@@ -7,15 +7,11 @@ name: Continuous Integration
 jobs:
   check:
     name: Check
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        target:
-          - x86_64-pc-windows-msvc
-          - x86_64-unknown-linux-gnu
-          - x86_64-apple-darwin
-          - aarch64-apple-darwin
-          - wasm32-unknown-unknown
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -25,27 +21,20 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
-          target: ${{ matrix.target }}
           override: true
 
       - name: Run cargo check
         uses: actions-rs/cargo@v1
         with:
-          use-cross: true
           command: check
-          args: --release --target=${{ matrix.target }}
 
   test:
     name: Test Suite
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        target:
-          - x86_64-pc-windows-msvc
-          - x86_64-unknown-linux-gnu
-          - x86_64-apple-darwin
-          - aarch64-apple-darwin
-          - wasm32-unknown-unknown
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -55,27 +44,21 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
-          target: ${{ matrix.target }}
           override: true
 
       - name: Run cargo test
         uses: actions-rs/cargo@v1
         with:
-          use-cross: true
           command: test
-          args: --release --target=${{ matrix.target }}
 
   lints:
     name: Lints
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        target:
-          - x86_64-pc-windows-msvc
-          - x86_64-unknown-linux-gnu
-          - x86_64-apple-darwin
-          - aarch64-apple-darwin
-          - wasm32-unknown-unknown
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        
+    runs-on: ${{ matrix.os }}
+    
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -85,13 +68,10 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
-          target: ${{ matrix.target }}
           override: true
           components: clippy
 
       - name: Run cargo clippy
         uses: actions-rs/cargo@v1
         with:
-          use-cross: true
           command: clippy
-          args: --release --target=${{ matrix.target }}
