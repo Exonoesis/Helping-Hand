@@ -1,49 +1,54 @@
 #![warn(clippy::pedantic)]
 
+mod camera;
 mod components;
-mod spawner;
 mod map;
 mod map_builder;
+mod spawner;
 mod systems;
-mod camera;
 mod turn_state;
 
-mod prelude {
+mod prelude
+{
     pub use bracket_lib::prelude::*;
-    pub use legion::*;
-    pub use legion::world::SubWorld;
     pub use legion::systems::CommandBuffer;
+    pub use legion::world::SubWorld;
+    pub use legion::*;
     pub const SCREEN_WIDTH: i32 = 80;
     pub const SCREEN_HEIGHT: i32 = 50;
     pub const DISPLAY_WIDTH: i32 = SCREEN_WIDTH / 2;
     pub const DISPLAY_HEIGHT: i32 = SCREEN_HEIGHT / 2;
-    pub use crate::components::*;
-    pub use crate::spawner::*;
-    pub use crate::map::*;
-    pub use crate::systems::*;
-    pub use crate::map_builder::*;
     pub use crate::camera::*;
+    pub use crate::components::*;
+    pub use crate::map::*;
+    pub use crate::map_builder::*;
+    pub use crate::spawner::*;
+    pub use crate::systems::*;
     pub use crate::turn_state::*;
 }
 
 use prelude::*;
 
-struct State {
-    ecs : World,
+struct State
+{
+    ecs: World,
     resources: Resources,
     input_systems: Schedule,
     player_systems: Schedule,
-    monster_systems: Schedule
+    monster_systems: Schedule,
 }
 
-impl State {
-    fn new() -> Self {
+impl State
+{
+    fn new() -> Self
+    {
         let mut ecs = World::default();
         let mut resources = Resources::default();
         let mut rng = RandomNumberGenerator::new();
         let map_builder = MapBuilder::new(&mut rng);
         spawn_player(&mut ecs, map_builder.player_start);
-        map_builder.rooms
+        map_builder
+            .rooms
             .iter()
             .skip(1)
             .map(|r| r.center())
@@ -56,13 +61,15 @@ impl State {
             resources,
             input_systems: build_input_scheduler(),
             player_systems: build_player_scheduler(),
-            monster_systems: build_monster_scheduler()
+            monster_systems: build_monster_scheduler(),
         }
     }
 }
 
-impl GameState for State {
-    fn tick(&mut self, ctx: &mut BTerm) {
+impl GameState for State
+{
+    fn tick(&mut self, ctx: &mut BTerm)
+    {
         ctx.set_active_console(0);
         ctx.cls();
         ctx.set_active_console(1);
@@ -70,19 +77,23 @@ impl GameState for State {
         self.resources.insert(ctx.key);
         let current_state = self.resources.get::<TurnState>().unwrap().clone();
         match current_state {
-            TurnState::AwaitingInput => self.input_systems.execute(&mut self.ecs, &mut self.resources),
+            TurnState::AwaitingInput => self
+                .input_systems
+                .execute(&mut self.ecs, &mut self.resources),
             TurnState::PlayerTurn => {
-                self.player_systems.execute(&mut self.ecs, &mut self.resources);
+                self.player_systems
+                    .execute(&mut self.ecs, &mut self.resources);
             }
-            TurnState::MonsterTurn => {
-                self.monster_systems.execute(&mut self.ecs, &mut self.resources)
-            }
+            TurnState::MonsterTurn => self
+                .monster_systems
+                .execute(&mut self.ecs, &mut self.resources),
         }
         render_draw_buffer(ctx).expect("Render error");
     }
 }
 
-fn main() -> BError {
+fn main() -> BError
+{
     let context = BTermBuilder::new()
         .with_title("Dungeon Crawler")
         .with_fps_cap(30.0)
