@@ -10,10 +10,11 @@ pub fn map_render(#[resource] map: &Map, #[resource] camera: &Camera)
             let pt = Point::new(x, y);
             let offset = Point::new(camera.left_x, camera.top_y);
             if map.in_bounds(pt) {
-                let idx = map_idx(x, y);
-                let glyph = match map.tiles[idx] {
-                    TileType::Floor => to_cp437('.'),
-                    TileType::Wall => to_cp437('#'),
+                let idx = idx(x, y);
+                let glyph = match map.tiles.get(idx) {
+                    Some(TileType::Floor) => to_cp437('.'),
+                    Some(TileType::Wall) => to_cp437('#'),
+                    _ => return
                 };
                 draw_batch.set(
                     // (1)

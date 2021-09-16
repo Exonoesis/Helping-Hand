@@ -1,5 +1,3 @@
-#![warn(clippy::pedantic)]
-
 mod camera;
 mod components;
 mod map;
@@ -51,7 +49,7 @@ impl State
             .rooms
             .iter()
             .skip(1)
-            .map(|r| r.center())
+            .map(Rect::center)
             .for_each(|pos| spawn_monster(&mut ecs, &mut rng, pos));
         resources.insert(map_builder.map);
         resources.insert(Camera::new(map_builder.player_start));
@@ -75,7 +73,7 @@ impl GameState for State
         ctx.set_active_console(1);
         ctx.cls();
         self.resources.insert(ctx.key);
-        let current_state = self.resources.get::<TurnState>().unwrap().clone();
+        let current_state = *self.resources.get::<TurnState>().unwrap();
         match current_state {
             TurnState::AwaitingInput => self
                 .input_systems
