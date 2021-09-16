@@ -14,7 +14,7 @@ pub fn map_render(#[resource] map: &Map, #[resource] camera: &Camera)
                 let glyph = match map.tiles.get(idx) {
                     Some(TileType::Floor) => to_cp437('.'),
                     Some(TileType::Wall) => to_cp437('#'),
-                    _ => return
+                    _ => return,
                 };
                 draw_batch.set(
                     // (1)
