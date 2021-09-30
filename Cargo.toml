@@ -5,5 +5,5 @@ authors = ["Jesse Fischbeck <jlevifisch@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-bracket-lib = "~0.8.1"
-legion = "=0.3.1"
+bevy = "0.5"
+bevy_ecs_tilemap = {git = "https://github.com/StarArawn/bevy_ecs_tilemap.git", rev = "83a8599feeb7c38f0cd66803483bcdb09894e6b1", features=["tiled_map"]}
