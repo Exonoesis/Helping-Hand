@@ -15,6 +15,14 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
+        
+      - name: Install Audio Driver via Alsa for Linux
+        run: |
+             if [ "$RUNNER_OS" == "Linux" ]; then
+                  sudo apt-get install libasound2-dev
+             fi
+        shell: bash
+     
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
@@ -38,6 +46,13 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
+        
+      - name: Install Audio Driver via Alsa for Linux
+        run: |
+             if [ "$RUNNER_OS" == "Linux" ]; then
+                  sudo apt-get install libasound2-dev
+             fi
+        shell: bash
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
@@ -58,6 +73,13 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
+        
+      - name: Install Audio Driver via Alsa for Linux
+        run: |
+             if [ "$RUNNER_OS" == "Linux" ]; then
+                  sudo apt-get install libasound2-dev
+             fi
+        shell: bash
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
