@@ -5,7 +5,8 @@ pub fn movement(
     time: Res<Time>,
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<&mut Transform, With<Camera>>,
-) {
+)
+{
     for mut transform in query.iter_mut() {
         let mut direction = Vec3::ZERO;
         let scale = transform.scale.x;
