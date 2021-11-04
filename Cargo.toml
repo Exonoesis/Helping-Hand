@@ -4,16 +4,6 @@ version = "0.1.0"
 authors = ["Jesse Fischbeck <jlevifisch@gmail.com>"]
 edition = "2021"
 
-[profile.dev.package."*"]
-opt-level = 3
-
-[profile.dev]
-opt-level = 1
-
-[profile.release]
-lto = "fat"
-codegen-units = 1
-
 [dependencies]
 bevy = "0.5"
 bevy_ecs_tilemap = {git = "https://github.com/StarArawn/bevy_ecs_tilemap.git", rev = "83a8599feeb7c38f0cd66803483bcdb09894e6b1", features=["tiled_map"]}
