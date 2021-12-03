@@ -1,5 +1,9 @@
 # Helping Hand
 
+### Project Snapshot
+
+![project image](/snapshots/unknown2.png)
+
 ---
 
 ### License
