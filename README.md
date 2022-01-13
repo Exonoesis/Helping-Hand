@@ -2,7 +2,7 @@
 
 ### Project Snapshot
 
-![project image](/snapshots/unknown2.png)
+![project image](snapshots/unknown2.png)
 
 ---
 
