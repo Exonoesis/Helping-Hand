@@ -9,8 +9,10 @@ use bevy::reflect::TypeUuid;
 #[derive(Default)]
 pub struct TiledMapPlugin;
 
-impl Plugin for TiledMapPlugin {
-    fn build(&self, app: &mut App) {
+impl Plugin for TiledMapPlugin
+{
+    fn build(&self, app: &mut App)
+    {
         app.add_asset::<TiledMap>()
             .add_asset_loader(TiledLoader)
             .add_system(process_loaded_tile_maps);
@@ -19,13 +21,15 @@ impl Plugin for TiledMapPlugin {
 
 #[derive(TypeUuid)]
 #[uuid = "e51081d0-6168-4881-a1c6-4249b2000d7f"]
-pub struct TiledMap {
+pub struct TiledMap
+{
     pub map: tiled::Map,
     pub tilesets: HashMap<u32, Handle<Image>>,
 }
 
 #[derive(Default, Bundle)]
-pub struct TiledMapBundle {
+pub struct TiledMapBundle
+{
     pub tiled_map: Handle<TiledMap>,
     pub map: Map,
     pub transform: Transform,
@@ -34,12 +38,14 @@ pub struct TiledMapBundle {
 
 pub struct TiledLoader;
 
-impl AssetLoader for TiledLoader {
+impl AssetLoader for TiledLoader
+{
     fn load<'a>(
         &'a self,
         bytes: &'a [u8],
         load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, Result<(), anyhow::Error>> {
+    ) -> BoxedFuture<'a, Result<(), anyhow::Error>>
+    {
         Box::pin(async move {
             let root_dir = load_context.path().parent().unwrap();
             let map = tiled::parse(BufReader::new(bytes))?;
@@ -68,7 +74,8 @@ impl AssetLoader for TiledLoader {
         })
     }
 
-    fn extensions(&self) -> &[&str] {
+    fn extensions(&self) -> &[&str]
+    {
         static EXTENSIONS: &[&str] = &["tmx"];
         EXTENSIONS
     }
@@ -83,7 +90,8 @@ pub fn process_loaded_tile_maps(
     new_maps: Query<&Handle<TiledMap>, Added<Handle<TiledMap>>>,
     layer_query: Query<&Layer>,
     chunk_query: Query<&Chunk>,
-) {
+)
+{
     let mut changed_maps = Vec::<Handle<TiledMap>>::default();
     for event in map_events.iter() {
         match event {
@@ -190,7 +198,11 @@ pub fn process_loaded_tile_maps(
                             &mut commands,
                             map_settings.clone(),
                             &mut meshes,
-                            tiled_map.tilesets.get(&tileset.first_gid).unwrap().clone_weak(),
+                            tiled_map
+                                .tilesets
+                                .get(&tileset.first_gid)
+                                .unwrap()
+                                .clone_weak(),
                             0u16,
                             layer.layer_index as u16,
                             move |mut tile_pos| {
@@ -214,7 +226,7 @@ pub fn process_loaded_tile_maps(
 
                                 if map_tile.gid < tileset.first_gid
                                     || map_tile.gid
-                                    >= tileset.first_gid + tileset.tilecount.unwrap()
+                                        >= tileset.first_gid + tileset.tilecount.unwrap()
                                 {
                                     return None;
                                 }
