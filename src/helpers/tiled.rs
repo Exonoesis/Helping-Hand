@@ -196,7 +196,7 @@ pub fn process_loaded_tile_maps(
 
                         let layer_entity = LayerBuilder::<TileBundle>::new_batch(
                             &mut commands,
-                            map_settings.clone(),
+                            map_settings,
                             &mut meshes,
                             tiled_map
                                 .tilesets
