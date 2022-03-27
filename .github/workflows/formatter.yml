@@ -13,7 +13,7 @@ jobs:
               toolchain: nightly
               components: rustfmt
               override: true
-        - uses: LoliGothick/rustfmt-check@@master
+        - uses: LoliGothick/rustfmt-check@master
           with:
               token: ${{ secrets.GITHUB_TOKEN }}
               flags: --all
