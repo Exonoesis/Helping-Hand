@@ -1,77 +1,95 @@
-name: CI
+# Based on https://github.com/actions-rs/meta/blob/master/recipes/quickstart.md
 
-on:
-  pull_request:
-  push:
+on: [push]
+
+name: Continuous Integration
 
 jobs:
-  test:
+  check:
+    name: Check
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - name: Checkout sources
+        uses: actions/checkout@v2
+        
+      - name: Install Audio Driver via Alsa for Linux
+        run: |
+             if [ "$RUNNER_OS" == "Linux" ]; then
+                  sudo apt update && sudo apt-get install libasound2-dev libudev-dev
+             fi
+        shell: bash
+     
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-build-stable-${{ hashFiles('**/Cargo.toml') }}
-      - uses: actions-rs/toolchain@v1
-        with:
+          profile: minimal
           toolchain: stable
           override: true
-      - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-        if: runner.os == 'linux'
-      - name: Build & run tests
-        run: cargo test
-  all-doc-tests:
-    runs-on: ubuntu-latest
+
+      - name: Run cargo check
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+
+  test:
+    name: Test Suite
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        
+    runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - name: Checkout sources
+        uses: actions/checkout@v2
+        
+      - name: Install Audio Driver via Alsa for Linux
+        run: |
+             if [ "$RUNNER_OS" == "Linux" ]; then
+                  sudo apt update && sudo apt-get install libasound2-dev libudev-dev
+             fi
+        shell: bash
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ubuntu-latest-cargo-build-stable-${{ hashFiles('**/Cargo.toml') }}
-      - uses: actions-rs/toolchain@v1
-        with:
+          profile: minimal
           toolchain: stable
           override: true
-      - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-      - name: Run doc tests with all features (this also compiles README examples)
-        run: cargo test --doc --all-features
-  lint:
+
+      - name: Run cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+
+  lints:
+    name: Lints        
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - name: Checkout sources
+        uses: actions/checkout@v2
+        
+      - name: Install Audio Driver via Alsa for Linux
+        run: |
+             if [ "$RUNNER_OS" == "Linux" ]; then
+                  sudo apt update && sudo apt-get install libasound2-dev libudev-dev
+             fi
+        shell: bash
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ubuntu-latest-cargo-build-stable-${{ hashFiles('**/Cargo.toml') }}
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: rustfmt, clippy
+          toolchain: nightly
           override: true
-      - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-      - name: Run clippy
-        run: cargo clippy --workspace --all-targets --all-features
-      - name: Check format
-        run: cargo fmt --all -- --check
+          components: clippy
+
+      - name: Run cargo clippy
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features
