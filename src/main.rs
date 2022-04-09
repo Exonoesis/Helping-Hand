@@ -12,7 +12,8 @@ mod helpers;
 
 fn startup(mut commands: Commands, asset_server: Res<AssetServer>)
 {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    //Comment out to not spawn map on title screen
+    //commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
     let handle: Handle<TiledMap> = asset_server.load("ortho-map.tmx");
 
@@ -42,5 +43,6 @@ fn main() {
         .add_startup_system(startup)
         .add_system(helpers::texture::set_texture_filters_to_nearest)
         .add_plugin(GamePlugin)
+        .add_system(helpers::camera::movement)
         .run();
 }

@@ -1,8 +1,10 @@
 use bevy::{core::Time, input::Input, math::Vec3, prelude::*, render::camera::Camera};
+//use crate::actions::Actions;
 
 // A simple camera system for moving and zooming the camera.
 pub fn movement(
     time: Res<Time>,
+    //actions: Res<Actions>,
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(&mut Transform, &mut OrthographicProjection), With<Camera>>,
 )
@@ -39,7 +41,7 @@ pub fn movement(
         }
 
         let z = transform.translation.z;
-        transform.translation += time.delta_seconds() * direction * 500.;
+        transform.translation += time.delta_seconds() * direction * 150.;
         // Important! We need to restore the Z values when moving the camera around.
         // Bevy has a specific camera setup and this can mess with how our layers are shown.
         transform.translation.z = z;
