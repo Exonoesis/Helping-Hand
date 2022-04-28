@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::Player;
+use bevy::prelude::*;
 
 pub enum Movement {
     Up,
@@ -50,7 +50,10 @@ pub fn movement_logger(mut input_receiver: EventReader<Movement>) {
     }
 }
 
-pub fn move_player(mut input_receiver: EventReader<Movement>, mut query: Query<(&mut Transform, &mut Sprite), With<Player>>) {
+pub fn move_player(
+    mut input_receiver: EventReader<Movement>,
+    mut query: Query<(&mut Transform, &mut Sprite), With<Player>>,
+) {
     for movement_action in input_receiver.iter() {
         let (mut player_transform, mut sprite) = query.single_mut();
 
@@ -61,23 +64,23 @@ pub fn move_player(mut input_receiver: EventReader<Movement>, mut query: Query<(
             Movement::Left => {
                 direction -= Vec3::new(3.0, 0.0, 0.0);
                 sprite.flip_x = false;
-            },
+            }
             Movement::Right => {
                 direction += Vec3::new(3.0, 0.0, 0.0);
                 sprite.flip_x = true;
-            },
+            }
             Movement::UpLeft => {
                 direction += Vec3::new(-3.0, 3.0, 0.0);
                 sprite.flip_x = false;
-            },
+            }
             Movement::UpRight => {
                 direction += Vec3::new(3.0, 3.0, 0.0);
                 sprite.flip_x = true;
-            },
+            }
             Movement::DownLeft => {
                 direction -= Vec3::new(3.0, 3.0, 0.0);
                 sprite.flip_x = false;
-            },
+            }
             Movement::DownRight => {
                 direction -= Vec3::new(-3.0, 3.0, 0.0);
                 sprite.flip_x = true;
