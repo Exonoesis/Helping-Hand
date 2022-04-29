@@ -1,7 +1,7 @@
 mod mechanics;
 
 use bevy::prelude::*;
-use mechanics::input::*;
+use mechanics::{camera::move_camera, input::*};
 
 #[derive(Component)]
 pub struct Player;
@@ -19,7 +19,7 @@ fn spawn_player(mut commands: Commands, asset_spawner: Res<AssetServer>) {
     commands.spawn_bundle(PlayerBundle {
         _p: Player,
         sprite: SpriteBundle {
-            texture: asset_spawner.load("textures/characters/eevee_sky_v2.png"),
+            texture: asset_spawner.load("textures/characters/EeveeSprites-l.png"),
             ..default()
         },
     });
@@ -33,5 +33,6 @@ fn main() {
         .add_system(player_input)
         //.add_system(movement_logger)
         .add_system(move_player)
+        .add_system(move_camera)
         .run();
 }
