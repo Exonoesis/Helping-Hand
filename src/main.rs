@@ -1,7 +1,7 @@
+mod mechanics;
+
 use bevy::prelude::*;
 use mechanics::input::*;
-
-mod mechanics;
 
 #[derive(Component)]
 pub struct Player;
@@ -31,7 +31,7 @@ fn main() {
         .add_startup_system(spawn_player)
         .add_event::<Movement>()
         .add_system(player_input)
-        .add_system(movement_logger)
+        //.add_system(movement_logger)
         .add_system(move_player)
         .run();
 }

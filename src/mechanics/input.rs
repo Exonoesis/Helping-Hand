@@ -33,7 +33,7 @@ pub fn player_input(input: Res<Input<KeyCode>>, mut input_broadcast: EventWriter
     }
 }
 
-pub fn movement_logger(mut input_receiver: EventReader<Movement>) {
+/*pub fn movement_logger(mut input_receiver: EventReader<Movement>) {
     for movement_action in input_receiver.iter() {
         let input_direction = match movement_action {
             Movement::Up => "Up",
@@ -48,7 +48,7 @@ pub fn movement_logger(mut input_receiver: EventReader<Movement>) {
 
         println!("Player input: {}", input_direction);
     }
-}
+}*/
 
 pub fn move_player(
     mut input_receiver: EventReader<Movement>,
@@ -57,32 +57,33 @@ pub fn move_player(
     for movement_action in input_receiver.iter() {
         let (mut player_transform, mut sprite) = query.single_mut();
 
+        let pixel_distance = 3.0;
         let mut direction = Vec3::ZERO;
         match movement_action {
-            Movement::Up => direction += Vec3::new(0.0, 3.0, 0.0),
-            Movement::Down => direction -= Vec3::new(0.0, 3.0, 0.0),
+            Movement::Up => direction += Vec3::new(0.0, pixel_distance, 0.0),
+            Movement::Down => direction -= Vec3::new(0.0, pixel_distance, 0.0),
             Movement::Left => {
-                direction -= Vec3::new(3.0, 0.0, 0.0);
+                direction -= Vec3::new(pixel_distance, 0.0, 0.0);
                 sprite.flip_x = false;
             }
             Movement::Right => {
-                direction += Vec3::new(3.0, 0.0, 0.0);
+                direction += Vec3::new(pixel_distance, 0.0, 0.0);
                 sprite.flip_x = true;
             }
             Movement::UpLeft => {
-                direction += Vec3::new(-3.0, 3.0, 0.0);
+                direction += Vec3::new(-pixel_distance, pixel_distance, 0.0);
                 sprite.flip_x = false;
             }
             Movement::UpRight => {
-                direction += Vec3::new(3.0, 3.0, 0.0);
+                direction += Vec3::new(pixel_distance, pixel_distance, 0.0);
                 sprite.flip_x = true;
             }
             Movement::DownLeft => {
-                direction -= Vec3::new(3.0, 3.0, 0.0);
+                direction -= Vec3::new(pixel_distance, pixel_distance, 0.0);
                 sprite.flip_x = false;
             }
             Movement::DownRight => {
-                direction -= Vec3::new(-3.0, 3.0, 0.0);
+                direction -= Vec3::new(-pixel_distance, pixel_distance, 0.0);
                 sprite.flip_x = true;
             }
         }
