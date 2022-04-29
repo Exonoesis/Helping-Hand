@@ -1,7 +1,7 @@
 mod mechanics;
 
 use bevy::prelude::*;
-use mechanics::{input::*, camera::move_camera};
+use mechanics::{camera::move_camera, input::*};
 
 #[derive(Component)]
 pub struct Player;
