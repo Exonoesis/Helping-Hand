@@ -33,23 +33,6 @@ pub fn player_input(input: Res<Input<KeyCode>>, mut input_broadcast: EventWriter
     }
 }
 
-/*pub fn movement_logger(mut input_receiver: EventReader<Movement>) {
-    for movement_action in input_receiver.iter() {
-        let input_direction = match movement_action {
-            Movement::Up => "Up",
-            Movement::Down => "Down",
-            Movement::Left => "Left",
-            Movement::Right => "Right",
-            Movement::UpLeft => "UpLeft",
-            Movement::UpRight => "UpRight",
-            Movement::DownLeft => "DownLeft",
-            Movement::DownRight => "DownRight",
-        };
-
-        println!("Player input: {}", input_direction);
-    }
-}*/
-
 pub fn move_player(
     mut input_receiver: EventReader<Movement>,
     mut query: Query<(&mut Transform, &mut Sprite), With<Player>>,
