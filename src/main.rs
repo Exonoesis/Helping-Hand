@@ -30,15 +30,12 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
-
         .add_startup_system(spawn_map)
         .insert_resource(LevelSelection::Index(0))
-
         .add_event::<Movement>()
         .add_system(player_input)
         .add_system(move_player)
         .add_system(move_camera)
-
         .register_ldtk_entity::<PlayerBundle>("Player")
         .run();
 }
