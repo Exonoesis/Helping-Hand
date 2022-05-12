@@ -8,7 +8,7 @@ pub enum Movement {
     Right,
 }
 
-pub fn player_input(input: Res<Input<KeyCode>>, mut input_broadcast: EventWriter<Movement>) { 
+pub fn player_input(input: Res<Input<KeyCode>>, mut input_broadcast: EventWriter<Movement>) {
     if input.pressed(KeyCode::W) {
         input_broadcast.send(Movement::Up);
     } else if input.pressed(KeyCode::S) {
