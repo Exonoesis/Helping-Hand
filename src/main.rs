@@ -9,9 +9,9 @@ pub struct Player;
 
 #[derive(Bundle, LdtkEntity)]
 struct PlayerBundle {
-    #[sprite_bundle("textures/characters/EeveeSprites-l.png")]
+    #[sprite_sheet_bundle("textures/characters/EeveeSprites.png", 64.0, 64.0, 1, 4, 0.0, 0)]
     #[bundle]
-    sprite: SpriteBundle,
+    sprite: SpriteSheetBundle,
 
     player: Player,
 }
