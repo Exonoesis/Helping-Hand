@@ -1,5 +1,6 @@
 use crate::Player;
-use bevy::prelude::*;
+use bevy::{prelude::*, sprite::collide_aabb::collide};
+use bevy_ecs_ldtk::{EntityInstance, ldtk::FieldInstance};
 
 pub enum Movement {
     Up,
@@ -22,10 +23,11 @@ pub fn player_input(input: Res<Input<KeyCode>>, mut input_broadcast: EventWriter
 
 pub fn move_player(
     mut input_receiver: EventReader<Movement>,
-    mut query: Query<(&mut Transform, &mut TextureAtlasSprite), With<Player>>,
+    mut player_query: Query<(&mut Transform, &mut TextureAtlasSprite), With<Player>>,
+    tile_query: Query<&EntityInstance>,
 ) {
     for movement_action in input_receiver.iter() {
-        let (mut player_transform, mut sprite) = query.single_mut();
+        let (mut player_transform, mut sprite) = player_query.single_mut();
 
         let pixel_distance = 3.0;
         let mut direction = Vec3::ZERO;
@@ -48,6 +50,22 @@ pub fn move_player(
             }
         }
 
-        player_transform.translation += direction;
+        let projected_position = player_transform.translation + direction;
+
+        let collision_tiles = tile_query
+            .iter()
+            .filter(|&tile| !tile.field_instances.is_empty())
+            .filter(|&tile| tile.field_instances.iter().any(|field_instance| field_instance.identifier == "Traversable"))
+            .collect::<Vec<&EntityInstance>>();
+        
+        for &collision_tile in collision_tiles.iter() {
+            let tile_position = Vec3::new(collision_tile.px.x as f32, collision_tile.px.y as f32, 0.0);
+
+            if collide(projected_position, Vec2::new(64.0, 64.0), tile_position, Vec2::new(64.0, 64.0)).is_some() {
+                return;
+            }
+        }
+
+        player_transform.translation = projected_position;
     }
 }
