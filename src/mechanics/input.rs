@@ -1,6 +1,6 @@
 use crate::Player;
 use bevy::{prelude::*, sprite::collide_aabb::collide};
-use bevy_ecs_ldtk::{EntityInstance, ldtk::FieldInstance};
+use bevy_ecs_ldtk::{EntityInstance, LdtkAsset};
 
 pub enum Movement {
     Up,
@@ -25,6 +25,8 @@ pub fn move_player(
     mut input_receiver: EventReader<Movement>,
     mut player_query: Query<(&mut Transform, &mut TextureAtlasSprite), With<Player>>,
     tile_query: Query<&EntityInstance>,
+    world_query: Query<&Handle<LdtkAsset>>,
+    loaded_worlds: Res<Assets<LdtkAsset>>
 ) {
     for movement_action in input_receiver.iter() {
         let (mut player_transform, mut sprite) = player_query.single_mut();
@@ -56,16 +58,18 @@ pub fn move_player(
             .iter()
             .filter(|&tile| !tile.field_instances.is_empty())
             .filter(|&tile| tile.field_instances.iter().any(|field_instance| field_instance.identifier == "Traversable"))
-            .collect::<Vec<&EntityInstance>>();
+            .collect::<Vec<&EntityInstance>>();  
+        
+        let world_height = loaded_worlds.get(world_query.single()).expect("The world should exist by now.").world_height();
+        let tile_side_length = 64.0;
         
         for &collision_tile in collision_tiles.iter() {
-            let tile_position = Vec3::new(collision_tile.px.x as f32, collision_tile.px.y as f32, 0.0);
+            let tile_position = Vec3::new(collision_tile.px.x as f32, (world_height - collision_tile.px.y) as f32, 0.0);
 
-            if collide(projected_position, Vec2::new(64.0, 64.0), tile_position, Vec2::new(64.0, 64.0)).is_some() {
+            if collide(projected_position, Vec2::new(tile_side_length, tile_side_length), tile_position, Vec2::new(tile_side_length, tile_side_length)).is_some() {
                 return;
             }
         }
-
         player_transform.translation = projected_position;
     }
 }
