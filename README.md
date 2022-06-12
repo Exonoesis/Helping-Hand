@@ -2,7 +2,7 @@
 
 ### Project Snapshot
 
-![project image](snapshots/Snapshot_3.gif)
+![project image](snapshots/Snapshot_4.gif)
 
 ---
 
