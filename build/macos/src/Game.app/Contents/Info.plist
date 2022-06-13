@@ -5,17 +5,17 @@
         <key>CFBundleDevelopmentRegion</key>
         <string>en</string>
         <key>CFBundleDisplayName</key>
-        <string>HelpingHand</string> <!-- ToDo: this should be the same as your OSX app name in the release flow -->
+        <string>HelpingHand</string> <!-- Note: this should be the same as your OSX app name in the release flow -->
         <key>CFBundleExecutable</key>
-        <string>helping-hand</string> <!-- ToDo: this should be the same as your executable name in the release flow -->
+        <string>helping-hand</string> <!-- Note: this should be the same as your executable name in the release flow -->
         <key>CFBundleIconFile</key>
         <string>AppIcon.icns</string>
         <key>CFBundleIdentifier</key>
-        <string>your.domain.bevy-game</string> <!-- ToDo -->
+        <string>com.hitpawz.helping-hand</string> <!-- Domain String -->
         <key>CFBundleInfoDictionaryVersion</key>
         <string>6.0</string>
         <key>CFBundleName</key>
-        <string>Helping Hand</string> <!-- ToDo -->
+        <string>Helping Hand</string> <!-- App Name -->
         <key>CFBundlePackageType</key>
         <string>APPL</string>
         <key>CFBundleShortVersionString</key>
