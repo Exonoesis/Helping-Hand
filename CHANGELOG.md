@@ -4,6 +4,14 @@
 - This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - This project uses [ISO Standard](https://www.iso.org/iso-8601-date-and-time-format.html) date formatting
 
+## [Unreleased]
+### Added
+- Making Universal Builds for MacOS.
+- Play Background Music
+
+### Fixed
+- Making Windows/MacOS/Linux executables automatically per new version.
+
 ## [0.1.0] - 2022-06-12
 ### Added
 - Collision (Basic)
@@ -11,4 +19,5 @@
 - Player Tracking Camera (Basic)
 - Character Movement via WASD
 
+[Unreleased]: https://github.com/Exonoesis/Helping-Hand/blob/main/CHANGELOG.md
 [0.1.0]: https://github.com/Exonoesis/Helping-Hand/releases/tag/v0.1.0
