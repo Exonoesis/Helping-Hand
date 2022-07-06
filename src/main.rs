@@ -1,8 +1,11 @@
 mod mechanics;
+mod audio;
 
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
+use bevy_kira_audio::AudioPlugin;
 use mechanics::{camera::move_camera, input::*};
+use audio::music::play_level_music;
 
 #[derive(Default, Component)]
 pub struct Player;
@@ -34,12 +37,14 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
+        .add_plugin(AudioPlugin)
         .add_startup_system(spawn_map)
-        .insert_resource(LevelSelection::Index(0))
+        .insert_resource(LevelSelection::Identifier("Test_level".to_string()))
         .add_event::<Movement>()
         .add_system(player_input)
         .add_system(move_player)
         .add_system(move_camera)
+        .add_system(play_level_music)
         .register_ldtk_entity::<PlayerBundle>("Player")
         .run();
 }
