@@ -8,6 +8,7 @@
 ### Added
 - Making Universal Builds for MacOS.
 - Play Background Music
+- Play Movement Based SFX (Footsteps & Collision)
 
 ### Fixed
 - Making Windows/MacOS/Linux executables automatically per new version.
