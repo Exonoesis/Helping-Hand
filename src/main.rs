@@ -7,7 +7,7 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_kira_audio::{AudioPlugin, AudioApp};
 use mechanics::{camera::move_camera, input::*};
 use audio::{music::{play_level_music, MusicChannel}, sfx::*};
-use entities::player::{PlayerBundle, PlayerMovementActions};
+use entities::player::{PlayerBundle, PlayerMovementActions, PlayerBumpChannel, PlayerWalkChannel};
 
 /// Loads the LDtk test map with a Camera into the game at the origin (0,0,0).
 fn spawn_map(mut commands: Commands, asset_spawner: Res<AssetServer>) {
@@ -30,9 +30,11 @@ fn main() {
         .add_plugin(AudioPlugin)
         .add_startup_system(spawn_map)
         .add_startup_system(load_player_movement_sound)
+        .add_startup_system(load_player_bump_sound)
         .insert_resource(LevelSelection::Identifier("Test_level".to_string()))
         .add_audio_channel::<MusicChannel>()
-        .add_audio_channel::<SFXChannel>()
+        .add_audio_channel::<PlayerWalkChannel>()
+        .add_audio_channel::<PlayerBumpChannel>()
         .add_event::<Movement>()
         .add_event::<PlayerMovementActions>()
         .add_system(player_input)
@@ -40,6 +42,7 @@ fn main() {
         .add_system(move_camera)
         .add_system(play_level_music)
         .add_system(play_player_movement_sound)
+        .add_system(play_player_bump_sound)
         .register_ldtk_entity::<PlayerBundle>("Player")
         .run();
 }

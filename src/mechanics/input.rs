@@ -86,11 +86,11 @@ pub fn move_player(
             )
             .is_some()
             {
-                player_movement_broadcast.send(PlayerMovementActions::Bump);
+                player_movement_broadcast.send(PlayerMovementActions::Bumping);
                 return;
             }
         }
         player_transform.translation = projected_position;
-        player_movement_broadcast.send(PlayerMovementActions::Walk);
+        player_movement_broadcast.send(PlayerMovementActions::Walking);
     }
 }

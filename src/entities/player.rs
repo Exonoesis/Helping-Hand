@@ -4,10 +4,16 @@ use bevy_ecs_ldtk::prelude::*;
 #[derive(Default, Component)]
 pub struct Player;
 
+#[derive(Default, Component)]
+pub struct PlayerBumpChannel;
+
+#[derive(Default, Component)]
+pub struct PlayerWalkChannel;
+
 #[derive(PartialEq, PartialOrd, Clone, Copy)]
 pub enum PlayerMovementActions {
-    Walk,
-    Bump,
+    Walking,
+    Bumping,
 }
 
 #[derive(Bundle, LdtkEntity)]
@@ -17,4 +23,6 @@ pub struct PlayerBundle {
     sprite: SpriteSheetBundle,
 
     player: Player,
+    bump_sound: PlayerBumpChannel,
+    walk_sound: PlayerWalkChannel,
 }
