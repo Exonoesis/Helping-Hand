@@ -1,13 +1,16 @@
-mod mechanics;
 mod audio;
 mod entities;
+mod mechanics;
 
+use audio::{
+    music::{play_level_music, MusicChannel},
+    sfx::*,
+};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
-use bevy_kira_audio::{AudioPlugin, AudioApp};
+use bevy_kira_audio::{AudioApp, AudioPlugin};
+use entities::player::{PlayerBumpChannel, PlayerBundle, PlayerMovementActions, PlayerWalkChannel};
 use mechanics::{camera::move_camera, input::*};
-use audio::{music::{play_level_music, MusicChannel}, sfx::*};
-use entities::player::{PlayerBundle, PlayerMovementActions, PlayerBumpChannel, PlayerWalkChannel};
 
 /// Loads the LDtk test map with a Camera into the game at the origin (0,0,0).
 fn spawn_map(mut commands: Commands, asset_spawner: Res<AssetServer>) {

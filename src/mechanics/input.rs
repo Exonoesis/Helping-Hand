@@ -27,7 +27,7 @@ pub fn move_player(
     tile_query: Query<&EntityInstance>,
     world_query: Query<&Handle<LdtkAsset>>,
     loaded_worlds: Res<Assets<LdtkAsset>>,
-    mut player_movement_broadcast: EventWriter<PlayerMovementActions>
+    mut player_movement_broadcast: EventWriter<PlayerMovementActions>,
 ) {
     for movement_action in input_receiver.iter() {
         let (mut player_transform, mut sprite) = player_query.single_mut();
