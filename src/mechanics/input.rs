@@ -1,4 +1,4 @@
-use crate::Player;
+use crate::entities::player::{Player, PlayerMovementActions};
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 use bevy_ecs_ldtk::{EntityInstance, LdtkAsset};
 
@@ -27,6 +27,7 @@ pub fn move_player(
     tile_query: Query<&EntityInstance>,
     world_query: Query<&Handle<LdtkAsset>>,
     loaded_worlds: Res<Assets<LdtkAsset>>,
+    mut player_movement_broadcast: EventWriter<PlayerMovementActions>
 ) {
     for movement_action in input_receiver.iter() {
         let (mut player_transform, mut sprite) = player_query.single_mut();
@@ -85,9 +86,11 @@ pub fn move_player(
             )
             .is_some()
             {
+                player_movement_broadcast.send(PlayerMovementActions::Bumping);
                 return;
             }
         }
         player_transform.translation = projected_position;
+        player_movement_broadcast.send(PlayerMovementActions::Walking);
     }
 }

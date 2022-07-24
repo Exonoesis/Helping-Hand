@@ -1,5 +1,5 @@
-use crate::Player;
 use bevy::prelude::*;
+use crate::entities::player::Player;
 
 pub fn move_camera(
     player_query: Query<&Transform, (With<Player>, Changed<Transform>)>,

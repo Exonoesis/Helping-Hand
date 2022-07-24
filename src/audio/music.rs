@@ -1,8 +1,11 @@
 use bevy_ecs_ldtk::LevelSelection;
-use bevy_kira_audio::Audio;
+use bevy_kira_audio::AudioChannel;
 use bevy::prelude::*;
 
-pub fn play_level_music(asset_server: Res<AssetServer>, current_level_name: Res<LevelSelection>, audio: Res<Audio>) {
+#[derive(Default, Component)]
+pub struct MusicChannel;
+
+pub fn play_level_music(asset_server: Res<AssetServer>, current_level_name: Res<LevelSelection>, background_music: Res<AudioChannel<MusicChannel>>) {
     let level_has_changed = current_level_name.is_changed() || current_level_name.is_added();
 
     if !level_has_changed {
@@ -16,5 +19,5 @@ pub fn play_level_music(asset_server: Res<AssetServer>, current_level_name: Res<
         
     let audio_file_path = format!("audio/music/{}_overworld.wav", level_identifier);
 
-    audio.play_looped(asset_server.load(&audio_file_path));
+    background_music.play_looped(asset_server.load(&audio_file_path));
 }
