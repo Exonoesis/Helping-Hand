@@ -5,6 +5,9 @@
 - This project uses [ISO Standard](https://www.iso.org/iso-8601-date-and-time-format.html) date formatting
 
 ## [Unreleased]
+
+
+## [0.2.0]
 ### Added
 - Making Universal Builds for MacOS.
 - Play Background Music
@@ -21,4 +24,5 @@
 - Character Movement via WASD
 
 [Unreleased]: https://github.com/Exonoesis/Helping-Hand/blob/main/CHANGELOG.md
+[0.2.0] https://github.com/Exonoesis/Helping-Hand/releases/tag/v0.2.0
 [0.1.0]: https://github.com/Exonoesis/Helping-Hand/releases/tag/v0.1.0
