@@ -7,7 +7,7 @@
 ## [Unreleased]
 
 
-## [0.2.0]
+## [0.2.0] - 2022-07-28
 ### Added
 - Making Universal Builds for MacOS.
 - Play Background Music
