@@ -24,5 +24,5 @@
 - Character Movement via WASD
 
 [Unreleased]: https://github.com/Exonoesis/Helping-Hand/blob/main/CHANGELOG.md
-[0.2.0] https://github.com/Exonoesis/Helping-Hand/releases/tag/v0.2.0
+[0.2.0]: https://github.com/Exonoesis/Helping-Hand/releases/tag/v0.2.0
 [0.1.0]: https://github.com/Exonoesis/Helping-Hand/releases/tag/v0.1.0
