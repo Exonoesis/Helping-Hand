@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::LevelSelection;
-use bevy_kira_audio::AudioChannel;
+use bevy_kira_audio::{AudioChannel, AudioControl};
 
 #[derive(Default, Component)]
 pub struct MusicChannel;
@@ -23,5 +23,5 @@ pub fn play_level_music(
 
     let audio_file_path = format!("audio/music/{}_overworld.wav", level_identifier);
 
-    background_music.play_looped(asset_server.load(&audio_file_path));
+    background_music.play(asset_server.load(&audio_file_path)).looped();
 }
