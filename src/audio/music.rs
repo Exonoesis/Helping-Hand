@@ -23,5 +23,7 @@ pub fn play_level_music(
 
     let audio_file_path = format!("audio/music/{}_overworld.wav", level_identifier);
 
-    background_music.play(asset_server.load(&audio_file_path)).looped();
+    background_music
+        .play(asset_server.load(&audio_file_path))
+        .looped();
 }
