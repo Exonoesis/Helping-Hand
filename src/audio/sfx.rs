@@ -1,13 +1,13 @@
 use crate::entities::player::{PlayerBumpChannel, PlayerMovementActions, PlayerWalkChannel};
 use bevy::prelude::*;
-use bevy_kira_audio::AudioChannel;
+use bevy_kira_audio::{AudioChannel, AudioControl};
 
 pub fn load_player_movement_sound(
     asset_server: Res<AssetServer>,
     player_movement_sound: Res<AudioChannel<PlayerWalkChannel>>,
 ) {
     let audio_file_path = "audio/sfx/player_walk.wav";
-    player_movement_sound.play_looped(asset_server.load(audio_file_path));
+    player_movement_sound.play(asset_server.load(audio_file_path)).looped();
     player_movement_sound.pause();
 }
 
@@ -36,7 +36,7 @@ pub fn load_player_bump_sound(
     player_bump_sound: Res<AudioChannel<PlayerBumpChannel>>,
 ) {
     let audio_file_path = "audio/sfx/player_bump.wav";
-    player_bump_sound.play_looped(asset_server.load(audio_file_path));
+    player_bump_sound.play(asset_server.load(audio_file_path)).looped();
     player_bump_sound.pause();
 }
 

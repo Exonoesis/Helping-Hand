@@ -14,7 +14,7 @@ use mechanics::{camera::move_camera, input::*};
 
 /// Loads the LDtk test map with a Camera into the game at the origin (0,0,0).
 fn spawn_map(mut commands: Commands, asset_spawner: Res<AssetServer>) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn_bundle(Camera2dBundle::default());
 
     asset_spawner
         .watch_for_changes()
