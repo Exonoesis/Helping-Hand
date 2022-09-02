@@ -14,7 +14,7 @@
 - Updated Bevy Kira Audio to version 0.12
 
 ### Fixed
-- Camera now maintains  own z position instead of adopting the players
+- Camera now maintains own z position instead of adopting the players
 - Fixed off-by-one error in collision tile placement
 
 ## [0.2.0] - 2022-07-28
