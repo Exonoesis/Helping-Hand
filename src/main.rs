@@ -34,7 +34,7 @@ fn main() {
         .add_startup_system(spawn_map)
         .add_startup_system(load_player_movement_sound)
         .add_startup_system(load_player_bump_sound)
-        .insert_resource(LevelSelection::Identifier("Test_level".to_string()))
+        .insert_resource(LevelSelection::Identifier("Level_1".to_string()))
         .add_audio_channel::<MusicChannel>()
         .add_audio_channel::<PlayerWalkChannel>()
         .add_audio_channel::<PlayerBumpChannel>()

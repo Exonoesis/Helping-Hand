@@ -5,10 +5,17 @@
 - This project uses [ISO Standard](https://www.iso.org/iso-8601-date-and-time-format.html) date formatting
 
 ## [Unreleased]
+### Added
+- Tutorial Level Map, including free-to-use placeholder assets
+
 ### Changed
 - Updated Bevy to version 0.8
 - Updated Bevy ECS LDtk to version 0.4
 - Updated Bevy Kira Audio to version 0.12
+
+### Fixed
+- Camera now maintains  own z position instead of adopting the players
+- Fixed off-by-one error in collision tile placement
 
 ## [0.2.0] - 2022-07-28
 ### Added

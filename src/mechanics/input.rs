@@ -74,7 +74,7 @@ pub fn move_player(
         for &collision_tile in collision_tiles.iter() {
             let tile_position = Vec3::new(
                 collision_tile.px.x as f32,
-                (world_height - collision_tile.px.y) as f32,
+                (world_height - (collision_tile.px.y + 64)) as f32,
                 0.0,
             );
 
