@@ -1,6 +1,6 @@
 use crate::entities::player::{Player, PlayerMovementActions};
 use bevy::{prelude::*, sprite::collide_aabb::collide};
-use bevy_ecs_ldtk::{EntityInstance, LdtkAsset};
+use bevy_ecs_ldtk::{EntityInstance, LdtkLevel};
 
 pub enum Movement {
     Up,
@@ -25,8 +25,8 @@ pub fn move_player(
     mut input_receiver: EventReader<Movement>,
     mut player_query: Query<(&mut Transform, &mut TextureAtlasSprite), With<Player>>,
     tile_query: Query<&EntityInstance>,
-    world_query: Query<&Handle<LdtkAsset>>,
-    loaded_worlds: Res<Assets<LdtkAsset>>,
+    level_query: Query<&Handle<LdtkLevel>>,
+    loaded_levels: Res<Assets<LdtkLevel>>,
     mut player_movement_broadcast: EventWriter<PlayerMovementActions>,
 ) {
     for movement_action in input_receiver.iter() {
@@ -53,7 +53,24 @@ pub fn move_player(
             }
         }
 
-        let projected_position = player_transform.translation + direction;
+        let level_info = &loaded_levels
+            .get(level_query.single())
+            .expect("The level should exist by now.")
+            .level;
+        let level_height = level_info.px_hei;
+        let level_width = level_info.px_wid;
+
+        let tile_side_length = 64.0;
+        let tile_mid_point = tile_side_length / 2.0;
+
+        let mut projected_position = player_transform.translation + direction;
+        projected_position.x = projected_position
+            .x
+            .clamp(tile_mid_point, level_width as f32 - tile_mid_point);
+            
+        projected_position.y = projected_position
+            .y
+            .clamp(tile_mid_point, level_height as f32 - tile_mid_point);
 
         let collision_tiles = tile_query
             .iter()
@@ -65,16 +82,10 @@ pub fn move_player(
             })
             .collect::<Vec<&EntityInstance>>();
 
-        let world_height = loaded_worlds
-            .get(world_query.single())
-            .expect("The world should exist by now.")
-            .world_height();
-        let tile_side_length = 64.0;
-
         for &collision_tile in collision_tiles.iter() {
             let tile_position = Vec3::new(
                 collision_tile.px.x as f32,
-                (world_height - collision_tile.px.y) as f32,
+                (level_height - (collision_tile.px.y)) as f32,
                 0.0,
             );
 
@@ -82,7 +93,7 @@ pub fn move_player(
                 projected_position,
                 Vec2::new(tile_side_length, tile_side_length),
                 tile_position,
-                Vec2::new(tile_side_length, tile_side_length),
+                Vec2::new(collision_tile.width as f32, collision_tile.height as f32),
             )
             .is_some()
             {
