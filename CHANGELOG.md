@@ -9,6 +9,7 @@
 - Updated Bevy to version 0.8
 - Updated Bevy ECS LDtk to version 0.4
 - Updated Bevy Kira Audio to version 0.12
+- Restricted Player Movement to Level Boundries
 
 ## [0.2.0] - 2022-07-28
 ### Added
