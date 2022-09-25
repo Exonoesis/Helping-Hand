@@ -178,7 +178,10 @@ mod tests {
         let player_id = app
             .world
             .spawn()
-            .insert_bundle((Player, Transform::from_xyz(TEST_LEVEL_WIDTH_IN_BOUNDS, TEST_LEVEL_HEIGHT_IN_BOUNDS, 0.0)))
+            .insert_bundle((
+                Player,
+                Transform::from_xyz(TEST_LEVEL_WIDTH_IN_BOUNDS, TEST_LEVEL_HEIGHT_IN_BOUNDS, 0.0),
+            ))
             .id();
 
         app.update();
@@ -186,7 +189,8 @@ mod tests {
         let player_query = app.world.get::<Transform>(player_id);
         assert!(player_query.is_some());
 
-        let expected_transform = Transform::from_xyz(TEST_LEVEL_WIDTH_IN_BOUNDS, TEST_LEVEL_HEIGHT_IN_BOUNDS, 0.0);
+        let expected_transform =
+            Transform::from_xyz(TEST_LEVEL_WIDTH_IN_BOUNDS, TEST_LEVEL_HEIGHT_IN_BOUNDS, 0.0);
         let actual_transform = *player_query.unwrap();
 
         assert_eq!(expected_transform, actual_transform);
@@ -199,7 +203,14 @@ mod tests {
         let player_id = app
             .world
             .spawn()
-            .insert_bundle((Player, Transform::from_xyz(TEST_LEVEL_WIDTH_OUT_LBOUNDS, TEST_LEVEL_HEIGHT_IN_BOUNDS, 0.0)))
+            .insert_bundle((
+                Player,
+                Transform::from_xyz(
+                    TEST_LEVEL_WIDTH_OUT_LBOUNDS,
+                    TEST_LEVEL_HEIGHT_IN_BOUNDS,
+                    0.0,
+                ),
+            ))
             .id();
 
         app.update();
@@ -207,7 +218,8 @@ mod tests {
         let player_query = app.world.get::<Transform>(player_id);
         assert!(player_query.is_some());
 
-        let expected_transform = Transform::from_xyz(PLAYER_MIDPOINT as f32, TEST_LEVEL_HEIGHT_IN_BOUNDS, 0.0);
+        let expected_transform =
+            Transform::from_xyz(PLAYER_MIDPOINT as f32, TEST_LEVEL_HEIGHT_IN_BOUNDS, 0.0);
         let actual_transform = *player_query.unwrap();
 
         assert_eq!(expected_transform, actual_transform);
@@ -220,7 +232,14 @@ mod tests {
         let player_id = app
             .world
             .spawn()
-            .insert_bundle((Player, Transform::from_xyz(TEST_LEVEL_WIDTH_OUT_LBOUNDS, TEST_LEVEL_HEIGHT_OUT_TBOUNDS, 0.0)))
+            .insert_bundle((
+                Player,
+                Transform::from_xyz(
+                    TEST_LEVEL_WIDTH_OUT_LBOUNDS,
+                    TEST_LEVEL_HEIGHT_OUT_TBOUNDS,
+                    0.0,
+                ),
+            ))
             .id();
 
         app.update();
@@ -245,7 +264,14 @@ mod tests {
         let player_id = app
             .world
             .spawn()
-            .insert_bundle((Player, Transform::from_xyz(TEST_LEVEL_WIDTH_OUT_LBOUNDS, TEST_LEVEL_HEIGHT_OUT_BBOUNDS, 0.0)))
+            .insert_bundle((
+                Player,
+                Transform::from_xyz(
+                    TEST_LEVEL_WIDTH_OUT_LBOUNDS,
+                    TEST_LEVEL_HEIGHT_OUT_BBOUNDS,
+                    0.0,
+                ),
+            ))
             .id();
 
         app.update();
@@ -267,7 +293,14 @@ mod tests {
         let player_id = app
             .world
             .spawn()
-            .insert_bundle((Player, Transform::from_xyz(TEST_LEVEL_WIDTH_OUT_RBOUNDS, TEST_LEVEL_HEIGHT_IN_BOUNDS, 0.0)))
+            .insert_bundle((
+                Player,
+                Transform::from_xyz(
+                    TEST_LEVEL_WIDTH_OUT_RBOUNDS,
+                    TEST_LEVEL_HEIGHT_IN_BOUNDS,
+                    0.0,
+                ),
+            ))
             .id();
 
         app.update();
@@ -275,8 +308,11 @@ mod tests {
         let player_query = app.world.get::<Transform>(player_id);
         assert!(player_query.is_some());
 
-        let expected_transform =
-            Transform::from_xyz((TEST_LEVEL_WIDTH - PLAYER_MIDPOINT) as f32, TEST_LEVEL_HEIGHT_IN_BOUNDS, 0.0);
+        let expected_transform = Transform::from_xyz(
+            (TEST_LEVEL_WIDTH - PLAYER_MIDPOINT) as f32,
+            TEST_LEVEL_HEIGHT_IN_BOUNDS,
+            0.0,
+        );
         let actual_transform = *player_query.unwrap();
 
         assert_eq!(expected_transform, actual_transform);
@@ -289,7 +325,14 @@ mod tests {
         let player_id = app
             .world
             .spawn()
-            .insert_bundle((Player, Transform::from_xyz(TEST_LEVEL_WIDTH_OUT_RBOUNDS, TEST_LEVEL_HEIGHT_OUT_TBOUNDS, 0.0)))
+            .insert_bundle((
+                Player,
+                Transform::from_xyz(
+                    TEST_LEVEL_WIDTH_OUT_RBOUNDS,
+                    TEST_LEVEL_HEIGHT_OUT_TBOUNDS,
+                    0.0,
+                ),
+            ))
             .id();
 
         app.update();
@@ -314,7 +357,14 @@ mod tests {
         let player_id = app
             .world
             .spawn()
-            .insert_bundle((Player, Transform::from_xyz(TEST_LEVEL_WIDTH_OUT_RBOUNDS, TEST_LEVEL_HEIGHT_OUT_BBOUNDS, 0.0)))
+            .insert_bundle((
+                Player,
+                Transform::from_xyz(
+                    TEST_LEVEL_WIDTH_OUT_RBOUNDS,
+                    TEST_LEVEL_HEIGHT_OUT_BBOUNDS,
+                    0.0,
+                ),
+            ))
             .id();
 
         app.update();
@@ -339,7 +389,14 @@ mod tests {
         let player_id = app
             .world
             .spawn()
-            .insert_bundle((Player, Transform::from_xyz(TEST_LEVEL_WIDTH_IN_BOUNDS, TEST_LEVEL_HEIGHT_OUT_TBOUNDS, 0.0)))
+            .insert_bundle((
+                Player,
+                Transform::from_xyz(
+                    TEST_LEVEL_WIDTH_IN_BOUNDS,
+                    TEST_LEVEL_HEIGHT_OUT_TBOUNDS,
+                    0.0,
+                ),
+            ))
             .id();
 
         app.update();
@@ -347,8 +404,11 @@ mod tests {
         let player_query = app.world.get::<Transform>(player_id);
         assert!(player_query.is_some());
 
-        let expected_transform =
-            Transform::from_xyz(TEST_LEVEL_WIDTH_IN_BOUNDS, (TEST_LEVEL_HEIGHT - PLAYER_MIDPOINT) as f32, 0.0);
+        let expected_transform = Transform::from_xyz(
+            TEST_LEVEL_WIDTH_IN_BOUNDS,
+            (TEST_LEVEL_HEIGHT - PLAYER_MIDPOINT) as f32,
+            0.0,
+        );
         let actual_transform = *player_query.unwrap();
 
         assert_eq!(expected_transform, actual_transform);
@@ -361,7 +421,14 @@ mod tests {
         let player_id = app
             .world
             .spawn()
-            .insert_bundle((Player, Transform::from_xyz(TEST_LEVEL_WIDTH_IN_BOUNDS, TEST_LEVEL_HEIGHT_OUT_BBOUNDS, 0.0)))
+            .insert_bundle((
+                Player,
+                Transform::from_xyz(
+                    TEST_LEVEL_WIDTH_IN_BOUNDS,
+                    TEST_LEVEL_HEIGHT_OUT_BBOUNDS,
+                    0.0,
+                ),
+            ))
             .id();
 
         app.update();
@@ -369,7 +436,8 @@ mod tests {
         let player_query = app.world.get::<Transform>(player_id);
         assert!(player_query.is_some());
 
-        let expected_transform = Transform::from_xyz(TEST_LEVEL_WIDTH_IN_BOUNDS, PLAYER_MIDPOINT as f32, 0.0);
+        let expected_transform =
+            Transform::from_xyz(TEST_LEVEL_WIDTH_IN_BOUNDS, PLAYER_MIDPOINT as f32, 0.0);
         let actual_transform = *player_query.unwrap();
 
         assert_eq!(expected_transform, actual_transform);
