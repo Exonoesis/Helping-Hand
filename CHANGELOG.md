@@ -5,10 +5,14 @@
 - This project uses [ISO Standard](https://www.iso.org/iso-8601-date-and-time-format.html) date formatting
 
 ## [Unreleased]
+### Added
+- Unit Testing for Level Boundaries.
+
 ### Changed
 - Updated Bevy to version 0.8
 - Updated Bevy ECS LDtk to version 0.4
 - Updated Bevy Kira Audio to version 0.12
+- Restricted Player Movement to Level Boundaries
 
 ## [0.2.0] - 2022-07-28
 ### Added
