@@ -12,6 +12,12 @@ use bevy_kira_audio::{AudioApp, AudioPlugin};
 use entities::player::{PlayerBumpChannel, PlayerBundle, PlayerMovementActions, PlayerWalkChannel};
 use mechanics::{camera::move_camera, input::*};
 
+#[derive(Default)]
+pub struct LevelDimensions {
+    pub width: usize,
+    pub height: usize,
+}
+
 /// Loads the LDtk test map with a Camera into the game at the origin (0,0,0).
 fn spawn_map(mut commands: Commands, asset_spawner: Res<AssetServer>) {
     commands.spawn_bundle(Camera2dBundle::default());
@@ -34,14 +40,17 @@ fn main() {
         .add_startup_system(spawn_map)
         .add_startup_system(load_player_movement_sound)
         .add_startup_system(load_player_bump_sound)
-        .insert_resource(LevelSelection::Identifier("Level_1".to_string()))
+        .insert_resource(LevelSelection::Identifier("Level_0".to_string()))
+        .init_resource::<LevelDimensions>()
         .add_audio_channel::<MusicChannel>()
         .add_audio_channel::<PlayerWalkChannel>()
         .add_audio_channel::<PlayerBumpChannel>()
         .add_event::<Movement>()
         .add_event::<PlayerMovementActions>()
+        .add_system(update_level_dimensions)
         .add_system(player_input)
         .add_system(move_player)
+        .add_system(bound_player_movement)
         .add_system(move_camera)
         .add_system(play_level_music)
         .add_system(play_player_movement_sound)
