@@ -56,6 +56,10 @@ pub fn bound_player_movement(
         return;
     }
 
+    if level_dimension.height == 0 || level_dimension.width == 0 {
+        return;
+    }
+
     let mut player_transform = player_query.get_single_mut().unwrap();
 
     let tile_side_length = 64.0;

@@ -6,6 +6,7 @@
 
 ## [Unreleased]
 ### Added
+- Tutorial Level Map, including free-to-use placeholder assets
 - Unit Testing for Level Boundaries.
 
 ### Changed
@@ -13,6 +14,10 @@
 - Updated Bevy ECS LDtk to version 0.4
 - Updated Bevy Kira Audio to version 0.12
 - Restricted Player Movement to Level Boundaries
+
+### Fixed
+- Camera now maintains own z position instead of adopting the players
+- Fixed off-by-one error in collision tile placement
 
 ## [0.2.0] - 2022-07-28
 ### Added
