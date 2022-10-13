@@ -7,7 +7,11 @@ pub fn move_camera(
 ) {
     if let Ok(player_transform) = player_query.get_single() {
         if let Ok(mut camera_transform) = camera_query.get_single_mut() {
-            let new_camera_position = Vec3::new(player_transform.translation.x, player_transform.translation.y, camera_transform.translation.z);
+            let new_camera_position = Vec3::new(
+                player_transform.translation.x,
+                player_transform.translation.y,
+                camera_transform.translation.z,
+            );
             camera_transform.translation = new_camera_position;
         }
     }
