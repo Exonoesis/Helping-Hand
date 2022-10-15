@@ -26,7 +26,7 @@ fn spawn_map(mut commands: Commands, asset_spawner: Res<AssetServer>) {
         .watch_for_changes()
         .expect("Hot Reloading is not working."); //For dev purposes only. REMOVE WHEN GIVING TO PLAYERS!
     commands.spawn_bundle(LdtkWorldBundle {
-        ldtk_handle: asset_spawner.load("maps/hh_test.ldtk"),
+        ldtk_handle: asset_spawner.load("map/hh_world.ldtk"),
         //transform: Transform::from_xyz(0.0, 0.0, 0.0),
         ..default()
     });
@@ -40,7 +40,7 @@ fn main() {
         .add_startup_system(spawn_map)
         .add_startup_system(load_player_movement_sound)
         .add_startup_system(load_player_bump_sound)
-        .insert_resource(LevelSelection::Identifier("Test_level".to_string()))
+        .insert_resource(LevelSelection::Identifier("Level_0".to_string()))
         .init_resource::<LevelDimensions>()
         .add_audio_channel::<MusicChannel>()
         .add_audio_channel::<PlayerWalkChannel>()
