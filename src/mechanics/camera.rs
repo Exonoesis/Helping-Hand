@@ -72,35 +72,39 @@ mod tests {
         app
     }
 
-    #[test]
-    fn within_bounds() {
-        let mut app = setup_app_bounds_checking();
-
-        let _player_id = app
-            .world
-            .spawn()
-            .insert_bundle((
-                Player,
-                Transform::from_xyz(
-                    TEST_LEVEL_WIDTH_IN_BOUNDS, 
-                    TEST_LEVEL_HEIGHT_IN_BOUNDS,
-                    0.0),
-            ))
-            .id();
-
+    fn spawn_camera(app: &mut App) -> Entity {
         let camera_id = app
             .world
             .spawn()
             .insert_bundle(Camera2dBundle {
                 projection: OrthographicProjection { 
-                    left: (0.0), 
-                    right: ((CAMERA_WIDTH - 1) as f32), 
-                    bottom: (0.0), 
-                    top: ((CAMERA_HEIGHT - 1) as f32), 
+                    left: 0.0, 
+                    right: (CAMERA_WIDTH - 1) as f32, 
+                    bottom: 0.0, 
+                    top: (CAMERA_HEIGHT - 1) as f32, 
                     ..default()},
                 ..default()
             })
             .id();
+
+        camera_id
+    }
+
+    #[test]
+    fn within_bounds() {
+        let mut app = setup_app_bounds_checking();
+
+        // The camera's position is dependent off of the Player's position whenever it changes, so we need to
+        // spawn the Player to trigger the camera to move.
+        app.world.spawn().insert_bundle((
+                Player,
+                Transform::from_xyz(
+                    TEST_LEVEL_WIDTH_IN_BOUNDS, 
+                    TEST_LEVEL_HEIGHT_IN_BOUNDS,
+                    0.0),
+        ));
+
+        let camera_id = spawn_camera(&mut app);
 
         app.update();
 
@@ -122,31 +126,18 @@ mod tests {
     fn out_of_bounds_left() {
         let mut app = setup_app_bounds_checking();
 
-        let _player_id = app
-            .world
-            .spawn()
-            .insert_bundle((
+
+        // The camera's position is dependent off of the Player's position whenever it changes, so we need to
+        // spawn the Player to trigger the camera to move.
+        app.world.spawn().insert_bundle((
                 Player,
                 Transform::from_xyz(
                     TEST_LEVEL_WIDTH_OUT_LBOUNDS, 
                     TEST_LEVEL_HEIGHT_IN_BOUNDS,
                     0.0),
-            ))
-            .id();
+        ));
 
-        let camera_id = app
-            .world
-            .spawn()
-            .insert_bundle(Camera2dBundle {
-                projection: OrthographicProjection { 
-                    left: (0.0), 
-                    right: ((CAMERA_WIDTH - 1) as f32), 
-                    bottom: (0.0), 
-                    top: ((CAMERA_HEIGHT - 1) as f32), 
-                    ..default()},
-                ..default()
-            })
-            .id();
+        let camera_id = spawn_camera(&mut app);
 
         app.update();
 
@@ -169,31 +160,17 @@ mod tests {
     fn out_of_bounds_topleft() {
         let mut app = setup_app_bounds_checking();
 
-        let _player_id = app
-            .world
-            .spawn()
-            .insert_bundle((
+        // The camera's position is dependent off of the Player's position whenever it changes, so we need to
+        // spawn the Player to trigger the camera to move.
+        app.world.spawn().insert_bundle((
                 Player,
                 Transform::from_xyz(
                     TEST_LEVEL_WIDTH_OUT_LBOUNDS, 
                     TEST_LEVEL_HEIGHT_OUT_TBOUNDS,
                     0.0),
-            ))
-            .id();
+        ));
 
-        let camera_id = app
-            .world
-            .spawn()
-            .insert_bundle(Camera2dBundle {
-                projection: OrthographicProjection { 
-                    left: (0.0), 
-                    right: ((CAMERA_WIDTH - 1) as f32), 
-                    bottom: (0.0), 
-                    top: ((CAMERA_HEIGHT - 1) as f32), 
-                    ..default()},
-                ..default()
-            })
-            .id();
+        let camera_id = spawn_camera(&mut app);
 
         app.update();
 
@@ -215,31 +192,17 @@ mod tests {
     fn out_of_bounds_bottomleft() {
         let mut app = setup_app_bounds_checking();
 
-        let _player_id = app
-            .world
-            .spawn()
-            .insert_bundle((
+        // The camera's position is dependent off of the Player's position whenever it changes, so we need to
+        // spawn the Player to trigger the camera to move.
+        app.world.spawn().insert_bundle((
                 Player,
                 Transform::from_xyz(
                     TEST_LEVEL_WIDTH_OUT_LBOUNDS, 
                     TEST_LEVEL_HEIGHT_OUT_BBOUNDS,
                     0.0),
-            ))
-            .id();
+        ));
 
-        let camera_id = app
-            .world
-            .spawn()
-            .insert_bundle(Camera2dBundle {
-                projection: OrthographicProjection { 
-                    left: (0.0), 
-                    right: ((CAMERA_WIDTH - 1) as f32), 
-                    bottom: (0.0), 
-                    top: ((CAMERA_HEIGHT - 1) as f32), 
-                    ..default()},
-                ..default()
-            })
-            .id();
+        let camera_id = spawn_camera(&mut app);
 
         app.update();
 
@@ -261,31 +224,17 @@ mod tests {
     fn out_of_bounds_right() {
         let mut app = setup_app_bounds_checking();
 
-        let _player_id = app
-            .world
-            .spawn()
-            .insert_bundle((
+        // The camera's position is dependent off of the Player's position whenever it changes, so we need to
+        // spawn the Player to trigger the camera to move.
+        app.world.spawn().insert_bundle((
                 Player,
                 Transform::from_xyz(
                     TEST_LEVEL_WIDTH_OUT_RBOUNDS, 
                     TEST_LEVEL_HEIGHT_IN_BOUNDS,
                     0.0),
-            ))
-            .id();
+        ));
 
-        let camera_id = app
-            .world
-            .spawn()
-            .insert_bundle(Camera2dBundle {
-                projection: OrthographicProjection { 
-                    left: (0.0), 
-                    right: ((CAMERA_WIDTH - 1) as f32), 
-                    bottom: (0.0), 
-                    top: ((CAMERA_HEIGHT - 1) as f32), 
-                    ..default()},
-                ..default()
-            })
-            .id();
+        let camera_id = spawn_camera(&mut app);
 
         app.update();
 
@@ -307,31 +256,17 @@ mod tests {
     fn out_of_bounds_topright() {
         let mut app = setup_app_bounds_checking();
 
-        let _player_id = app
-            .world
-            .spawn()
-            .insert_bundle((
+        // The camera's position is dependent off of the Player's position whenever it changes, so we need to
+        // spawn the Player to trigger the camera to move.
+        app.world.spawn().insert_bundle((
                 Player,
                 Transform::from_xyz(
                     TEST_LEVEL_WIDTH_OUT_RBOUNDS, 
                     TEST_LEVEL_HEIGHT_OUT_TBOUNDS,
                     0.0),
-            ))
-            .id();
+        ));
 
-        let camera_id = app
-            .world
-            .spawn()
-            .insert_bundle(Camera2dBundle {
-                projection: OrthographicProjection { 
-                    left: (0.0), 
-                    right: ((CAMERA_WIDTH - 1) as f32), 
-                    bottom: (0.0), 
-                    top: ((CAMERA_HEIGHT - 1) as f32), 
-                    ..default()},
-                ..default()
-            })
-            .id();
+        let camera_id = spawn_camera(&mut app);
 
         app.update();
 
@@ -353,31 +288,17 @@ mod tests {
     fn out_of_bounds_bottomright() {
         let mut app = setup_app_bounds_checking();
 
-        let _player_id = app
-            .world
-            .spawn()
-            .insert_bundle((
+        // The camera's position is dependent off of the Player's position whenever it changes, so we need to
+        // spawn the Player to trigger the camera to move.
+        app.world.spawn().insert_bundle((
                 Player,
                 Transform::from_xyz(
                     TEST_LEVEL_WIDTH_OUT_RBOUNDS, 
                     TEST_LEVEL_HEIGHT_OUT_BBOUNDS,
                     0.0),
-            ))
-            .id();
+        ));
 
-        let camera_id = app
-            .world
-            .spawn()
-            .insert_bundle(Camera2dBundle {
-                projection: OrthographicProjection { 
-                    left: (0.0), 
-                    right: ((CAMERA_WIDTH - 1) as f32), 
-                    bottom: (0.0), 
-                    top: ((CAMERA_HEIGHT - 1) as f32), 
-                    ..default()},
-                ..default()
-            })
-            .id();
+        let camera_id = spawn_camera(&mut app);
 
         app.update();
 
@@ -399,31 +320,17 @@ mod tests {
     fn out_of_bounds_top() {
         let mut app = setup_app_bounds_checking();
 
-        let _player_id = app
-            .world
-            .spawn()
-            .insert_bundle((
+        // The camera's position is dependent off of the Player's position whenever it changes, so we need to
+        // spawn the Player to trigger the camera to move.
+        app.world.spawn().insert_bundle((
                 Player,
                 Transform::from_xyz(
                     TEST_LEVEL_WIDTH_IN_BOUNDS, 
                     TEST_LEVEL_HEIGHT_OUT_TBOUNDS,
                     0.0),
-            ))
-            .id();
+        ));
 
-        let camera_id = app
-            .world
-            .spawn()
-            .insert_bundle(Camera2dBundle {
-                projection: OrthographicProjection { 
-                    left: (0.0), 
-                    right: ((CAMERA_WIDTH - 1) as f32), 
-                    bottom: (0.0), 
-                    top: ((CAMERA_HEIGHT - 1) as f32), 
-                    ..default()},
-                ..default()
-            })
-            .id();
+        let camera_id = spawn_camera(&mut app);
 
         app.update();
 
@@ -445,31 +352,17 @@ mod tests {
     fn out_of_bounds_bottom() {
         let mut app = setup_app_bounds_checking();
 
-        let _player_id = app
-            .world
-            .spawn()
-            .insert_bundle((
+        // The camera's position is dependent off of the Player's position whenever it changes, so we need to
+        // spawn the Player to trigger the camera to move.
+        app.world.spawn().insert_bundle((
                 Player,
                 Transform::from_xyz(
                     TEST_LEVEL_WIDTH_IN_BOUNDS, 
                     TEST_LEVEL_HEIGHT_OUT_BBOUNDS,
                     0.0),
-            ))
-            .id();
+        ));
 
-        let camera_id = app
-            .world
-            .spawn()
-            .insert_bundle(Camera2dBundle {
-                projection: OrthographicProjection { 
-                    left: (0.0), 
-                    right: ((CAMERA_WIDTH - 1) as f32), 
-                    bottom: (0.0), 
-                    top: ((CAMERA_HEIGHT - 1) as f32), 
-                    ..default()},
-                ..default()
-            })
-            .id();
+        let camera_id = spawn_camera(&mut app);
 
         app.update();
 
