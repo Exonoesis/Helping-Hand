@@ -10,7 +10,10 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_kira_audio::{AudioApp, AudioPlugin};
 use entities::player::{PlayerBumpChannel, PlayerBundle, PlayerMovementActions, PlayerWalkChannel};
-use mechanics::{camera::{move_camera, update_camera_on_resolution_change}, input::*};
+use mechanics::{
+    camera::{move_camera, update_camera_on_resolution_change},
+    input::*,
+};
 
 #[derive(Default)]
 pub struct LevelDimensions {

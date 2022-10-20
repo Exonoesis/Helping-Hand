@@ -46,8 +46,15 @@ pub fn move_camera(
     }
 }
 
-pub fn update_camera_on_resolution_change (
-    camera_query: Query<&OrthographicProjection,(With<Camera2d>, Without<Player>, Changed<OrthographicProjection>)>,
+pub fn update_camera_on_resolution_change(
+    camera_query: Query<
+        &OrthographicProjection,
+        (
+            With<Camera2d>,
+            Without<Player>,
+            Changed<OrthographicProjection>,
+        ),
+    >,
     mut player_query: Query<&mut Transform, With<Player>>,
 ) {
     if camera_query.is_empty() {
