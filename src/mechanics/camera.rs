@@ -46,6 +46,24 @@ pub fn move_camera(
     }
 }
 
+pub fn update_camera_on_resolution_change (
+    camera_query: Query<&OrthographicProjection,(With<Camera2d>, Without<Player>, Changed<OrthographicProjection>)>,
+    mut player_query: Query<&mut Transform, With<Player>>,
+) {
+    if camera_query.is_empty() {
+        return;
+    }
+
+    if player_query.is_empty() {
+        return;
+    }
+
+    let mut player_position = player_query.get_single_mut().unwrap();
+
+    //Camera updates its position based on changes to player position, thus we add 0 to force a change to player position
+    player_position.translation.x += 0.0;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
