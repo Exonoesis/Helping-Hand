@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::LevelSelection;
 use bevy_kira_audio::{AudioChannel, AudioControl};
 
-#[derive(Default, Component)]
+#[derive(Default, Component, Resource)]
 pub struct MusicChannel;
 
 pub fn play_level_music(

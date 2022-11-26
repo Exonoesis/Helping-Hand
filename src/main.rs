@@ -15,7 +15,7 @@ use mechanics::{
     input::*,
 };
 
-#[derive(Default)]
+#[derive(Default, Resource)]
 pub struct LevelDimensions {
     pub width: usize,
     pub height: usize,
@@ -23,12 +23,9 @@ pub struct LevelDimensions {
 
 /// Loads the LDtk test map with a Camera into the game at the origin (0,0,0).
 fn spawn_map(mut commands: Commands, asset_spawner: Res<AssetServer>) {
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
 
-    asset_spawner
-        .watch_for_changes()
-        .expect("Hot Reloading is not working."); //For dev purposes only. REMOVE WHEN GIVING TO PLAYERS!
-    commands.spawn_bundle(LdtkWorldBundle {
+    commands.spawn(LdtkWorldBundle {
         ldtk_handle: asset_spawner.load("map/hh_world.ldtk"),
         //transform: Transform::from_xyz(0.0, 0.0, 0.0),
         ..default()
@@ -37,7 +34,11 @@ fn spawn_map(mut commands: Commands, asset_spawner: Res<AssetServer>) {
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(AssetPlugin {
+            //For dev purposes only. REMOVE WHEN GIVING TO PLAYERS!
+            watch_for_changes: true,
+            ..default()
+        }))
         .add_plugin(LdtkPlugin)
         .add_plugin(AudioPlugin)
         .add_startup_system(spawn_map)

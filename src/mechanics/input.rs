@@ -181,8 +181,8 @@ mod tests {
 
         let player_id = app
             .world
-            .spawn()
-            .insert_bundle((
+            .spawn_empty()
+            .insert((
                 Player,
                 Transform::from_xyz(TEST_LEVEL_WIDTH_IN_BOUNDS, TEST_LEVEL_HEIGHT_IN_BOUNDS, 0.0),
             ))
@@ -206,8 +206,8 @@ mod tests {
 
         let player_id = app
             .world
-            .spawn()
-            .insert_bundle((
+            .spawn_empty()
+            .insert((
                 Player,
                 Transform::from_xyz(
                     TEST_LEVEL_WIDTH_OUT_LBOUNDS,
@@ -235,8 +235,8 @@ mod tests {
 
         let player_id = app
             .world
-            .spawn()
-            .insert_bundle((
+            .spawn_empty()
+            .insert((
                 Player,
                 Transform::from_xyz(
                     TEST_LEVEL_WIDTH_OUT_LBOUNDS,
@@ -267,8 +267,8 @@ mod tests {
 
         let player_id = app
             .world
-            .spawn()
-            .insert_bundle((
+            .spawn_empty()
+            .insert((
                 Player,
                 Transform::from_xyz(
                     TEST_LEVEL_WIDTH_OUT_LBOUNDS,
@@ -296,8 +296,8 @@ mod tests {
 
         let player_id = app
             .world
-            .spawn()
-            .insert_bundle((
+            .spawn_empty()
+            .insert((
                 Player,
                 Transform::from_xyz(
                     TEST_LEVEL_WIDTH_OUT_RBOUNDS,
@@ -328,8 +328,8 @@ mod tests {
 
         let player_id = app
             .world
-            .spawn()
-            .insert_bundle((
+            .spawn_empty()
+            .insert((
                 Player,
                 Transform::from_xyz(
                     TEST_LEVEL_WIDTH_OUT_RBOUNDS,
@@ -360,8 +360,8 @@ mod tests {
 
         let player_id = app
             .world
-            .spawn()
-            .insert_bundle((
+            .spawn_empty()
+            .insert((
                 Player,
                 Transform::from_xyz(
                     TEST_LEVEL_WIDTH_OUT_RBOUNDS,
@@ -392,8 +392,8 @@ mod tests {
 
         let player_id = app
             .world
-            .spawn()
-            .insert_bundle((
+            .spawn_empty()
+            .insert((
                 Player,
                 Transform::from_xyz(
                     TEST_LEVEL_WIDTH_IN_BOUNDS,
@@ -424,8 +424,8 @@ mod tests {
 
         let player_id = app
             .world
-            .spawn()
-            .insert_bundle((
+            .spawn_empty()
+            .insert((
                 Player,
                 Transform::from_xyz(
                     TEST_LEVEL_WIDTH_IN_BOUNDS,
