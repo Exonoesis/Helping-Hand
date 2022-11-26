@@ -107,8 +107,8 @@ mod tests {
     fn spawn_camera(app: &mut App) -> Entity {
         let camera_id = app
             .world
-            .spawn()
-            .insert_bundle(Camera2dBundle {
+            .spawn_empty()
+            .insert(Camera2dBundle {
                 projection: OrthographicProjection {
                     left: 0.0,
                     right: (CAMERA_WIDTH - 1) as f32,
@@ -129,7 +129,7 @@ mod tests {
 
         // The camera's position is dependent off of the Player's position whenever it changes, so we need to
         // spawn the Player to trigger the camera to move.
-        app.world.spawn().insert_bundle((
+        app.world.spawn_empty().insert((
             Player,
             Transform::from_xyz(TEST_LEVEL_WIDTH_IN_BOUNDS, TEST_LEVEL_HEIGHT_IN_BOUNDS, 0.0),
         ));
@@ -158,7 +158,7 @@ mod tests {
 
         // The camera's position is dependent off of the Player's position whenever it changes, so we need to
         // spawn the Player to trigger the camera to move.
-        app.world.spawn().insert_bundle((
+        app.world.spawn_empty().insert((
             Player,
             Transform::from_xyz(
                 TEST_LEVEL_WIDTH_OUT_LBOUNDS,
@@ -192,7 +192,7 @@ mod tests {
 
         // The camera's position is dependent off of the Player's position whenever it changes, so we need to
         // spawn the Player to trigger the camera to move.
-        app.world.spawn().insert_bundle((
+        app.world.spawn_empty().insert((
             Player,
             Transform::from_xyz(
                 TEST_LEVEL_WIDTH_OUT_LBOUNDS,
@@ -225,7 +225,7 @@ mod tests {
 
         // The camera's position is dependent off of the Player's position whenever it changes, so we need to
         // spawn the Player to trigger the camera to move.
-        app.world.spawn().insert_bundle((
+        app.world.spawn_empty().insert((
             Player,
             Transform::from_xyz(
                 TEST_LEVEL_WIDTH_OUT_LBOUNDS,
@@ -258,7 +258,7 @@ mod tests {
 
         // The camera's position is dependent off of the Player's position whenever it changes, so we need to
         // spawn the Player to trigger the camera to move.
-        app.world.spawn().insert_bundle((
+        app.world.spawn_empty().insert((
             Player,
             Transform::from_xyz(
                 TEST_LEVEL_WIDTH_OUT_RBOUNDS,
@@ -291,7 +291,7 @@ mod tests {
 
         // The camera's position is dependent off of the Player's position whenever it changes, so we need to
         // spawn the Player to trigger the camera to move.
-        app.world.spawn().insert_bundle((
+        app.world.spawn_empty().insert((
             Player,
             Transform::from_xyz(
                 TEST_LEVEL_WIDTH_OUT_RBOUNDS,
@@ -324,7 +324,7 @@ mod tests {
 
         // The camera's position is dependent off of the Player's position whenever it changes, so we need to
         // spawn the Player to trigger the camera to move.
-        app.world.spawn().insert_bundle((
+        app.world.spawn_empty().insert((
             Player,
             Transform::from_xyz(
                 TEST_LEVEL_WIDTH_OUT_RBOUNDS,
@@ -357,7 +357,7 @@ mod tests {
 
         // The camera's position is dependent off of the Player's position whenever it changes, so we need to
         // spawn the Player to trigger the camera to move.
-        app.world.spawn().insert_bundle((
+        app.world.spawn_empty().insert((
             Player,
             Transform::from_xyz(
                 TEST_LEVEL_WIDTH_IN_BOUNDS,
@@ -390,7 +390,7 @@ mod tests {
 
         // The camera's position is dependent off of the Player's position whenever it changes, so we need to
         // spawn the Player to trigger the camera to move.
-        app.world.spawn().insert_bundle((
+        app.world.spawn_empty().insert((
             Player,
             Transform::from_xyz(
                 TEST_LEVEL_WIDTH_IN_BOUNDS,

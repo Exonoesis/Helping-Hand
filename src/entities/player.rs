@@ -4,10 +4,10 @@ use bevy_ecs_ldtk::prelude::*;
 #[derive(Default, Component)]
 pub struct Player;
 
-#[derive(Default, Component)]
+#[derive(Default, Component, Resource)]
 pub struct PlayerBumpChannel;
 
-#[derive(Default, Component)]
+#[derive(Default, Component, Resource)]
 pub struct PlayerWalkChannel;
 
 #[derive(PartialEq, PartialOrd, Clone, Copy)]

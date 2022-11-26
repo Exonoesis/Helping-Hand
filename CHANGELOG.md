@@ -10,9 +10,9 @@
 - Unit Testing for Level Boundaries
 
 ### Changed
-- Updated Bevy to version 0.8
-- Updated Bevy ECS LDtk to version 0.4
-- Updated Bevy Kira Audio to version 0.12
+- Updated Bevy to version 0.9
+- Updated Bevy ECS LDtk to version 0.5
+- Updated Bevy Kira Audio to version 0.13
 - Restricted Player Movement to Level Boundaries
 - Restricted Camera Movement to Level Boundaries
 
