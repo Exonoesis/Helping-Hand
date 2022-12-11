@@ -1,4 +1,5 @@
-use crate::{entities::player::Player, LevelDimensions};
+use crate::entities::player::Player;
+use crate::visuals::map::LevelDimensions;
 use bevy::prelude::*;
 
 pub fn move_camera(
