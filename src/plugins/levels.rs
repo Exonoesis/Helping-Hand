@@ -8,9 +8,9 @@ use crate::{
     visuals::map::*
 };
 
-pub struct MapPlugin;
+pub struct LevelsPlugin;
 
-impl Plugin for MapPlugin {
+impl Plugin for LevelsPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_startup_system(spawn_map)

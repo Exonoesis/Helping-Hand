@@ -8,9 +8,9 @@ use crate::{
     entities::player::*
 };
 
-pub struct PlayerPlugin;
+pub struct PlayableCharacterPlugin;
 
-impl Plugin for PlayerPlugin {
+impl Plugin for PlayableCharacterPlugin {
     fn build (&self, app: &mut App) {
         app
             .add_startup_system(load_player_movement_sound)

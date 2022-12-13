@@ -17,7 +17,7 @@ fn main() {
         }))
         .add_plugin(LdtkPlugin)
         .add_plugin(AudioPlugin)
-        .add_plugin(plugins::map_plugin::MapPlugin)
-        .add_plugin(plugins::player_plugin::PlayerPlugin)
+        .add_plugin(plugins::levels::LevelsPlugin)
+        .add_plugin(plugins::playable_character::PlayableCharacterPlugin)
         .run();
 }

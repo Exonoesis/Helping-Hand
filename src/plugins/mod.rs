@@ -1,4 +1,4 @@
-pub mod main_menu_plugin;
-pub mod map_plugin;
-pub mod player_plugin;
-pub mod pregame_plugin;
+pub mod main_menu;
+pub mod levels;
+pub mod playable_character;
+pub mod pregame;
