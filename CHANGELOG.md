@@ -15,6 +15,7 @@
 - Updated Bevy Kira Audio to version 0.13
 - Restricted Player Movement to Level Boundaries
 - Restricted Camera Movement to Level Boundaries
+- Game App Setup moved into Plugins
 
 ### Fixed
 - Camera now maintains own z position instead of adopting the players

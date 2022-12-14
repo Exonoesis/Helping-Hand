@@ -1,6 +1,6 @@
 use crate::{
     entities::player::{Player, PlayerMovementActions},
-    LevelDimensions,
+    visuals::map::LevelDimensions,
 };
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 use bevy_ecs_ldtk::{EntityInstance, LdtkLevel};
