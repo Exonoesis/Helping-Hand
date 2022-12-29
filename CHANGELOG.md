@@ -8,6 +8,7 @@
 ### Added
 - Tutorial Level Map, including free-to-use placeholder assets
 - Unit Testing for Level Boundaries
+- Spellchecking logging for mistyped asset loading.
 
 ### Changed
 - Updated Bevy to version 0.9
