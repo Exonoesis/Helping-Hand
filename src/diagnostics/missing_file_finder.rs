@@ -40,7 +40,7 @@ fn breadth_first_search(current_path: &Path, results: &mut Vec<PathBuf>) {
 
 /// Returns the minimum number of edits required to map word1 to word2.
 ///
-/// NOTE: This is a famous Divide-and-Conquer algorithm. For more information, see
+/// NOTE: This is a famous Dynamic Programming algorithm. For more information, see
 /// this: https://en.wikipedia.org/wiki/Edit_distance
 fn edit_distance(word1: &str, word2: &str) -> usize {
     let word1_chars = word1.graphemes(true).collect::<Vec<&str>>();
