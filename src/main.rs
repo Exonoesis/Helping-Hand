@@ -8,7 +8,7 @@ mod visuals;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_kira_audio::AudioPlugin;
-use plugins::developer_helpers::SmartAssetIoPlugin;
+use plugins::smart_asset_io::SmartAssetIoPlugin;
 
 fn main() {
     App::new()
