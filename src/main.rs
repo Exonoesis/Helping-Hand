@@ -20,6 +20,8 @@ fn main() {
                     ..default()
                 })
                 .build()
+                // An explanation for this line can be found in the referencing bevy example:
+                // https://github.com/bevyengine/bevy/blob/main/examples/asset/custom_asset_io.rs#L69
                 .add_before::<bevy::asset::AssetPlugin, _>(SmartAssetIoPlugin),
         )
         .add_plugin(LdtkPlugin)
