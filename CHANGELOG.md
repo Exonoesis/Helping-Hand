@@ -8,7 +8,7 @@
 ### Added
 - Tutorial Level Map, including free-to-use placeholder assets
 - Unit Testing for Level Boundaries
-- Spellchecking logging for mistyped asset loading.
+- Spellchecking logging for mistyped asset loading
 
 ### Changed
 - Updated Bevy to version 0.9
@@ -17,6 +17,7 @@
 - Restricted Player Movement to Level Boundaries
 - Restricted Camera Movement to Level Boundaries
 - Game App Setup moved into Plugins
+- Plugin system now load via Game States
 
 ### Fixed
 - Camera now maintains own z position instead of adopting the players
@@ -25,12 +26,12 @@
 
 ## [0.2.0] - 2022-07-28
 ### Added
-- Making Universal Builds for MacOS.
+- Making Universal Builds for MacOS
 - Play Background Music
 - Play Movement Based SFX (Footsteps & Collision)
 
 ### Fixed
-- Making Windows/MacOS/Linux executables automatically per new version.
+- Making Windows/MacOS/Linux executables automatically per new version
 
 ## [0.1.0] - 2022-06-12
 ### Added
