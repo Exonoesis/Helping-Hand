@@ -144,8 +144,12 @@ impl AssetIo for SmartAssetIo {
         self.0.read_directory(path)
     }
 
-    fn watch_path_for_changes(&self, path: &Path) -> Result<(), AssetIoError> {
-        self.0.watch_path_for_changes(path)
+    fn watch_path_for_changes(
+        &self,
+        to_watch: &Path,
+        to_reload: Option<PathBuf>,
+    ) -> Result<(), AssetIoError> {
+        self.0.watch_path_for_changes(to_watch, to_reload)
     }
 
     fn watch_for_changes(&self) -> Result<(), AssetIoError> {

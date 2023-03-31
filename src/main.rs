@@ -10,10 +10,11 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_kira_audio::AudioPlugin;
 use plugins::smart_asset_io::SmartAssetIoPlugin;
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub enum AppState {
-    MainMenu,
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
+enum AppState {
+    #[default]
     InGame,
+    MainMenu,
 }
 
 fn main() {
@@ -30,7 +31,7 @@ fn main() {
                 // https://github.com/bevyengine/bevy/blob/main/examples/asset/custom_asset_io.rs#L69
                 .add_before::<bevy::asset::AssetPlugin, _>(SmartAssetIoPlugin),
         )
-        .add_state(AppState::InGame)
+        .add_state::<AppState>()
         .add_plugin(LdtkPlugin)
         .add_plugin(AudioPlugin)
         .add_plugin(plugins::levels::LevelsPlugin)
