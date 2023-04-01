@@ -11,9 +11,9 @@
 - Spellchecking logging for mistyped asset loading
 
 ### Changed
-- Updated Bevy to version 0.9
-- Updated Bevy ECS LDtk to version 0.5
-- Updated Bevy Kira Audio to version 0.13
+- Updated Bevy to version 0.10
+- Updated Bevy ECS LDtk to version 0.6
+- Updated Bevy Kira Audio to version 0.15
 - Restricted Player Movement to Level Boundaries
 - Restricted Camera Movement to Level Boundaries
 - Game App Setup moved into Plugins
