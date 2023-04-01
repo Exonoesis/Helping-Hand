@@ -25,8 +25,8 @@ pub fn move_camera(
     let (mut camera_transform, camera_bounds) = camera_query.get_single_mut().unwrap();
     let player_transform = player_query.get_single().unwrap();
 
-    let camera_width = (camera_bounds.right - camera_bounds.left).abs() + 1.0;
-    let camera_height = (camera_bounds.top - camera_bounds.bottom).abs() + 1.0;
+    let camera_width = camera_bounds.area.width() + 1.0;
+    let camera_height = camera_bounds.area.height() + 1.0;
 
     if camera_width > level_dimension.width as f32 {
         camera_transform.translation.x = level_dimension.width as f32 / 2.0;
@@ -106,15 +106,16 @@ mod tests {
     }
 
     fn spawn_camera(app: &mut App) -> Entity {
+        let left = 0.0;
+        let right = (CAMERA_WIDTH - 1) as f32;
+        let bottom = 0.0;
+        let top = (CAMERA_HEIGHT - 1) as f32;
         let camera_id = app
             .world
             .spawn_empty()
             .insert(Camera2dBundle {
                 projection: OrthographicProjection {
-                    left: 0.0,
-                    right: (CAMERA_WIDTH - 1) as f32,
-                    bottom: 0.0,
-                    top: (CAMERA_HEIGHT - 1) as f32,
+                    area: Rect::new(left, bottom, right, top),
                     ..default()
                 },
                 ..default()
