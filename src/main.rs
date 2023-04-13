@@ -13,8 +13,8 @@ use plugins::smart_asset_io::SmartAssetIoPlugin;
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
 enum AppState {
     #[default]
-    InGame,
     MainMenu,
+    InGame,
 }
 
 fn main() {
@@ -36,5 +36,6 @@ fn main() {
         .add_plugin(AudioPlugin)
         .add_plugin(plugins::levels::LevelsPlugin)
         .add_plugin(plugins::playable_character::PlayableCharacterPlugin)
+        .add_plugin(plugins::main_menu::MainMenuPlugin)
         .run();
 }
