@@ -29,10 +29,10 @@ pub fn load_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                         size: Size::new(Val::Percent(100.0), Val::Percent(50.0)),
                         justify_content: JustifyContent::Center,
                         padding: UiRect {
-                            left: Val::Px(0.0),
-                            right: Val::Px(0.0),
-                            top: Val::Px(0.0),
-                            bottom: Val::Px(35.0)
+                            left: Val::Percent(0.0),
+                            right: Val::Percent(0.0),
+                            top: Val::Percent(0.0),
+                            bottom: Val::Percent(3.0)
                         },
                         ..default()
                     },
@@ -58,7 +58,7 @@ pub fn load_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                         flex_direction: FlexDirection::Column,
                         align_items: AlignItems::Center,
                         justify_content: JustifyContent::Center,
-                        gap: Size::height(Val::Px(30.0)),
+                        gap: Size::height(Val::Percent(4.2)),
                         ..default()
                     },
                     background_color: GREEN.into(),
