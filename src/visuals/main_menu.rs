@@ -1,18 +1,12 @@
 use bevy::prelude::*;
 
-const RED: Color = Color::rgb(0.255, 0.0, 0.0);
-const BLUE: Color = Color::rgb(0.0, 0.0, 0.255);
-const GREEN: Color = Color::rgb(0.0, 0.255, 0.0);
-const PINK: Color = Color::rgb(0.255, 0.0, 0.255);
-const CYAN: Color = Color::rgb(0.0, 0.255, 0.255);
-const BLACK: Color = Color::rgb(0.255, 0.255, 0.255);
-const WHITE: Color = Color::rgb(0.0, 0.0, 0.0);
+const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
 
 pub fn load_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
     commands
         //Node that spans entire screen, acts as container for other UI elements
-        .spawn(NodeBundle {
+        .spawn(ImageBundle {
             style: Style {
                 size: Size::new(Val::Percent(100.0),Val::Percent(100.0)),
                 align_items: AlignItems::Center,
@@ -20,14 +14,16 @@ pub fn load_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                 flex_direction: FlexDirection::Column,
                 ..default()
             },
+            image: asset_server.load("textures/main_menu/HH-background.png").into(),
             ..default()
         })
             .with_children(|parent| {
                 //Node for the top half of the screen
-                parent.spawn(ButtonBundle {
+                parent.spawn(NodeBundle {
                     style: Style {
                         size: Size::new(Val::Percent(100.0), Val::Percent(50.0)),
                         justify_content: JustifyContent::Center,
+                        align_items: AlignItems::FlexEnd,
                         padding: UiRect {
                             left: Val::Percent(0.0),
                             right: Val::Percent(0.0),
@@ -36,23 +32,21 @@ pub fn load_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                         ..default()
                     },
-                    background_color: RED.into(),
                     ..default()
                 })
                     //Node for the title text
                     .with_children(|parent|{
-                        parent.spawn(ButtonBundle {
-                            style: Style {
-                                size: Size::new(Val::Px(945.0), Val::Px(175.0)),
-                                align_self: AlignSelf::FlexEnd,
-                                ..default()
-                            },
-                            background_color: BLUE.into(),
-                            ..default()
-                        });
+                        parent.spawn(TextBundle::from_section (
+                            "Helping Hand",
+                            TextStyle {
+                                font: asset_server.load("fonts/Huglove.ttf"),
+                                font_size: 180.0,
+                                color: WHITE,
+                            }
+                        ));
                     });
                 //Node for the bottom half of the screen
-                parent.spawn(ButtonBundle {
+                parent.spawn(NodeBundle {
                     style: Style {
                         size: Size::new(Val::Percent(100.0), Val::Percent(50.0)),
                         flex_direction: FlexDirection::Column,
@@ -61,7 +55,6 @@ pub fn load_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                         gap: Size::height(Val::Percent(4.2)),
                         ..default()
                     },
-                    background_color: GREEN.into(),
                     ..default()
                 })
                     //Node for the play button
@@ -73,19 +66,19 @@ pub fn load_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 align_items: AlignItems::Center,
                                 ..default()
                             },
-                            background_color: PINK.into(),
+                            image: asset_server.load("textures/main_menu/button.png").into(),
                             ..default()
                         })
                             //Node for play text
                             .with_children(|parent|{
-                                parent.spawn(ButtonBundle {
-                                    style: Style {
-                                        size: Size::new(Val::Percent(80.0), Val::Percent(80.0)),
-                                        ..default()
-                                    },
-                                    background_color: BLACK.into(),
-                                    ..default()
-                                });
+                                parent.spawn(TextBundle::from_section (
+                                    "Play",
+                                    TextStyle {
+                                        font: asset_server.load("fonts/Huglove.ttf"),
+                                        font_size: 80.0,
+                                        color: WHITE,
+                                    }
+                                ));
                             });
                     }) 
                     //Node for the quit button
@@ -97,19 +90,19 @@ pub fn load_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 align_items: AlignItems::Center,
                                 ..default()
                             },
-                            background_color: CYAN.into(),
+                            image: asset_server.load("textures/main_menu/button.png").into(),
                             ..default()
                         })
                             //Node for quit text
                             .with_children(|parent|{
-                                parent.spawn(ButtonBundle {
-                                    style: Style {
-                                        size: Size::new(Val::Percent(80.0), Val::Percent(80.0)),
-                                        ..default()
-                                    },
-                                    background_color: WHITE.into(),
-                                    ..default()
-                                });
+                                parent.spawn(TextBundle::from_section (
+                                    "Quit",
+                                    TextStyle {
+                                        font: asset_server.load("fonts/Huglove.ttf"),
+                                        font_size: 80.0,
+                                        color: WHITE,
+                                    }
+                                ));
                             });
                     });
             });
