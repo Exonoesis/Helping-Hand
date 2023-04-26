@@ -1,13 +1,20 @@
 use bevy::prelude::*;
+use bevy::app::AppExit;
+
+use crate::visuals::main_menu::MainMenuButtonTypes;
 
 pub fn button_system(
-    mut interaction_query: Query<&Interaction, (Changed<Interaction>, With<Button>), 
+    mut exit_event: EventWriter<AppExit>,
+    mut interaction_query: Query<(&Interaction, &MainMenuButtonTypes), (Changed<Interaction>, With<Button>), 
     >
 ) {
-    for interaction in &mut interaction_query {
+    for (interaction, button_type) in &mut interaction_query {
         match *interaction {
             Interaction::Clicked => {
-                println! ("Click!");
+                match button_type {
+                    MainMenuButtonTypes::Play => println!("Play clicked!"),
+                    MainMenuButtonTypes::Quit => exit_event.send(AppExit)
+                }
             }
             Interaction::Hovered => {
                 println! ("Hover");

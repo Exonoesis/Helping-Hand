@@ -11,7 +11,7 @@ use bevy_kira_audio::AudioPlugin;
 use plugins::smart_asset_io::SmartAssetIoPlugin;
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
-enum AppState {
+pub enum AppState {
     #[default]
     MainMenu,
     InGame,
