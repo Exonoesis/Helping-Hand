@@ -9,6 +9,7 @@
 - Tutorial Level Map, including free-to-use placeholder assets
 - Unit Testing for Level Boundaries
 - Spellchecking logging for mistyped asset loading
+- Main Menu w/ Quit and Play Buttons that exit the application and transition to the game respectively
 
 ### Changed
 - Updated Bevy to version 0.10
