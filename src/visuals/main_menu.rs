@@ -8,11 +8,14 @@ pub enum MainMenuButtonTypes {
     Quit,
 }
 
+#[derive(Component)]
+pub struct MainMenuUI;
+
 pub fn load_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn((Camera2dBundle::default(), MainMenuUI));
     commands
         //Node that spans entire screen, acts as container for other UI elements
-        .spawn(ImageBundle {
+        .spawn((ImageBundle {
             style: Style {
                 size: Size::new(Val::Percent(100.0),Val::Percent(100.0)),
                 align_items: AlignItems::Center,
@@ -22,7 +25,9 @@ pub fn load_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             image: asset_server.load("textures/main_menu/HH-background.png").into(),
             ..default()
-        })
+        }, 
+        MainMenuUI,
+        ))
             .with_children(|parent| {
                 //Node for the top half of the screen
                 parent.spawn(NodeBundle {
@@ -116,4 +121,11 @@ pub fn load_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                             });
                     });
             });
+}
+
+pub fn unload_main_menu (mut commands: Commands, query: Query<Entity, With<MainMenuUI>>)
+{
+    for entity in query.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
 }
