@@ -187,6 +187,7 @@ mod tests {
     fn setup_main_menu_build_and_cleanup_checking() -> App {
         let mut app = App::new();
 
+        //We test this as a startup system because we cannot test states directly
         app.add_startup_system(spawn_main_menu);
 
         app
