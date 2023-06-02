@@ -2,12 +2,12 @@ use bevy::prelude::*;
 use bevy::app::AppExit;
 
 use crate::AppState;
-use crate::visuals::main_menu::MainMenuButtonTypes;
+use crate::visuals::main_menu::ButtonTypes;
 
 pub fn button_system(
     mut exit_event: EventWriter<AppExit>,
     mut next_state: ResMut<NextState<AppState>>,
-    mut interaction_query: Query<(&Interaction, &MainMenuButtonTypes), (Changed<Interaction>, With<Button>)>
+    mut interaction_query: Query<(&Interaction, &ButtonTypes), (Changed<Interaction>, With<Button>)>
 ) {
     for (interaction, button_type) in &mut interaction_query {
         if *interaction != Interaction::Clicked {
@@ -15,8 +15,8 @@ pub fn button_system(
         }
         
         match button_type {
-            MainMenuButtonTypes::Play => next_state.set(AppState::InGame),
-            MainMenuButtonTypes::Quit => exit_event.send(AppExit)
+            ButtonTypes::Play => next_state.set(AppState::InGame),
+            ButtonTypes::Quit => exit_event.send(AppExit),
         }
     }
 }
