@@ -1,7 +1,8 @@
 # Helping Hand
 
-### Project Snapshot
+### Project Snapshots
 
+![project image](snapshots/Snapshot_6.png)
 ![project image](snapshots/Snapshot_5.gif)
 
 ---
