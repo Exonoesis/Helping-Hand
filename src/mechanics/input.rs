@@ -1,5 +1,5 @@
 use crate::{
-    entities::player::{Player, PlayerMovementActions},
+    entities::{player::{Player, PlayerMovementActions, DirectionFacing}, self},
     visuals::map::LevelDimensions,
 };
 use bevy::{prelude::*, sprite::collide_aabb::collide};
@@ -78,13 +78,13 @@ pub fn bound_player_movement(
 
 pub fn move_player(
     mut input_receiver: EventReader<Movement>,
-    mut player_query: Query<(&mut Transform, &mut TextureAtlasSprite), With<Player>>,
+    mut player_query: Query<(&mut Transform, &mut TextureAtlasSprite, &mut DirectionFacing), With<Player>>,
     tile_query: Query<&EntityInstance>,
     level_dimension: Res<LevelDimensions>,
     mut player_movement_broadcast: EventWriter<PlayerMovementActions>,
 ) {
     for movement_action in input_receiver.iter() {
-        let (mut player_transform, mut sprite) = player_query.single_mut();
+        let (mut player_transform, mut sprite, mut facing) = player_query.single_mut();
 
         let pixel_distance = 3.0;
         let mut direction = Vec3::ZERO;
@@ -92,18 +92,22 @@ pub fn move_player(
             Movement::Up => {
                 direction += Vec3::new(0.0, pixel_distance, 0.0);
                 sprite.index = 0;
+                *facing = DirectionFacing::Up;
             }
             Movement::Down => {
                 direction -= Vec3::new(0.0, pixel_distance, 0.0);
                 sprite.index = 1;
+                *facing = DirectionFacing::Down;
             }
             Movement::Left => {
                 direction -= Vec3::new(pixel_distance, 0.0, 0.0);
                 sprite.index = 2;
+                *facing = DirectionFacing::Left;
             }
             Movement::Right => {
                 direction += Vec3::new(pixel_distance, 0.0, 0.0);
                 sprite.index = 3;
+                *facing = DirectionFacing::Right;
             }
         }
 

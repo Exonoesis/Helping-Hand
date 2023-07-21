@@ -16,6 +16,14 @@ pub enum PlayerMovementActions {
     Bumping,
 }
 
+#[derive(Component, PartialEq, PartialOrd, Clone, Copy)]
+pub enum DirectionFacing {
+    Up,
+    Down,
+    Left,
+    Right
+}
+
 #[derive(Bundle, LdtkEntity)]
 pub struct PlayerBundle {
     #[sprite_sheet_bundle("textures/characters/EeveeSprites.png", 64.0, 64.0, 1, 4, 0.0, 0.0, 0)]
