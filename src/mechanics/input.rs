@@ -1,5 +1,5 @@
 use crate::{
-    entities::{player::{Player, PlayerMovementActions, DirectionFacing}, self},
+    entities::player::{Player, PlayerMovementActions, DirectionFacing},
     visuals::map::LevelDimensions,
 };
 use bevy::{prelude::*, sprite::collide_aabb::collide};

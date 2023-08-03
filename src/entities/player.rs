@@ -16,9 +16,9 @@ pub enum PlayerMovementActions {
     Bumping,
 }
 
-#[derive(Component, PartialEq, PartialOrd, Clone, Copy)]
+#[derive(Default, Component, PartialEq, PartialOrd, Clone, Copy)]
 pub enum DirectionFacing {
-    Up,
+    #[default] Up,
     Down,
     Left,
     Right
@@ -31,6 +31,7 @@ pub struct PlayerBundle {
     sprite: SpriteSheetBundle,
 
     player: Player,
+    direction_facing: DirectionFacing,
     bump_sound: PlayerBumpChannel,
     walk_sound: PlayerWalkChannel,
 }
