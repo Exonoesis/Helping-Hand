@@ -11,9 +11,9 @@ pub struct MainMenuPlugin;
 impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
         app
-        .add_system(spawn_main_menu.in_schedule(OnEnter(AppState::MainMenu)))
-        .add_systems((load_background_image,load_button_image,load_text_font).in_set(OnUpdate(AppState::MainMenu)))
-        .add_system((button_system).in_set(OnUpdate(AppState::MainMenu)))
-        .add_system(unload_main_menu.in_schedule(OnExit(AppState::MainMenu)));
+        .add_systems(OnEnter(AppState::MainMenu), spawn_main_menu)
+        .add_systems(Update(AppState::MainMenu), (load_background_image,load_button_image,load_text_font))
+        .add_systems(Update(AppState::MainMenu), button_system)
+        .add_systems(OnExit(AppState::MainMenu), unload_main_menu);
     }
 }
