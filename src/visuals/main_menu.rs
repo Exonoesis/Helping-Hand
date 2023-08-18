@@ -193,7 +193,7 @@ mod tests {
         let mut app = App::new();
 
         //We test this as a startup system because we cannot test states directly
-        app.add_startup_system(spawn_main_menu);
+        app.add_systems(Startup, spawn_main_menu);
 
         app
     }
@@ -211,7 +211,7 @@ mod tests {
         assert!(item_num > 0);
 
         //Now we call our unload Main Menu function...
-        app.add_system(unload_main_menu);
+        app.add_systems(Update, unload_main_menu);
         app.update();
 
         //and ensure that no entities remain

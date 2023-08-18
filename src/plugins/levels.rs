@@ -16,14 +16,14 @@ impl Plugin for LevelsPlugin {
         app.add_systems(OnEnter(AppState::InGame), spawn_map)
             .insert_resource(LevelSelection::Identifier("Level_0".to_string()))
             .init_resource::<LevelDimensions>()
-            .add_systems(Update(AppState::InGame),
+            .add_systems(Update,
                 (
                     move_camera,
                     player_input,
                     play_level_music,
                     update_level_dimensions,
                     update_camera_on_resolution_change,
-                ),
+                ).run_if(in_state(AppState::InGame)),
             )
             .add_audio_channel::<MusicChannel>()
             .add_event::<Movement>();

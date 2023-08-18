@@ -100,7 +100,7 @@ mod tests {
             height: TEST_LEVEL_HEIGHT,
         });
 
-        app.add_system(move_camera);
+        app.add_systems(Update, move_camera);
 
         app
     }

@@ -10,7 +10,7 @@ pub fn button_system(
     mut interaction_query: Query<(&Interaction, &ButtonTypes), (Changed<Interaction>, With<Button>)>
 ) {
     for (interaction, button_type) in &mut interaction_query {
-        if *interaction != Interaction::Clicked {
+        if *interaction != Interaction::Pressed {
             continue;
         }
         

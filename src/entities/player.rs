@@ -10,7 +10,7 @@ pub struct PlayerBumpChannel;
 #[derive(Default, Component, Resource)]
 pub struct PlayerWalkChannel;
 
-#[derive(PartialEq, PartialOrd, Clone, Copy)]
+#[derive(PartialEq, PartialOrd, Clone, Copy, Event)]
 pub enum PlayerMovementActions {
     Walking,
     Bumping,
