@@ -5,7 +5,9 @@ mod mechanics;
 mod plugins;
 mod visuals;
 
-use bevy::prelude::*;
+use std::time::Duration;
+
+use bevy::{asset::ChangeWatcher, prelude::*};
 use bevy_ecs_ldtk::prelude::*;
 use bevy_kira_audio::AudioPlugin;
 use plugins::smart_asset_io::SmartAssetIoPlugin;
@@ -23,7 +25,7 @@ fn main() {
             DefaultPlugins
                 .set(AssetPlugin {
                     //For dev purposes only. REMOVE WHEN GIVING TO PLAYERS!
-                    watch_for_changes: true,
+                    watch_for_changes: ChangeWatcher::with_delay(Duration::from_millis(200)),
                     ..default()
                 })
                 .build()
@@ -32,10 +34,10 @@ fn main() {
                 .add_before::<bevy::asset::AssetPlugin, _>(SmartAssetIoPlugin),
         )
         .add_state::<AppState>()
-        .add_plugin(LdtkPlugin)
-        .add_plugin(AudioPlugin)
-        .add_plugin(plugins::levels::LevelsPlugin)
-        .add_plugin(plugins::playable_character::PlayableCharacterPlugin)
-        .add_plugin(plugins::main_menu::MainMenuPlugin)
+        .add_plugins(LdtkPlugin)
+        .add_plugins(AudioPlugin)
+        .add_plugins(plugins::levels::LevelsPlugin)
+        .add_plugins(plugins::playable_character::PlayableCharacterPlugin)
+        .add_plugins(plugins::main_menu::MainMenuPlugin)
         .run();
 }

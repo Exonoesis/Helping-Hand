@@ -10,15 +10,17 @@
 - Unit Testing for Level Boundaries
 - Spellchecking logging for mistyped asset loading
 - Main Menu w/ Quit and Play Buttons that exit the application and transition to the game respectively
+- Caching for Builds on GitHub.
 
 ### Changed
-- Updated Bevy to version 0.10
-- Updated Bevy ECS LDtk to version 0.6
-- Updated Bevy Kira Audio to version 0.15
+- Updated Bevy to version 0.11
+- Updated Bevy ECS LDtk to version 0.8
+- Updated Bevy Kira Audio to version 0.16
 - Restricted Player Movement to Level Boundaries
 - Restricted Camera Movement to Level Boundaries
 - Game App Setup moved into Plugins
 - Plugin system now load via Game States
+- Updated dependencies for Continuous Integration GitHub Actions.
 
 ### Fixed
 - Camera now maintains own z position instead of adopting the players

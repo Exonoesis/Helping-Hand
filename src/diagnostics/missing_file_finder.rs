@@ -1,5 +1,5 @@
 use bevy::{
-    asset::{AssetIo, AssetIoError, Metadata},
+    asset::{AssetIo, AssetIoError, ChangeWatcher, Metadata},
     prelude::*,
     utils::BoxedFuture,
 };
@@ -152,8 +152,8 @@ impl AssetIo for SmartAssetIo {
         self.0.watch_path_for_changes(to_watch, to_reload)
     }
 
-    fn watch_for_changes(&self) -> Result<(), AssetIoError> {
-        self.0.watch_for_changes()
+    fn watch_for_changes(&self, configuration: &ChangeWatcher) -> Result<(), AssetIoError> {
+        self.0.watch_for_changes(configuration)
     }
 
     fn get_metadata(&self, path: &Path) -> Result<Metadata, AssetIoError> {

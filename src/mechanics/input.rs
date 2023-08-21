@@ -5,6 +5,7 @@ use crate::{
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 use bevy_ecs_ldtk::{EntityInstance, LdtkLevel};
 
+#[derive(Event)]
 pub enum Movement {
     Up,
     Down,
@@ -174,7 +175,7 @@ mod tests {
             height: TEST_LEVEL_HEIGHT,
         });
 
-        app.add_system(bound_player_movement);
+        app.add_systems(Update, bound_player_movement);
 
         app
     }
