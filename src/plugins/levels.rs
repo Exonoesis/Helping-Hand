@@ -13,18 +13,17 @@ pub struct LevelsPlugin;
 
 impl Plugin for LevelsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(spawn_map.in_schedule(OnEnter(AppState::InGame)))
+        app.add_systems(OnEnter(AppState::InGame), spawn_map)
             .insert_resource(LevelSelection::Identifier("Level_0".to_string()))
             .init_resource::<LevelDimensions>()
-            .add_systems(
+            .add_systems(Update,
                 (
                     move_camera,
                     player_input,
                     play_level_music,
                     update_level_dimensions,
                     update_camera_on_resolution_change,
-                )
-                    .in_set(OnUpdate(AppState::InGame)),
+                ).run_if(in_state(AppState::InGame)),
             )
             .add_audio_channel::<MusicChannel>()
             .add_event::<Movement>();

@@ -24,7 +24,8 @@ pub fn spawn_main_menu(mut commands: Commands) {
         //Node that spans entire screen, acts as container for other UI elements
         .spawn((ImageBundle {
             style: Style {
-                size: Size::new(Val::Percent(100.0),Val::Percent(100.0)),
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
                 align_items: AlignItems::Center,
                 justify_content: JustifyContent::Center,
                 flex_direction: FlexDirection::Column,
@@ -39,7 +40,8 @@ pub fn spawn_main_menu(mut commands: Commands) {
                 //Node for the top half of the screen
                 parent.spawn(NodeBundle {
                     style: Style {
-                        size: Size::new(Val::Percent(100.0), Val::Percent(50.0)),
+                        width: Val::Percent(100.0),
+                        height: Val::Percent(50.0),
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::FlexEnd,
                         padding: UiRect {
@@ -69,11 +71,12 @@ pub fn spawn_main_menu(mut commands: Commands) {
                 //Node for the bottom half of the screen
                 parent.spawn(NodeBundle {
                     style: Style {
-                        size: Size::new(Val::Percent(100.0), Val::Percent(50.0)),
+                        width: Val::Percent(100.0),
+                        height: Val::Percent(50.0),
                         flex_direction: FlexDirection::Column,
                         align_items: AlignItems::Center,
                         justify_content: JustifyContent::Center,
-                        gap: Size::height(Val::Percent(4.2)),
+                        row_gap: Val::Percent(4.2),
                         ..default()
                     },
                     ..default()
@@ -82,7 +85,8 @@ pub fn spawn_main_menu(mut commands: Commands) {
                     .with_children(|parent|{
                         parent.spawn((ButtonBundle {
                             style: Style {
-                                size: Size::new(Val::Px(370.0), Val::Px(95.0)),
+                                width: Val::Px(370.0),
+                                height: Val::Px(95.0),
                                 justify_content: JustifyContent::Center,
                                 align_items: AlignItems::Center,
                                 ..default()
@@ -110,7 +114,8 @@ pub fn spawn_main_menu(mut commands: Commands) {
                     .with_children(|parent|{
                         parent.spawn((ButtonBundle {
                             style: Style {
-                                size: Size::new(Val::Px(370.0), Val::Px(95.0)),
+                                width: Val::Px(370.0),
+                                height: Val::Px(95.0),
                                 justify_content: JustifyContent::Center,
                                 align_items: AlignItems::Center,
                                 ..default()
@@ -188,7 +193,7 @@ mod tests {
         let mut app = App::new();
 
         //We test this as a startup system because we cannot test states directly
-        app.add_startup_system(spawn_main_menu);
+        app.add_systems(Startup, spawn_main_menu);
 
         app
     }
@@ -206,7 +211,7 @@ mod tests {
         assert!(item_num > 0);
 
         //Now we call our unload Main Menu function...
-        app.add_system(unload_main_menu);
+        app.add_systems(Update, unload_main_menu);
         app.update();
 
         //and ensure that no entities remain

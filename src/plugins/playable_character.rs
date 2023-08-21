@@ -8,18 +8,18 @@ pub struct PlayableCharacterPlugin;
 
 impl Plugin for PlayableCharacterPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            (load_player_movement_sound, load_player_bump_sound)
-                .in_schedule(OnEnter(AppState::InGame)),
-        )
+        app
         .add_systems(
+            OnEnter(AppState::InGame),
+            (load_player_movement_sound, load_player_bump_sound),
+        )
+        .add_systems(Update,
             (
                 move_player,
                 bound_player_movement,
                 play_player_movement_sound,
-                play_player_bump_sound,
-            )
-                .in_set(OnUpdate(AppState::InGame)),
+                play_player_bump_sound
+            ).run_if(in_state(AppState::InGame)),
         )
         .add_audio_channel::<PlayerWalkChannel>()
         .add_audio_channel::<PlayerBumpChannel>()

@@ -10,7 +10,7 @@ pub struct PlayerBumpChannel;
 #[derive(Default, Component, Resource)]
 pub struct PlayerWalkChannel;
 
-#[derive(PartialEq, PartialOrd, Clone, Copy)]
+#[derive(PartialEq, PartialOrd, Clone, Copy, Event)]
 pub enum PlayerMovementActions {
     Walking,
     Bumping,
@@ -19,7 +19,6 @@ pub enum PlayerMovementActions {
 #[derive(Bundle, LdtkEntity)]
 pub struct PlayerBundle {
     #[sprite_sheet_bundle("textures/characters/EeveeSprites.png", 64.0, 64.0, 1, 4, 0.0, 0.0, 0)]
-    #[bundle]
     sprite: SpriteSheetBundle,
 
     player: Player,
