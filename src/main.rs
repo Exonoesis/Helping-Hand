@@ -7,7 +7,7 @@ mod visuals;
 
 use std::time::Duration;
 
-use bevy::{prelude::*, asset::ChangeWatcher};
+use bevy::{asset::ChangeWatcher, prelude::*};
 use bevy_ecs_ldtk::prelude::*;
 use bevy_kira_audio::AudioPlugin;
 use plugins::smart_asset_io::SmartAssetIoPlugin;

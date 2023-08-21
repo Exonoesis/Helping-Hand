@@ -1,5 +1,5 @@
 use bevy::{
-    asset::{AssetIo, AssetIoError, Metadata, ChangeWatcher},
+    asset::{AssetIo, AssetIoError, ChangeWatcher, Metadata},
     prelude::*,
     utils::BoxedFuture,
 };
