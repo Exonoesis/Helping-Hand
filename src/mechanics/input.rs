@@ -5,14 +5,6 @@ use crate::{
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 use bevy_ecs_ldtk::{EntityInstance, LdtkLevel};
 
-#[derive(Event)]
-pub enum Movement {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
 pub fn player_input(
     input: Res<Input<KeyCode>>, 
     mut player_query: Query<&mut DirectionFacing, With<Player>>,
