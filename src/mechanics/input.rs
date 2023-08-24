@@ -13,15 +13,24 @@ pub enum Movement {
     Right,
 }
 
-pub fn player_input(input: Res<Input<KeyCode>>, mut input_broadcast: EventWriter<Movement>) {
+pub fn player_input(
+    input: Res<Input<KeyCode>>, 
+    mut player_query: Query<&mut DirectionFacing, With<Player>>,
+) {
+    if player_query.is_empty() {
+        return;
+    }
+
+    let mut facing = player_query.single_mut();
+
     if input.pressed(KeyCode::W) {
-        input_broadcast.send(Movement::Up);
+        *facing = DirectionFacing::Up;
     } else if input.pressed(KeyCode::S) {
-        input_broadcast.send(Movement::Down);
+        *facing = DirectionFacing::Down;
     } else if input.pressed(KeyCode::A) {
-        input_broadcast.send(Movement::Left);
+        *facing = DirectionFacing::Left;
     } else if input.pressed(KeyCode::D) {
-        input_broadcast.send(Movement::Right);
+        *facing = DirectionFacing::Right;
     }
 }
 
@@ -78,29 +87,25 @@ pub fn bound_player_movement(
 }
 
 pub fn animate(
-    mut input_receiver: EventReader<Movement>,
-    mut player_query: Query<(&mut TextureAtlasSprite, &mut DirectionFacing), With<Player>>,
-    
+    mut player_query: Query<(&mut TextureAtlasSprite, &DirectionFacing), (Changed<DirectionFacing>, With<Player>)>,
 ) {
-    for movement_action in input_receiver.iter() {
-        let (mut sprite, mut facing) = player_query.single_mut();
-        match movement_action {
-            Movement::Up => {
-                sprite.index = 0;
-                *facing = DirectionFacing::Up;
-            }
-            Movement::Down => {
-                sprite.index = 1;
-                *facing = DirectionFacing::Down;
-            }
-            Movement::Left => {
-                sprite.index = 2;
-                *facing = DirectionFacing::Left;
-            }
-            Movement::Right => {
-                sprite.index = 3;
-                *facing = DirectionFacing::Right;
-            }
+    if player_query.is_empty() {
+        return;
+    }
+
+    let (mut sprite, facing) = player_query.single_mut();
+    match facing {
+        DirectionFacing::Up => {
+            sprite.index = 0;
+        }
+        DirectionFacing::Down => {
+            sprite.index = 1;
+        }
+        DirectionFacing::Left => {
+            sprite.index = 2;
+        }
+        DirectionFacing::Right => {
+            sprite.index = 3;
         }
     }
 }
