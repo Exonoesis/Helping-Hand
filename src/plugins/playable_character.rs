@@ -16,6 +16,7 @@ impl Plugin for PlayableCharacterPlugin {
             Update,
             (
                 move_player,
+                animate,
                 bound_player_movement,
                 play_player_movement_sound,
                 play_player_bump_sound,
