@@ -16,7 +16,7 @@ pub enum PlayerMovementActions {
     Bumping,
 }
 
-#[derive(Default, Component, PartialEq, PartialOrd, Clone, Copy)]
+#[derive(Default, Component)]
 pub enum DirectionFacing {
     #[default] Up,
     Down,

@@ -106,68 +106,69 @@ pub fn animate(
 }
 
 pub fn move_player(
-    mut input_receiver: EventReader<Movement>,
-    mut player_query: Query<&mut Transform, With<Player>>,
+    mut player_query: Query<(&mut Transform, &DirectionFacing), (Changed<DirectionFacing>, With<Player>)>,
     tile_query: Query<&EntityInstance>,
     level_dimension: Res<LevelDimensions>,
     mut player_movement_broadcast: EventWriter<PlayerMovementActions>,
 ) {
-    for movement_action in input_receiver.iter() {
-        let mut player_transform = player_query.single_mut();
-
-        let pixel_distance = 3.0;
-        let mut direction = Vec3::ZERO;
-        match movement_action {
-            Movement::Up => {
-                direction += Vec3::new(0.0, pixel_distance, 0.0);
-            }
-            Movement::Down => {
-                direction -= Vec3::new(0.0, pixel_distance, 0.0);
-            }
-            Movement::Left => {
-                direction -= Vec3::new(pixel_distance, 0.0, 0.0);
-            }
-            Movement::Right => {
-                direction += Vec3::new(pixel_distance, 0.0, 0.0);
-            }
-        }
-
-        let tile_side_length = 64.0;
-
-        let projected_position = player_transform.translation + direction;
-
-        let collision_tiles = tile_query
-            .iter()
-            .filter(|&tile| !tile.field_instances.is_empty())
-            .filter(|&tile| {
-                tile.field_instances
-                    .iter()
-                    .any(|field_instance| field_instance.identifier == "Traversable")
-            })
-            .collect::<Vec<&EntityInstance>>();
-
-        for &collision_tile in collision_tiles.iter() {
-            let tile_position = Vec3::new(
-                collision_tile.px.x as f32,
-                (level_dimension.height as i32 - (collision_tile.px.y)) as f32,
-                0.0,
-            );
-
-            if collide(
-                projected_position,
-                Vec2::new(tile_side_length, tile_side_length),
-                tile_position,
-                Vec2::new(collision_tile.width as f32, collision_tile.height as f32),
-            )
-            .is_some()
-            {
-                player_movement_broadcast.send(PlayerMovementActions::Bumping);
-                return;
-            }
-        }
-        player_transform.translation = projected_position;
-        player_movement_broadcast.send(PlayerMovementActions::Walking);
+    if player_query.is_empty() {
+        return;
     }
+    
+    let (mut player_transform, facing) = player_query.get_single_mut().unwrap();
+
+    let pixel_distance = 3.0;
+    let mut direction = Vec3::ZERO;
+    match facing {
+        DirectionFacing::Up => {
+            direction += Vec3::new(0.0, pixel_distance, 0.0);
+        }
+        DirectionFacing::Down => {
+            direction -= Vec3::new(0.0, pixel_distance, 0.0);
+        }
+        DirectionFacing::Left => {
+            direction -= Vec3::new(pixel_distance, 0.0, 0.0);
+        }
+        DirectionFacing::Right => {
+            direction += Vec3::new(pixel_distance, 0.0, 0.0);
+        }
+    }
+
+    let tile_side_length = 64.0;
+
+    let projected_position = player_transform.translation + direction;
+
+    let collision_tiles = tile_query
+        .iter()
+        .filter(|&tile| !tile.field_instances.is_empty())
+        .filter(|&tile| {
+            tile.field_instances
+                .iter()
+                .any(|field_instance| field_instance.identifier == "Traversable")
+        })
+        .collect::<Vec<&EntityInstance>>();
+
+    for &collision_tile in collision_tiles.iter() {
+        let tile_position = Vec3::new(
+            collision_tile.px.x as f32,
+            (level_dimension.height as i32 - (collision_tile.px.y)) as f32,
+            0.0,
+        );
+
+        if collide(
+            projected_position,
+            Vec2::new(tile_side_length, tile_side_length),
+            tile_position,
+            Vec2::new(collision_tile.width as f32, collision_tile.height as f32),
+        )
+        .is_some()
+        {
+            player_movement_broadcast.send(PlayerMovementActions::Bumping);
+            return;
+        }
+    }
+    player_transform.translation = projected_position;
+    player_movement_broadcast.send(PlayerMovementActions::Walking);
 }
 
 #[cfg(test)]
