@@ -5,24 +5,32 @@ use crate::{
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 use bevy_ecs_ldtk::{EntityInstance, LdtkLevel};
 
+#[derive(Component)]
+pub struct MovementIntent;
+
 pub fn player_input(
     input: Res<Input<KeyCode>>, 
-    mut player_query: Query<&mut DirectionFacing, With<Player>>,
+    mut player_query: Query<(Entity, &mut DirectionFacing), With<Player>>,
+    mut commands: Commands,
 ) {
     if player_query.is_empty() {
         return;
     }
 
-    let mut facing = player_query.single_mut();
+    let (entity, mut facing) = player_query.single_mut();
 
-    if input.pressed(KeyCode::W) {
+    if input.just_pressed(KeyCode::W) {
         *facing = DirectionFacing::Up;
-    } else if input.pressed(KeyCode::S) {
+    } else if input.just_pressed (KeyCode:: S) {
         *facing = DirectionFacing::Down;
-    } else if input.pressed(KeyCode::A) {
+    } else if input.just_pressed (KeyCode:: A) {
         *facing = DirectionFacing::Left;
-    } else if input.pressed(KeyCode::D) {
+    } else if input.just_pressed (KeyCode:: D) {
         *facing = DirectionFacing::Right;
+    }
+
+    if input.any_pressed([KeyCode::W, KeyCode::S, KeyCode::A, KeyCode::D]) {
+        commands.entity(entity).insert(MovementIntent);
     }
 }
 
@@ -103,16 +111,17 @@ pub fn animate(
 }
 
 pub fn move_entity(
-    mut entity_query: Query<(&mut Transform, &DirectionFacing), Changed<DirectionFacing>>,
+    mut entity_query: Query<(Entity, &mut Transform, &DirectionFacing), Added<MovementIntent>>,
     tile_query: Query<&EntityInstance>,
     level_dimension: Res<LevelDimensions>,
     mut entity_movement_broadcast: EventWriter<PlayerMovementActions>,
+    mut commands: Commands,
 ) {
     if entity_query.is_empty() {
         return;
     }
     
-    let (mut entity_transform, facing) = entity_query.get_single_mut().unwrap();
+    let (entity, mut entity_transform, facing) = entity_query.get_single_mut().unwrap();
 
     let pixel_distance = 3.0;
     let mut direction = Vec3::ZERO;
@@ -161,11 +170,13 @@ pub fn move_entity(
         .is_some()
         {
             entity_movement_broadcast.send(PlayerMovementActions::Bumping);
+            commands.entity(entity).remove::<MovementIntent>();
             return;
         }
     }
     entity_transform.translation = projected_position;
     entity_movement_broadcast.send(PlayerMovementActions::Walking);
+    commands.entity(entity).remove::<MovementIntent>();
 }
 
 #[cfg(test)]
