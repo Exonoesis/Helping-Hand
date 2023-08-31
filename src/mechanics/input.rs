@@ -79,13 +79,13 @@ pub fn bound_player_movement(
 }
 
 pub fn animate(
-    mut player_query: Query<(&mut TextureAtlasSprite, &DirectionFacing), (Changed<DirectionFacing>, With<Player>)>,
+    mut entity_query: Query<(&mut TextureAtlasSprite, &DirectionFacing), Changed<DirectionFacing>>,
 ) {
-    if player_query.is_empty() {
+    if entity_query.is_empty() {
         return;
     }
 
-    let (mut sprite, facing) = player_query.single_mut();
+    let (mut sprite, facing) = entity_query.single_mut();
     match facing {
         DirectionFacing::Up => {
             sprite.index = 0;
@@ -102,17 +102,17 @@ pub fn animate(
     }
 }
 
-pub fn move_player(
-    mut player_query: Query<(&mut Transform, &DirectionFacing), (Changed<DirectionFacing>, With<Player>)>,
+pub fn move_entity(
+    mut entity_query: Query<(&mut Transform, &DirectionFacing), Changed<DirectionFacing>>,
     tile_query: Query<&EntityInstance>,
     level_dimension: Res<LevelDimensions>,
-    mut player_movement_broadcast: EventWriter<PlayerMovementActions>,
+    mut entity_movement_broadcast: EventWriter<PlayerMovementActions>,
 ) {
-    if player_query.is_empty() {
+    if entity_query.is_empty() {
         return;
     }
     
-    let (mut player_transform, facing) = player_query.get_single_mut().unwrap();
+    let (mut entity_transform, facing) = entity_query.get_single_mut().unwrap();
 
     let pixel_distance = 3.0;
     let mut direction = Vec3::ZERO;
@@ -133,7 +133,7 @@ pub fn move_player(
 
     let tile_side_length = 64.0;
 
-    let projected_position = player_transform.translation + direction;
+    let projected_position = entity_transform.translation + direction;
 
     let collision_tiles = tile_query
         .iter()
@@ -160,12 +160,12 @@ pub fn move_player(
         )
         .is_some()
         {
-            player_movement_broadcast.send(PlayerMovementActions::Bumping);
+            entity_movement_broadcast.send(PlayerMovementActions::Bumping);
             return;
         }
     }
-    player_transform.translation = projected_position;
-    player_movement_broadcast.send(PlayerMovementActions::Walking);
+    entity_transform.translation = projected_position;
+    entity_movement_broadcast.send(PlayerMovementActions::Walking);
 }
 
 #[cfg(test)]

@@ -15,7 +15,7 @@ impl Plugin for PlayableCharacterPlugin {
         .add_systems(
             Update,
             (
-                move_player,
+                move_entity,
                 animate,
                 bound_player_movement,
                 play_player_movement_sound,
