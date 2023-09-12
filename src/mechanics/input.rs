@@ -6,6 +6,7 @@ use bevy::{prelude::*, sprite::collide_aabb::collide};
 use bevy_ecs_ldtk::{EntityInstance, LdtkLevel};
 
 #[derive(Component)]
+#[component(storage="SparseSet")]
 pub struct MovementIntent;
 
 pub fn player_input(
@@ -27,9 +28,7 @@ pub fn player_input(
         *facing = DirectionFacing::Left;
     } else if input.just_pressed (KeyCode:: D) {
         *facing = DirectionFacing::Right;
-    }
-
-    if input.any_pressed([KeyCode::W, KeyCode::S, KeyCode::A, KeyCode::D]) {
+    } else if input.any_pressed([KeyCode::W, KeyCode::S, KeyCode::A, KeyCode::D]) {
         commands.entity(entity).insert(MovementIntent);
     }
 }
@@ -93,19 +92,21 @@ pub fn animate(
         return;
     }
 
-    let (mut sprite, facing) = entity_query.single_mut();
-    match facing {
-        DirectionFacing::Up => {
-            sprite.index = 0;
-        }
-        DirectionFacing::Down => {
-            sprite.index = 1;
-        }
-        DirectionFacing::Left => {
-            sprite.index = 2;
-        }
-        DirectionFacing::Right => {
-            sprite.index = 3;
+    for (mut sprite, facing) in entity_query.iter_mut()
+    {
+        match facing {
+            DirectionFacing::Up => {
+                sprite.index = 0;
+            }
+            DirectionFacing::Down => {
+                sprite.index = 1;
+            }
+            DirectionFacing::Left => {
+                sprite.index = 2;
+            }
+            DirectionFacing::Right => {
+                sprite.index = 3;
+            }
         }
     }
 }
@@ -120,63 +121,64 @@ pub fn move_entity(
     if entity_query.is_empty() {
         return;
     }
-    
-    let (entity, mut entity_transform, facing) = entity_query.get_single_mut().unwrap();
-
-    let pixel_distance = 3.0;
-    let mut direction = Vec3::ZERO;
-    match facing {
-        DirectionFacing::Up => {
-            direction += Vec3::new(0.0, pixel_distance, 0.0);
-        }
-        DirectionFacing::Down => {
-            direction -= Vec3::new(0.0, pixel_distance, 0.0);
-        }
-        DirectionFacing::Left => {
-            direction -= Vec3::new(pixel_distance, 0.0, 0.0);
-        }
-        DirectionFacing::Right => {
-            direction += Vec3::new(pixel_distance, 0.0, 0.0);
-        }
-    }
-
-    let tile_side_length = 64.0;
-
-    let projected_position = entity_transform.translation + direction;
 
     let collision_tiles = tile_query
-        .iter()
-        .filter(|&tile| !tile.field_instances.is_empty())
-        .filter(|&tile| {
-            tile.field_instances
-                .iter()
-                .any(|field_instance| field_instance.identifier == "Traversable")
-        })
-        .collect::<Vec<&EntityInstance>>();
+            .iter()
+            .filter(|&tile| !tile.field_instances.is_empty())
+            .filter(|&tile| {
+                tile.field_instances
+                    .iter()
+                    .any(|field_instance| field_instance.identifier == "Traversable")
+            })
+            .collect::<Vec<&EntityInstance>>();
 
-    for &collision_tile in collision_tiles.iter() {
-        let tile_position = Vec3::new(
-            collision_tile.px.x as f32,
-            (level_dimension.height as i32 - (collision_tile.px.y)) as f32,
-            0.0,
-        );
-
-        if collide(
-            projected_position,
-            Vec2::new(tile_side_length, tile_side_length),
-            tile_position,
-            Vec2::new(collision_tile.width as f32, collision_tile.height as f32),
-        )
-        .is_some()
-        {
-            entity_movement_broadcast.send(PlayerMovementActions::Bumping);
-            commands.entity(entity).remove::<MovementIntent>();
-            return;
+    for (entity, mut entity_transform, facing) in entity_query.iter_mut()
+    {
+        let pixel_distance = 3.0;
+        let mut direction = Vec3::ZERO;
+        match facing {
+            DirectionFacing::Up => {
+                direction += Vec3::new(0.0, pixel_distance, 0.0);
+            }
+            DirectionFacing::Down => {
+                direction -= Vec3::new(0.0, pixel_distance, 0.0);
+            }
+            DirectionFacing::Left => {
+                direction -= Vec3::new(pixel_distance, 0.0, 0.0);
+            }
+            DirectionFacing::Right => {
+                direction += Vec3::new(pixel_distance, 0.0, 0.0);
+            }
         }
+
+        let tile_side_length = 64.0;
+        let projected_position = entity_transform.translation + direction;
+
+        for &collision_tile in collision_tiles.iter() {
+            let tile_position = Vec3::new(
+                collision_tile.px.x as f32,
+                (level_dimension.height as i32 - (collision_tile.px.y)) as f32,
+                0.0,
+            );
+
+            if collide(
+                projected_position,
+                Vec2::new(tile_side_length, tile_side_length),
+                tile_position,
+                Vec2::new(collision_tile.width as f32, collision_tile.height as f32),
+            )
+            .is_some()
+            {
+                entity_movement_broadcast.send(PlayerMovementActions::Bumping);
+                commands.entity(entity).remove::<MovementIntent>();
+                return;
+            }
+        }
+
+        entity_transform.translation = projected_position;
+        entity_movement_broadcast.send(PlayerMovementActions::Walking);
+        commands.entity(entity).remove::<MovementIntent>();
     }
-    entity_transform.translation = projected_position;
-    entity_movement_broadcast.send(PlayerMovementActions::Walking);
-    commands.entity(entity).remove::<MovementIntent>();
 }
 
 #[cfg(test)]
