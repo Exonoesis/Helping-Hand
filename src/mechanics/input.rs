@@ -244,7 +244,7 @@ pub fn interact_entity(
             )
             .is_some()
             {
-                let text = interactive_tile.field_instances().get(0).unwrap();
+                let text = interactive_tile.field_instances().get(1).unwrap();
                 
                 if let String(message) = &text.value {
                     println!("{}", message.as_ref().unwrap());
