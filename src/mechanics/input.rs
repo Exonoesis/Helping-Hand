@@ -3,7 +3,8 @@ use crate::{
     visuals::map::LevelDimensions,
 };
 use bevy::{prelude::*, sprite::collide_aabb::collide};
-use bevy_ecs_ldtk::{EntityInstance, LdtkLevel};
+use bevy_ecs_ldtk::{EntityInstance, LdtkLevel, prelude::LdtkFields};
+use crate::FieldValue::String;
 
 #[derive(Component)]
 #[component(storage="SparseSet")]
@@ -19,16 +20,18 @@ pub fn player_input(
     }
 
     let (entity, mut facing) = player_query.single_mut();
-
-    if input.just_pressed(KeyCode::W) {
+    
+    if input.pressed(KeyCode::W) {
         *facing = DirectionFacing::Up;
-    } else if input.just_pressed (KeyCode:: S) {
+        commands.entity(entity).insert(MovementIntent);
+    } else if input.pressed (KeyCode:: S) {
         *facing = DirectionFacing::Down;
-    } else if input.just_pressed (KeyCode:: A) {
+        commands.entity(entity).insert(MovementIntent);
+    } else if input.pressed (KeyCode:: A) {
         *facing = DirectionFacing::Left;
-    } else if input.just_pressed (KeyCode:: D) {
+        commands.entity(entity).insert(MovementIntent);
+    } else if input.pressed (KeyCode:: D) {
         *facing = DirectionFacing::Right;
-    } else if input.any_pressed([KeyCode::W, KeyCode::S, KeyCode::A, KeyCode::D]) {
         commands.entity(entity).insert(MovementIntent);
     }
 }
@@ -85,7 +88,7 @@ pub fn bound_player_movement(
     );
 }
 
-pub fn animate(
+pub fn animate_entity(
     mut entity_query: Query<(&mut TextureAtlasSprite, &DirectionFacing), Changed<DirectionFacing>>,
 ) {
     if entity_query.is_empty() {
@@ -178,6 +181,76 @@ pub fn move_entity(
         entity_transform.translation = projected_position;
         entity_movement_broadcast.send(PlayerMovementActions::Walking);
         commands.entity(entity).remove::<MovementIntent>();
+    }
+}
+
+pub fn interact_entity(
+    input: Res<Input<KeyCode>>, 
+    tile_query: Query<&EntityInstance>,
+    entity_query: Query<(&Transform, &DirectionFacing)>,
+    level_dimension: Res<LevelDimensions>,
+)
+{
+    if entity_query.is_empty() {
+        return;
+    }
+
+    if input.just_pressed(KeyCode::E) {
+        let interactive_tiles = tile_query
+            .iter()
+            .filter(|&tile| !tile.field_instances.is_empty())
+            .filter(|&tile| {
+                tile.field_instances
+                    .iter()
+                    .any(|field_instance| field_instance.identifier == "Interactable")
+            })
+            .collect::<Vec<&EntityInstance>>();
+
+        let (entity_transform, facing) = entity_query.get_single().unwrap();
+        
+        let pixel_distance = 3.0;
+        let mut direction = Vec3::ZERO;
+
+        match facing {
+            DirectionFacing::Up => {
+                direction += Vec3::new(0.0, pixel_distance, 0.0);
+            }
+            DirectionFacing::Down => {
+                direction -= Vec3::new(0.0, pixel_distance, 0.0);
+            }
+            DirectionFacing::Left => {
+                direction -= Vec3::new(pixel_distance, 0.0, 0.0);
+            }
+            DirectionFacing::Right => {
+                direction += Vec3::new(pixel_distance, 0.0, 0.0);
+            }
+        }
+
+        let tile_side_length = 64.0;
+        let projected_position = entity_transform.translation + direction;
+
+        for &interactive_tile in interactive_tiles.iter() {
+            let tile_position = Vec3::new(
+                interactive_tile.px.x as f32,
+                (level_dimension.height as i32 - (interactive_tile.px.y)) as f32,
+                0.0,
+            );
+
+            if collide(
+                projected_position,
+                Vec2::new(tile_side_length, tile_side_length),
+                tile_position,
+                Vec2::new(interactive_tile.width as f32, interactive_tile.height as f32),
+            )
+            .is_some()
+            {
+                let text = interactive_tile.field_instances().get(0).unwrap();
+                
+                if let String(message) = &text.value {
+                    println!("{}", message.as_ref().unwrap());
+                }
+            }
+        }
     }
 }
 
