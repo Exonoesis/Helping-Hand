@@ -187,7 +187,7 @@ pub fn move_entity(
 pub fn interact_entity(
     input: Res<Input<KeyCode>>, 
     tile_query: Query<&EntityInstance>,
-    entity_query: Query<(&Transform, &DirectionFacing)>,
+    entity_query: Query<(&Transform, &DirectionFacing), With<Player>>,
     level_dimension: Res<LevelDimensions>,
 )
 {
@@ -195,60 +195,62 @@ pub fn interact_entity(
         return;
     }
 
-    if input.just_pressed(KeyCode::E) {
-        let interactive_tiles = tile_query
-            .iter()
-            .filter(|&tile| !tile.field_instances.is_empty())
-            .filter(|&tile| {
-                tile.field_instances
-                    .iter()
-                    .any(|field_instance| field_instance.identifier == "Interactable")
-            })
-            .collect::<Vec<&EntityInstance>>();
+    if !input.just_pressed(KeyCode::E) {
+       return; 
+    }
 
-        let (entity_transform, facing) = entity_query.get_single().unwrap();
-        
-        let pixel_distance = 3.0;
-        let mut direction = Vec3::ZERO;
+    let interactive_tiles = tile_query
+        .iter()
+        .filter(|&tile| !tile.field_instances.is_empty())
+        .filter(|&tile| {
+            tile.field_instances
+                .iter()
+                .any(|field_instance| field_instance.identifier == "Interactable")
+        })
+        .collect::<Vec<&EntityInstance>>();
 
-        match facing {
-            DirectionFacing::Up => {
-                direction += Vec3::new(0.0, pixel_distance, 0.0);
-            }
-            DirectionFacing::Down => {
-                direction -= Vec3::new(0.0, pixel_distance, 0.0);
-            }
-            DirectionFacing::Left => {
-                direction -= Vec3::new(pixel_distance, 0.0, 0.0);
-            }
-            DirectionFacing::Right => {
-                direction += Vec3::new(pixel_distance, 0.0, 0.0);
-            }
+    let (entity_transform, facing) = entity_query.get_single().unwrap();
+    
+    let pixel_distance = 3.0;
+    let mut direction = Vec3::ZERO;
+
+    match facing {
+        DirectionFacing::Up => {
+            direction += Vec3::new(0.0, pixel_distance, 0.0);
         }
+        DirectionFacing::Down => {
+            direction -= Vec3::new(0.0, pixel_distance, 0.0);
+        }
+        DirectionFacing::Left => {
+            direction -= Vec3::new(pixel_distance, 0.0, 0.0);
+        }
+        DirectionFacing::Right => {
+            direction += Vec3::new(pixel_distance, 0.0, 0.0);
+        }
+    }
 
-        let tile_side_length = 64.0;
-        let projected_position = entity_transform.translation + direction;
+    let tile_side_length = 64.0;
+    let projected_position = entity_transform.translation + direction;
 
-        for &interactive_tile in interactive_tiles.iter() {
-            let tile_position = Vec3::new(
-                interactive_tile.px.x as f32,
-                (level_dimension.height as i32 - (interactive_tile.px.y)) as f32,
-                0.0,
-            );
+    for &interactive_tile in interactive_tiles.iter() {
+        let tile_position = Vec3::new(
+            interactive_tile.px.x as f32,
+            (level_dimension.height as i32 - (interactive_tile.px.y)) as f32,
+            0.0,
+        );
 
-            if collide(
-                projected_position,
-                Vec2::new(tile_side_length, tile_side_length),
-                tile_position,
-                Vec2::new(interactive_tile.width as f32, interactive_tile.height as f32),
-            )
-            .is_some()
-            {
-                let text = interactive_tile.field_instances().get(1).unwrap();
-                
-                if let String(message) = &text.value {
-                    println!("{}", message.as_ref().unwrap());
-                }
+        if collide(
+            projected_position,
+            Vec2::new(tile_side_length, tile_side_length),
+            tile_position,
+            Vec2::new(interactive_tile.width as f32, interactive_tile.height as f32),
+        )
+        .is_some()
+        {
+            let text = interactive_tile.field_instances().get(1).expect("interact_entity: Could not find INteractive text in Interactive Tile");
+            
+            if let String(message) = &text.value {
+                println!("{}", message.as_ref().unwrap());
             }
         }
     }
