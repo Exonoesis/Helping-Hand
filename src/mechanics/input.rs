@@ -1,17 +1,17 @@
+use crate::FieldValue::String;
 use crate::{
-    entities::player::{Player, PlayerMovementActions, DirectionFacing},
+    entities::player::{DirectionFacing, Player, PlayerMovementActions},
     visuals::map::LevelDimensions,
 };
 use bevy::{prelude::*, sprite::collide_aabb::collide};
-use bevy_ecs_ldtk::{EntityInstance, LdtkLevel, prelude::LdtkFields};
-use crate::FieldValue::String;
+use bevy_ecs_ldtk::{prelude::LdtkFields, EntityInstance, LdtkLevel};
 
 #[derive(Component)]
-#[component(storage="SparseSet")]
+#[component(storage = "SparseSet")]
 pub struct MovementIntent;
 
 pub fn player_input(
-    input: Res<Input<KeyCode>>, 
+    input: Res<Input<KeyCode>>,
     mut player_query: Query<(Entity, &mut DirectionFacing), With<Player>>,
     mut commands: Commands,
 ) {
@@ -20,17 +20,17 @@ pub fn player_input(
     }
 
     let (entity, mut facing) = player_query.single_mut();
-    
+
     if input.pressed(KeyCode::W) {
         *facing = DirectionFacing::Up;
         commands.entity(entity).insert(MovementIntent);
-    } else if input.pressed (KeyCode:: S) {
+    } else if input.pressed(KeyCode::S) {
         *facing = DirectionFacing::Down;
         commands.entity(entity).insert(MovementIntent);
-    } else if input.pressed (KeyCode:: A) {
+    } else if input.pressed(KeyCode::A) {
         *facing = DirectionFacing::Left;
         commands.entity(entity).insert(MovementIntent);
-    } else if input.pressed (KeyCode:: D) {
+    } else if input.pressed(KeyCode::D) {
         *facing = DirectionFacing::Right;
         commands.entity(entity).insert(MovementIntent);
     }
@@ -95,8 +95,7 @@ pub fn animate_entity(
         return;
     }
 
-    for (mut sprite, facing) in entity_query.iter_mut()
-    {
+    for (mut sprite, facing) in entity_query.iter_mut() {
         match facing {
             DirectionFacing::Up => {
                 sprite.index = 0;
@@ -126,17 +125,16 @@ pub fn move_entity(
     }
 
     let collision_tiles = tile_query
-            .iter()
-            .filter(|&tile| !tile.field_instances.is_empty())
-            .filter(|&tile| {
-                tile.field_instances
-                    .iter()
-                    .any(|field_instance| field_instance.identifier == "Traversable")
-            })
-            .collect::<Vec<&EntityInstance>>();
+        .iter()
+        .filter(|&tile| !tile.field_instances.is_empty())
+        .filter(|&tile| {
+            tile.field_instances
+                .iter()
+                .any(|field_instance| field_instance.identifier == "Traversable")
+        })
+        .collect::<Vec<&EntityInstance>>();
 
-    for (entity, mut entity_transform, facing) in entity_query.iter_mut()
-    {
+    for (entity, mut entity_transform, facing) in entity_query.iter_mut() {
         let pixel_distance = 3.0;
         let mut direction = Vec3::ZERO;
         match facing {
@@ -185,18 +183,17 @@ pub fn move_entity(
 }
 
 pub fn interact_entity(
-    input: Res<Input<KeyCode>>, 
+    input: Res<Input<KeyCode>>,
     tile_query: Query<&EntityInstance>,
     player_query: Query<(&Transform, &DirectionFacing), With<Player>>,
     level_dimension: Res<LevelDimensions>,
-)
-{
+) {
     if player_query.is_empty() {
         return;
     }
 
     if !input.just_pressed(KeyCode::E) {
-       return; 
+        return;
     }
 
     let interactive_tiles = tile_query
@@ -209,8 +206,10 @@ pub fn interact_entity(
         })
         .collect::<Vec<&EntityInstance>>();
 
-    let (player_transform, facing) = player_query.get_single().expect("interact_entity: The player does not exist, but they should");
-    
+    let (player_transform, facing) = player_query
+        .get_single()
+        .expect("interact_entity: The player does not exist, but they should");
+
     let pixel_distance = 3.0;
     let mut direction = Vec3::ZERO;
 
@@ -243,12 +242,18 @@ pub fn interact_entity(
             projected_position,
             Vec2::new(tile_side_length, tile_side_length),
             tile_position,
-            Vec2::new(interactive_tile.width as f32, interactive_tile.height as f32),
+            Vec2::new(
+                interactive_tile.width as f32,
+                interactive_tile.height as f32,
+            ),
         )
         .is_some()
         {
-            let text = interactive_tile.field_instances().get(1).expect("interact_entity: Could not find Interactive text in Interactive Tile");
-            
+            let text = interactive_tile
+                .field_instances()
+                .get(1)
+                .expect("interact_entity: Could not find Interactive text in Interactive Tile");
+
             if let String(message) = &text.value {
                 println!("{}", message.as_ref().unwrap());
             }

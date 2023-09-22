@@ -18,10 +18,11 @@ pub enum PlayerMovementActions {
 
 #[derive(Default, Component)]
 pub enum DirectionFacing {
-    #[default] Up,
+    #[default]
+    Up,
     Down,
     Left,
-    Right
+    Right,
 }
 
 #[derive(Bundle, LdtkEntity)]
