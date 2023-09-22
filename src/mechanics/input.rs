@@ -187,11 +187,11 @@ pub fn move_entity(
 pub fn interact_entity(
     input: Res<Input<KeyCode>>, 
     tile_query: Query<&EntityInstance>,
-    entity_query: Query<(&Transform, &DirectionFacing), With<Player>>,
+    player_query: Query<(&Transform, &DirectionFacing), With<Player>>,
     level_dimension: Res<LevelDimensions>,
 )
 {
-    if entity_query.is_empty() {
+    if player_query.is_empty() {
         return;
     }
 
@@ -209,7 +209,7 @@ pub fn interact_entity(
         })
         .collect::<Vec<&EntityInstance>>();
 
-    let (entity_transform, facing) = entity_query.get_single().unwrap();
+    let (player_transform, facing) = player_query.get_single().expect("interact_entity: The player does not exist, but they should");
     
     let pixel_distance = 3.0;
     let mut direction = Vec3::ZERO;
@@ -230,7 +230,7 @@ pub fn interact_entity(
     }
 
     let tile_side_length = 64.0;
-    let projected_position = entity_transform.translation + direction;
+    let projected_position = player_transform.translation + direction;
 
     for &interactive_tile in interactive_tiles.iter() {
         let tile_position = Vec3::new(
@@ -247,7 +247,7 @@ pub fn interact_entity(
         )
         .is_some()
         {
-            let text = interactive_tile.field_instances().get(1).expect("interact_entity: Could not find INteractive text in Interactive Tile");
+            let text = interactive_tile.field_instances().get(1).expect("interact_entity: Could not find Interactive text in Interactive Tile");
             
             if let String(message) = &text.value {
                 println!("{}", message.as_ref().unwrap());
