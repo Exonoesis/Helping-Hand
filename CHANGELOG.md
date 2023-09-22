@@ -10,7 +10,10 @@
 - Unit Testing for Level Boundaries
 - Spellchecking logging for mistyped asset loading
 - Main Menu w/ Quit and Play Buttons that exit the application and transition to the game respectively
-- Caching for Builds on GitHub.
+- Caching for Builds on GitHub
+- Windows and Runtime optimizations
+- Generalizations focused on reusability of functions
+- Interactive Entities
 
 ### Changed
 - Updated Bevy to version 0.11
@@ -20,7 +23,10 @@
 - Restricted Camera Movement to Level Boundaries
 - Game App Setup moved into Plugins
 - Plugin system now load via Game States
-- Updated dependencies for Continuous Integration GitHub Actions.
+- Updated dependencies for Continuous Integration GitHub Actions
+- Isolated Animation code from Collision Detection code
+- Made character movement reliant on component change detection rather than event broadcasts
+
 
 ### Fixed
 - Camera now maintains own z position instead of adopting the players

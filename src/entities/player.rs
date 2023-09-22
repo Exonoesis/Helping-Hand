@@ -16,12 +16,21 @@ pub enum PlayerMovementActions {
     Bumping,
 }
 
+#[derive(Default, Component)]
+pub enum DirectionFacing {
+    #[default] Up,
+    Down,
+    Left,
+    Right
+}
+
 #[derive(Bundle, LdtkEntity)]
 pub struct PlayerBundle {
     #[sprite_sheet_bundle("textures/characters/EeveeSprites.png", 64.0, 64.0, 1, 4, 0.0, 0.0, 0)]
     sprite: SpriteSheetBundle,
 
     player: Player,
+    direction_facing: DirectionFacing,
     bump_sound: PlayerBumpChannel,
     walk_sound: PlayerWalkChannel,
 }

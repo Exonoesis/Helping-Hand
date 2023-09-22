@@ -27,7 +27,6 @@ impl Plugin for LevelsPlugin {
                 )
                     .run_if(in_state(AppState::InGame)),
             )
-            .add_audio_channel::<MusicChannel>()
-            .add_event::<Movement>();
+            .add_audio_channel::<MusicChannel>();
     }
 }
