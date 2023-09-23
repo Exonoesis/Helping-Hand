@@ -4,7 +4,7 @@
 - This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - This project uses [ISO Standard](https://www.iso.org/iso-8601-date-and-time-format.html) date formatting
 
-## [Unreleased]
+## [0.3.0] - 2023-09-22
 ### Added
 - Tutorial Level Map, including free-to-use placeholder assets
 - Unit Testing for Level Boundaries
@@ -49,6 +49,6 @@
 - Player Tracking Camera (Basic)
 - Character Movement via WASD
 
-[Unreleased]: https://github.com/Exonoesis/Helping-Hand/blob/main/CHANGELOG.md
+[0.3.0]: https://github.com/Exonoesis/Helping-Hand/releases/tag/v0.3.0
 [0.2.0]: https://github.com/Exonoesis/Helping-Hand/releases/tag/v0.2.0
 [0.1.0]: https://github.com/Exonoesis/Helping-Hand/releases/tag/v0.1.0
