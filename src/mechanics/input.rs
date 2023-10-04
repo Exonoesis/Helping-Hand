@@ -72,7 +72,7 @@ pub fn bound_player_movement(
         return;
     }
 
-    let mut player_transform = player_query.get_single_mut().unwrap();
+    let mut player_transform = player_query.get_single_mut().expect("bound_player_movement: The player does not exist, but they should");
 
     let tile_side_length = 64.0;
     let tile_mid_point = tile_side_length / 2.0;
@@ -255,7 +255,7 @@ pub fn interact_entity(
                 .expect("interact_entity: Could not find Interactive text in Interactive Tile");
 
             if let String(message) = &text.value {
-                println!("{}", message.as_ref().unwrap());
+                println!("{}", message.as_ref().expect("interact_entity: Could not display message"));
             }
         }
     }
@@ -311,7 +311,7 @@ mod tests {
 
         let expected_transform =
             Transform::from_xyz(TEST_LEVEL_WIDTH_IN_BOUNDS, TEST_LEVEL_HEIGHT_IN_BOUNDS, 0.0);
-        let actual_transform = *player_query.unwrap();
+        let actual_transform = *player_query.expect("within_bound [test]: Player could not be found");
 
         assert_eq!(expected_transform, actual_transform);
     }
@@ -340,7 +340,7 @@ mod tests {
 
         let expected_transform =
             Transform::from_xyz(PLAYER_MIDPOINT as f32, TEST_LEVEL_HEIGHT_IN_BOUNDS, 0.0);
-        let actual_transform = *player_query.unwrap();
+        let actual_transform = *player_query.expect("out_of_bounds_left [test]: Player could not be found");
 
         assert_eq!(expected_transform, actual_transform);
     }
@@ -372,7 +372,7 @@ mod tests {
             (TEST_LEVEL_HEIGHT - PLAYER_MIDPOINT) as f32,
             0.0,
         );
-        let actual_transform = *player_query.unwrap();
+        let actual_transform = *player_query.expect("out_of_bounds_topleft [test]: Player could not be found");
 
         assert_eq!(expected_transform, actual_transform);
     }
@@ -401,7 +401,7 @@ mod tests {
 
         let expected_transform =
             Transform::from_xyz(PLAYER_MIDPOINT as f32, PLAYER_MIDPOINT as f32, 0.0);
-        let actual_transform = *player_query.unwrap();
+        let actual_transform = *player_query.expect("out_of_bounds_bottomleft [test]: Player could not be found");
 
         assert_eq!(expected_transform, actual_transform);
     }
@@ -433,7 +433,7 @@ mod tests {
             TEST_LEVEL_HEIGHT_IN_BOUNDS,
             0.0,
         );
-        let actual_transform = *player_query.unwrap();
+        let actual_transform = *player_query.expect("out_of_bounds_right [test]: Player could not be found");
 
         assert_eq!(expected_transform, actual_transform);
     }
@@ -465,7 +465,7 @@ mod tests {
             (TEST_LEVEL_HEIGHT - PLAYER_MIDPOINT) as f32,
             0.0,
         );
-        let actual_transform = *player_query.unwrap();
+        let actual_transform = *player_query.expect("out_of_bounds_topright [test]: Player could not be found");
 
         assert_eq!(expected_transform, actual_transform);
     }
@@ -497,7 +497,7 @@ mod tests {
             PLAYER_MIDPOINT as f32,
             0.0,
         );
-        let actual_transform = *player_query.unwrap();
+        let actual_transform = *player_query.expect("out_of_bounds_bottomright [test]: Player could not be found");
 
         assert_eq!(expected_transform, actual_transform);
     }
@@ -529,7 +529,7 @@ mod tests {
             (TEST_LEVEL_HEIGHT - PLAYER_MIDPOINT) as f32,
             0.0,
         );
-        let actual_transform = *player_query.unwrap();
+        let actual_transform = *player_query.expect("out_of_bounds_top [test]: Player could not be found");
 
         assert_eq!(expected_transform, actual_transform);
     }
@@ -558,7 +558,7 @@ mod tests {
 
         let expected_transform =
             Transform::from_xyz(TEST_LEVEL_WIDTH_IN_BOUNDS, PLAYER_MIDPOINT as f32, 0.0);
-        let actual_transform = *player_query.unwrap();
+        let actual_transform = *player_query.expect("out_of_bounds_bottom [test]: Player could not be found");
 
         assert_eq!(expected_transform, actual_transform);
     }
