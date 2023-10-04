@@ -87,7 +87,11 @@ fn edit_distance(word1: &str, word2: &str) -> usize {
 /// the original_path.
 fn to_canonical_asset_path(original_path: &Path) -> PathBuf {
     let root_directory = env!("CARGO_MANIFEST_DIR").to_string();
-    let asset_directory = root_directory + "/assets/" + original_path.to_str().expect("to_cononical_asset_path: original path could not be found");
+    let asset_directory = root_directory
+        + "/assets/"
+        + original_path
+            .to_str()
+            .expect("to_cononical_asset_path: original path could not be found");
 
     Path::new(&asset_directory).to_path_buf()
 }
@@ -113,8 +117,12 @@ fn get_closest_file_path(original_path: &Path) -> PathBuf {
 
     for asset_file_path in &asset_file_paths {
         file_difference_scores.push(edit_distance(
-            original_path.to_str().expect("get_closest_file_path: original path could not be found"),
-            asset_file_path.to_str().expect("get_closest_file_path: asset file path could not be found"),
+            original_path
+                .to_str()
+                .expect("get_closest_file_path: original path could not be found"),
+            asset_file_path
+                .to_str()
+                .expect("get_closest_file_path: asset file path could not be found"),
         ));
     }
 

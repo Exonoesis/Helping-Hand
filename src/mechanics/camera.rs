@@ -22,8 +22,12 @@ pub fn move_camera(
         return;
     }
 
-    let (mut camera_transform, camera_bounds) = camera_query.get_single_mut().expect("move_camera: could not find camera");
-    let player_transform = player_query.get_single().expect("move_camera: could not find player");
+    let (mut camera_transform, camera_bounds) = camera_query
+        .get_single_mut()
+        .expect("move_camera: could not find camera");
+    let player_transform = player_query
+        .get_single()
+        .expect("move_camera: could not find player");
 
     let camera_width = camera_bounds.area.width() + 1.0;
     let camera_height = camera_bounds.area.height() + 1.0;
@@ -66,7 +70,9 @@ pub fn update_camera_on_resolution_change(
         return;
     }
 
-    let mut player_position = player_query.get_single_mut().expect("update_camera_on_resolution_change: player could not be found");
+    let mut player_position = player_query
+        .get_single_mut()
+        .expect("update_camera_on_resolution_change: player could not be found");
 
     //Camera updates its position based on changes to player position, thus we add 0 to force a change to player position
     player_position.translation.x += 0.0;
@@ -146,7 +152,8 @@ mod tests {
         let expected_transform_x = TEST_LEVEL_WIDTH_IN_BOUNDS;
         let expected_transform_y = TEST_LEVEL_HEIGHT_IN_BOUNDS;
 
-        let actual_transform = *camera_query.expect("within_bounds [test]: camera could not be found");
+        let actual_transform =
+            *camera_query.expect("within_bounds [test]: camera could not be found");
         let actual_transform_x = actual_transform.translation.x;
         let actual_transform_y = actual_transform.translation.y;
 
@@ -179,7 +186,8 @@ mod tests {
         let expected_transform_x = CAMERA_MIDPOINT as f32;
         let expected_transform_y = TEST_LEVEL_HEIGHT_IN_BOUNDS;
 
-        let actual_transform = *camera_query.expect("out_of_bounds_left [test]: camera could not be found");
+        let actual_transform =
+            *camera_query.expect("out_of_bounds_left [test]: camera could not be found");
 
         let actual_transform_x = actual_transform.translation.x;
         let actual_transform_y = actual_transform.translation.y;
@@ -213,7 +221,8 @@ mod tests {
         let expected_transform_x = CAMERA_MIDPOINT as f32;
         let expected_transform_y = (TEST_LEVEL_HEIGHT - CAMERA_MIDPOINT) as f32;
 
-        let actual_transform = *camera_query.expect("out_of_bounds_topleft [test]: camera could not be found");
+        let actual_transform =
+            *camera_query.expect("out_of_bounds_topleft [test]: camera could not be found");
         let actual_transform_x = actual_transform.translation.x;
         let actual_transform_y = actual_transform.translation.y;
 
@@ -246,7 +255,8 @@ mod tests {
         let expected_transform_x = CAMERA_MIDPOINT as f32;
         let expected_transform_y = CAMERA_MIDPOINT as f32;
 
-        let actual_transform = *camera_query.expect("out_of_bounds_bottomleft [test]: camera could not be found");
+        let actual_transform =
+            *camera_query.expect("out_of_bounds_bottomleft [test]: camera could not be found");
         let actual_transform_x = actual_transform.translation.x;
         let actual_transform_y = actual_transform.translation.y;
 
@@ -279,7 +289,8 @@ mod tests {
         let expected_transform_x = (TEST_LEVEL_WIDTH - CAMERA_MIDPOINT) as f32;
         let expected_transform_y = TEST_LEVEL_HEIGHT_IN_BOUNDS;
 
-        let actual_transform = *camera_query.expect("out_of_bounds_right [test]: camera could not be found");
+        let actual_transform =
+            *camera_query.expect("out_of_bounds_right [test]: camera could not be found");
         let actual_transform_x = actual_transform.translation.x;
         let actual_transform_y = actual_transform.translation.y;
 
@@ -312,7 +323,8 @@ mod tests {
         let expected_transform_x = (TEST_LEVEL_WIDTH - CAMERA_MIDPOINT) as f32;
         let expected_transform_y = (TEST_LEVEL_HEIGHT - CAMERA_MIDPOINT) as f32;
 
-        let actual_transform = *camera_query.expect("out_of_bounds_topright [test]: camera could not be found");
+        let actual_transform =
+            *camera_query.expect("out_of_bounds_topright [test]: camera could not be found");
         let actual_transform_x = actual_transform.translation.x;
         let actual_transform_y = actual_transform.translation.y;
 
@@ -345,7 +357,8 @@ mod tests {
         let expected_transform_x = (TEST_LEVEL_WIDTH - CAMERA_MIDPOINT) as f32;
         let expected_transform_y = CAMERA_MIDPOINT as f32;
 
-        let actual_transform = *camera_query.expect("out_of_bounds_bottomright [test]: camera could not be found");
+        let actual_transform =
+            *camera_query.expect("out_of_bounds_bottomright [test]: camera could not be found");
         let actual_transform_x = actual_transform.translation.x;
         let actual_transform_y = actual_transform.translation.y;
 
@@ -378,7 +391,8 @@ mod tests {
         let expected_transform_x = TEST_LEVEL_HEIGHT_IN_BOUNDS;
         let expected_transform_y = (TEST_LEVEL_HEIGHT - CAMERA_MIDPOINT) as f32;
 
-        let actual_transform = *camera_query.expect("out_of_bounds_top [test]: camera could not be found");
+        let actual_transform =
+            *camera_query.expect("out_of_bounds_top [test]: camera could not be found");
         let actual_transform_x = actual_transform.translation.x;
         let actual_transform_y = actual_transform.translation.y;
 
@@ -411,7 +425,8 @@ mod tests {
         let expected_transform_x = TEST_LEVEL_WIDTH_IN_BOUNDS;
         let expected_transform_y = CAMERA_MIDPOINT as f32;
 
-        let actual_transform = *camera_query.expect("out_of_bounds_bottom [test]: camera could not be found");
+        let actual_transform =
+            *camera_query.expect("out_of_bounds_bottom [test]: camera could not be found");
         let actual_transform_x = actual_transform.translation.x;
         let actual_transform_y = actual_transform.translation.y;
 
