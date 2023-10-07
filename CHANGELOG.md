@@ -7,6 +7,7 @@
 ## [Unreleased]
 ### Fixed
 - macOS Sonoma crashing the application by updating dependencies.
+- Missing File Finder thinking assets folder doesn't exist for release builds.
 
 ## [0.3.0] - 2023-09-22
 ### Added

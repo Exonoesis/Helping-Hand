@@ -1,5 +1,5 @@
 use bevy::{
-    asset::{AssetIo, AssetIoError, ChangeWatcher, Metadata},
+    asset::{AssetIo, AssetIoError, ChangeWatcher, Metadata, FileAssetIo},
     prelude::*,
     utils::BoxedFuture,
 };
@@ -86,14 +86,9 @@ fn edit_distance(word1: &str, word2: &str) -> usize {
 /// to the asset directory's entry containing the file or directory of
 /// the original_path.
 fn to_canonical_asset_path(original_path: &Path) -> PathBuf {
-    let root_directory = env!("CARGO_MANIFEST_DIR").to_string();
-    let asset_directory = root_directory
-        + "/assets/"
-        + original_path
-            .to_str()
-            .expect("to_cononical_asset_path: original path could not be found");
+    let asset_directory = FileAssetIo::get_base_path();
 
-    Path::new(&asset_directory).to_path_buf()
+    Path::new(&asset_directory).join("assets").join(original_path).to_path_buf()
 }
 
 /// Returns a vector of all known files in the assets folder.
