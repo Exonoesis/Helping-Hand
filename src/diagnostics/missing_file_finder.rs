@@ -1,5 +1,5 @@
 use bevy::{
-    asset::{AssetIo, AssetIoError, ChangeWatcher, Metadata, FileAssetIo},
+    asset::{AssetIo, AssetIoError, ChangeWatcher, FileAssetIo, Metadata},
     prelude::*,
     utils::BoxedFuture,
 };
@@ -88,7 +88,10 @@ fn edit_distance(word1: &str, word2: &str) -> usize {
 fn to_canonical_asset_path(original_path: &Path) -> PathBuf {
     let asset_directory = FileAssetIo::get_base_path();
 
-    Path::new(&asset_directory).join("assets").join(original_path).to_path_buf()
+    Path::new(&asset_directory)
+        .join("assets")
+        .join(original_path)
+        .to_path_buf()
 }
 
 /// Returns a vector of all known files in the assets folder.
