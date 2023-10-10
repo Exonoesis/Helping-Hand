@@ -4,6 +4,11 @@
 - This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - This project uses [ISO Standard](https://www.iso.org/iso-8601-date-and-time-format.html) date formatting
 
+## [Unreleased]
+### Fixed
+- macOS Sonoma crashing the application by updating dependencies.
+- Missing File Finder thinking assets folder doesn't exist for release builds.
+
 ## [0.3.0] - 2023-09-22
 ### Added
 - Tutorial Level Map, including free-to-use placeholder assets
