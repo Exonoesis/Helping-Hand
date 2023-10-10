@@ -1,4 +1,5 @@
 use crate::FieldValue::String;
+use crate::entities::player::MovementIntent;
 use crate::{
     entities::player::{DirectionFacing, Player, PlayerMovementActions},
     visuals::map::LevelDimensions,
@@ -6,33 +7,28 @@ use crate::{
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 use bevy_ecs_ldtk::{prelude::LdtkFields, EntityInstance, LdtkLevel};
 
-#[derive(Component)]
-#[component(storage = "SparseSet")]
-pub struct MovementIntent;
-
 pub fn player_input(
     input: Res<Input<KeyCode>>,
-    mut player_query: Query<(Entity, &mut DirectionFacing), With<Player>>,
-    mut commands: Commands,
+    mut player_query: Query<(&mut DirectionFacing, &mut MovementIntent), With<Player>>,
 ) {
     if player_query.is_empty() {
         return;
     }
 
-    let (entity, mut facing) = player_query.single_mut();
+    let (mut facing, mut moving) = player_query.single_mut();
 
     if input.pressed(KeyCode::W) {
         *facing = DirectionFacing::Up;
-        commands.entity(entity).insert(MovementIntent);
+        *moving = MovementIntent::Moving;
     } else if input.pressed(KeyCode::S) {
         *facing = DirectionFacing::Down;
-        commands.entity(entity).insert(MovementIntent);
+        *moving = MovementIntent::Moving;
     } else if input.pressed(KeyCode::A) {
         *facing = DirectionFacing::Left;
-        commands.entity(entity).insert(MovementIntent);
+        *moving = MovementIntent::Moving;
     } else if input.pressed(KeyCode::D) {
         *facing = DirectionFacing::Right;
-        commands.entity(entity).insert(MovementIntent);
+        *moving = MovementIntent::Moving;
     }
 }
 
@@ -116,11 +112,10 @@ pub fn animate_entity(
 }
 
 pub fn move_entity(
-    mut entity_query: Query<(Entity, &mut Transform, &DirectionFacing), Added<MovementIntent>>,
+    mut entity_query: Query<(&mut Transform, &DirectionFacing, &mut MovementIntent), Changed<MovementIntent>>,
     tile_query: Query<&EntityInstance>,
     level_dimension: Res<LevelDimensions>,
     mut entity_movement_broadcast: EventWriter<PlayerMovementActions>,
-    mut commands: Commands,
 ) {
     if entity_query.is_empty() {
         return;
@@ -136,9 +131,14 @@ pub fn move_entity(
         })
         .collect::<Vec<&EntityInstance>>();
 
-    for (entity, mut entity_transform, facing) in entity_query.iter_mut() {
+    for (mut entity_transform, facing, mut moving) in entity_query.iter_mut() {
         let pixel_distance = 3.0;
         let mut direction = Vec3::ZERO;
+
+        if *moving != MovementIntent::Moving {
+            return;
+        }
+
         match facing {
             DirectionFacing::Up => {
                 direction += Vec3::new(0.0, pixel_distance, 0.0);
@@ -173,14 +173,14 @@ pub fn move_entity(
             .is_some()
             {
                 entity_movement_broadcast.send(PlayerMovementActions::Bumping);
-                commands.entity(entity).remove::<MovementIntent>();
+                *moving = MovementIntent::Idle;
                 return;
             }
         }
 
         entity_transform.translation = projected_position;
         entity_movement_broadcast.send(PlayerMovementActions::Walking);
-        commands.entity(entity).remove::<MovementIntent>();
+        *moving = MovementIntent::Idle;
     }
 }
 

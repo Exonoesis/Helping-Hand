@@ -11,7 +11,7 @@
 	"iid": "bf9aa1e0-3b70-11ee-9cc1-416ff9ef20f1",
 	"jsonVersion": "1.4.1",
 	"appBuildId": 471015,
-	"nextUid": 49,
+	"nextUid": 55,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -886,7 +886,7 @@
 					"identifier": "Interactable",
 					"doc": null,
 					"__type": "String",
-					"uid": 45,
+					"uid": 54,
 					"type": "F_String",
 					"isArray": false,
 					"canBeNull": false,
@@ -909,7 +909,7 @@
 					"acceptFileTypes": null,
 					"defaultOverride": {
 						"id": "V_String",
-						"params": ["This is my interactive text!"]
+						"params": ["This is a message"]
 					},
 					"textLanguageMode": null,
 					"symmetricalRef": false,
@@ -2835,7 +2835,7 @@
 							"px": [224,1056],
 							"fieldInstances": [
 								{ "__identifier": "Traversable", "__type": "Bool", "__value": false, "__tile": null, "defUid": 46, "realEditorValues": [] },
-								{ "__identifier": "Interactable", "__type": "String", "__value": "This is my interactive text!", "__tile": null, "defUid": 45, "realEditorValues": [] }
+								{ "__identifier": "Interactable", "__type": "String", "__value": "This is a message", "__tile": null, "defUid": 54, "realEditorValues": [] }
 							]
 						}
 					]
