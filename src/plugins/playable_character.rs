@@ -18,6 +18,8 @@ impl Plugin for PlayableCharacterPlugin {
                 move_entity,
                 animate_entity,
                 interact_entity,
+                display_interactive_message,
+                transition_level,
                 bound_player_movement,
                 play_player_movement_sound,
                 play_player_bump_sound,
@@ -27,6 +29,7 @@ impl Plugin for PlayableCharacterPlugin {
         .add_audio_channel::<PlayerWalkChannel>()
         .add_audio_channel::<PlayerBumpChannel>()
         .add_event::<PlayerMovementActions>()
+        .add_event::<InteractionEvent>()
         .register_ldtk_entity::<PlayerBundle>("Player");
     }
 }
