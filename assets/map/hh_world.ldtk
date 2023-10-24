@@ -1125,7 +1125,7 @@
 					"acceptFileTypes": null,
 					"defaultOverride": {
 						"id": "V_String",
-						"params": ["transition:Level_2"]
+						"params": ["transition:Level_0"]
 					},
 					"textLanguageMode": null,
 					"symmetricalRef": false,
@@ -3040,6 +3040,25 @@
 								{ "__identifier": "Traversable", "__type": "Bool", "__value": false, "__tile": null, "defUid": 56, "realEditorValues": [] },
 								{ "__identifier": "Interactable", "__type": "String", "__value": "transition:Level_2", "__tile": null, "defUid": 57, "realEditorValues": [] }
 							]
+						},
+						{
+							"__identifier": "Door_Transition_Outer",
+							"__grid": [13,12],
+							"__pivot": [0.5,0.5],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#2CE8F5",
+							"__worldX": 1248,
+							"__worldY": 672,
+							"iid": "ba57bf20-6280-11ee-9b62-7de955b05bf7",
+							"width": 64,
+							"height": 64,
+							"defUid": 55,
+							"px": [864,800],
+							"fieldInstances": [
+								{ "__identifier": "Traversable", "__type": "Bool", "__value": false, "__tile": null, "defUid": 56, "realEditorValues": [] },
+								{ "__identifier": "Interactable", "__type": "String", "__value": "transition:Level_2", "__tile": null, "defUid": 57, "realEditorValues": [] }
+							]
 						}
 					]
 				},
@@ -4738,22 +4757,6 @@
 							"defUid": 42,
 							"px": [1216,928],
 							"fieldInstances": [{ "__identifier": "Traversable", "__type": "Bool", "__value": false, "__tile": null, "defUid": 43, "realEditorValues": [] }]
-						},
-						{
-							"__identifier": "Block_Full",
-							"__grid": [8,11],
-							"__pivot": [0.5,0.5],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#3F3F3F",
-							"__worldX": -928,
-							"__worldY": 928,
-							"iid": "fb42d640-6280-11ee-af99-a732fac8c7d4",
-							"width": 64,
-							"height": 64,
-							"defUid": 14,
-							"px": [544,736],
-							"fieldInstances": [{ "__identifier": "Traversable", "__type": "Bool", "__value": false, "__tile": null, "defUid": 15, "realEditorValues": [] }]
 						}
 					]
 				},
@@ -6388,7 +6391,7 @@
 							"px": [480,672],
 							"fieldInstances": [
 								{ "__identifier": "Traversable", "__type": "Bool", "__value": false, "__tile": null, "defUid": 59, "realEditorValues": [] },
-								{ "__identifier": "Interactable", "__type": "String", "__value": "transition:Level_2", "__tile": null, "defUid": 60, "realEditorValues": [] }
+								{ "__identifier": "Interactable", "__type": "String", "__value": "transition:Level_0", "__tile": null, "defUid": 60, "realEditorValues": [] }
 							]
 						},
 						{
@@ -6407,7 +6410,7 @@
 							"px": [544,672],
 							"fieldInstances": [
 								{ "__identifier": "Traversable", "__type": "Bool", "__value": false, "__tile": null, "defUid": 59, "realEditorValues": [] },
-								{ "__identifier": "Interactable", "__type": "String", "__value": "transition:Level_2", "__tile": null, "defUid": 60, "realEditorValues": [] }
+								{ "__identifier": "Interactable", "__type": "String", "__value": "transition:Level_0", "__tile": null, "defUid": 60, "realEditorValues": [] }
 							]
 						}
 					]

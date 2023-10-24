@@ -37,13 +37,10 @@ pub fn player_input(
 }
 
 pub fn update_level_dimensions(
-    level_query: Query<&Handle<LdtkLevel>>,
+    level_query: Query<&Handle<LdtkLevel>, Changed<Handle<LdtkLevel>>>,
     loaded_levels: Res<Assets<LdtkLevel>>,
     mut level_dimension: ResMut<LevelDimensions>,
 ) {
-    if !(loaded_levels.is_added() || loaded_levels.is_changed()) {
-        return;
-    }
 
     if loaded_levels.is_empty() || level_query.is_empty() {
         return;
@@ -299,9 +296,7 @@ pub fn transition_level (
         }
 
         let arg = &interaction_command.1;
-        
-        //*level = LevelSelection::Identifier(arg.to_string());
-        *level = LevelSelection::Identifier("Level_1".to_string());
+        *level = LevelSelection::Identifier(arg.to_string());
     }
 }
 
