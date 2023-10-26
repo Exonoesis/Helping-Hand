@@ -1,49 +1,46 @@
-use crate::FieldValue::String;
+use crate::FieldValue::String as StringType;
+use crate::entities::player::MovementIntent;
 use crate::{
     entities::player::{DirectionFacing, Player, PlayerMovementActions},
     visuals::map::LevelDimensions,
 };
 use bevy::{prelude::*, sprite::collide_aabb::collide};
+use bevy_ecs_ldtk::LevelSelection;
 use bevy_ecs_ldtk::{prelude::LdtkFields, EntityInstance, LdtkLevel};
 
-#[derive(Component)]
-#[component(storage = "SparseSet")]
-pub struct MovementIntent;
+#[derive(Event)]
+pub struct InteractionEvent(String, String);
 
 pub fn player_input(
     input: Res<Input<KeyCode>>,
-    mut player_query: Query<(Entity, &mut DirectionFacing), With<Player>>,
-    mut commands: Commands,
+    mut player_query: Query<(&mut DirectionFacing, &mut MovementIntent), With<Player>>,
 ) {
     if player_query.is_empty() {
         return;
     }
 
-    let (entity, mut facing) = player_query.single_mut();
+    let (mut facing, mut moving) = player_query.single_mut();
 
     if input.pressed(KeyCode::W) {
         *facing = DirectionFacing::Up;
-        commands.entity(entity).insert(MovementIntent);
+        *moving = MovementIntent::Moving;
     } else if input.pressed(KeyCode::S) {
         *facing = DirectionFacing::Down;
-        commands.entity(entity).insert(MovementIntent);
+        *moving = MovementIntent::Moving;
     } else if input.pressed(KeyCode::A) {
         *facing = DirectionFacing::Left;
-        commands.entity(entity).insert(MovementIntent);
+        *moving = MovementIntent::Moving;
     } else if input.pressed(KeyCode::D) {
         *facing = DirectionFacing::Right;
-        commands.entity(entity).insert(MovementIntent);
+        *moving = MovementIntent::Moving;
     }
 }
 
 pub fn update_level_dimensions(
-    level_query: Query<&Handle<LdtkLevel>>,
+    level_query: Query<&Handle<LdtkLevel>, Changed<Handle<LdtkLevel>>>,
     loaded_levels: Res<Assets<LdtkLevel>>,
     mut level_dimension: ResMut<LevelDimensions>,
 ) {
-    if !(loaded_levels.is_added() || loaded_levels.is_changed()) {
-        return;
-    }
 
     if loaded_levels.is_empty() || level_query.is_empty() {
         return;
@@ -116,11 +113,10 @@ pub fn animate_entity(
 }
 
 pub fn move_entity(
-    mut entity_query: Query<(Entity, &mut Transform, &DirectionFacing), Added<MovementIntent>>,
+    mut entity_query: Query<(&mut Transform, &DirectionFacing, &mut MovementIntent), Changed<MovementIntent>>,
     tile_query: Query<&EntityInstance>,
     level_dimension: Res<LevelDimensions>,
     mut entity_movement_broadcast: EventWriter<PlayerMovementActions>,
-    mut commands: Commands,
 ) {
     if entity_query.is_empty() {
         return;
@@ -136,9 +132,14 @@ pub fn move_entity(
         })
         .collect::<Vec<&EntityInstance>>();
 
-    for (entity, mut entity_transform, facing) in entity_query.iter_mut() {
+    for (mut entity_transform, facing, mut moving) in entity_query.iter_mut() {
         let pixel_distance = 3.0;
         let mut direction = Vec3::ZERO;
+
+        if *moving != MovementIntent::Moving {
+            return;
+        }
+
         match facing {
             DirectionFacing::Up => {
                 direction += Vec3::new(0.0, pixel_distance, 0.0);
@@ -173,14 +174,14 @@ pub fn move_entity(
             .is_some()
             {
                 entity_movement_broadcast.send(PlayerMovementActions::Bumping);
-                commands.entity(entity).remove::<MovementIntent>();
+                *moving = MovementIntent::Idle;
                 return;
             }
         }
 
         entity_transform.translation = projected_position;
         entity_movement_broadcast.send(PlayerMovementActions::Walking);
-        commands.entity(entity).remove::<MovementIntent>();
+        *moving = MovementIntent::Idle;
     }
 }
 
@@ -189,6 +190,7 @@ pub fn interact_entity(
     tile_query: Query<&EntityInstance>,
     player_query: Query<(&Transform, &DirectionFacing), With<Player>>,
     level_dimension: Res<LevelDimensions>,
+    mut interactible_event_writer: EventWriter<InteractionEvent>,
 ) {
     if player_query.is_empty() {
         return;
@@ -254,17 +256,47 @@ pub fn interact_entity(
             let text = interactive_tile
                 .field_instances()
                 .get(1)
-                .expect("interact_entity: Could not find Interactive text in Interactive Tile");
+                .expect("interact_entity: Could not find Interactive command text in Interactive Tile");
 
-            if let String(message) = &text.value {
-                println!(
-                    "{}",
-                    message
-                        .as_ref()
-                        .expect("interact_entity: Could not display message")
-                );
+            if let StringType(message) = &text.value {
+                let raw_string = message.as_ref().expect("interact_entity: Could not display message");
+                let split_string: Vec<&str> = raw_string.split(':').collect();
+
+                let command = split_string[0];
+                let arg = split_string[1];
+
+                interactible_event_writer.send(InteractionEvent(command.to_string(), arg.to_string()));
             }
         }
+    }
+}
+
+pub fn display_interactive_message (
+    mut interactible_event_reader: EventReader<InteractionEvent>,
+) {
+    for interaction_command in interactible_event_reader.iter() {
+        let command = &interaction_command.0;
+        if command != "message" {
+            continue;
+        }
+
+        let arg = &interaction_command.1;
+        println!("{}", arg);
+    }
+}
+
+pub fn transition_level (
+    mut interactible_event_reader: EventReader<InteractionEvent>,
+    mut level: ResMut<LevelSelection>
+) {
+    for interaction_command in interactible_event_reader.iter() {
+        let command = &interaction_command.0;
+        if command != "transition" {
+            continue;
+        }
+
+        let arg = &interaction_command.1;
+        *level = LevelSelection::Identifier(arg.to_string());
     }
 }
 

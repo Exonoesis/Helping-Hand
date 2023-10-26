@@ -25,6 +25,13 @@ pub enum DirectionFacing {
     Right,
 }
 
+#[derive(Default, Component, PartialEq)]
+pub enum MovementIntent {
+    #[default]
+    Idle,
+    Moving,
+}
+
 #[derive(Bundle, LdtkEntity)]
 pub struct PlayerBundle {
     #[sprite_sheet_bundle("textures/characters/EeveeSprites.png", 64.0, 64.0, 1, 4, 0.0, 0.0, 0)]
@@ -32,6 +39,7 @@ pub struct PlayerBundle {
 
     player: Player,
     direction_facing: DirectionFacing,
+    movement_intent: MovementIntent,
     bump_sound: PlayerBumpChannel,
     walk_sound: PlayerWalkChannel,
 }

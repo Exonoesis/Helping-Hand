@@ -5,6 +5,9 @@
 - This project uses [ISO Standard](https://www.iso.org/iso-8601-date-and-time-format.html) date formatting
 
 ## [Unreleased]
+### Added
+- Interaction Events.
+
 ### Fixed
 - macOS Sonoma crashing the application by updating dependencies.
 - Missing File Finder thinking assets folder doesn't exist for release builds.
