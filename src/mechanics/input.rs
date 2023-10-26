@@ -1,5 +1,5 @@
-use crate::FieldValue::String as StringType;
 use crate::entities::player::MovementIntent;
+use crate::FieldValue::String as StringType;
 use crate::{
     entities::player::{DirectionFacing, Player, PlayerMovementActions},
     visuals::map::LevelDimensions,
@@ -41,7 +41,6 @@ pub fn update_level_dimensions(
     loaded_levels: Res<Assets<LdtkLevel>>,
     mut level_dimension: ResMut<LevelDimensions>,
 ) {
-
     if loaded_levels.is_empty() || level_query.is_empty() {
         return;
     }
@@ -113,7 +112,10 @@ pub fn animate_entity(
 }
 
 pub fn move_entity(
-    mut entity_query: Query<(&mut Transform, &DirectionFacing, &mut MovementIntent), Changed<MovementIntent>>,
+    mut entity_query: Query<
+        (&mut Transform, &DirectionFacing, &mut MovementIntent),
+        Changed<MovementIntent>,
+    >,
     tile_query: Query<&EntityInstance>,
     level_dimension: Res<LevelDimensions>,
     mut entity_movement_broadcast: EventWriter<PlayerMovementActions>,
@@ -253,27 +255,27 @@ pub fn interact_entity(
         )
         .is_some()
         {
-            let text = interactive_tile
-                .field_instances()
-                .get(1)
-                .expect("interact_entity: Could not find Interactive command text in Interactive Tile");
+            let text = interactive_tile.field_instances().get(1).expect(
+                "interact_entity: Could not find Interactive command text in Interactive Tile",
+            );
 
             if let StringType(message) = &text.value {
-                let raw_string = message.as_ref().expect("interact_entity: Could not display message");
+                let raw_string = message
+                    .as_ref()
+                    .expect("interact_entity: Could not display message");
                 let split_string: Vec<&str> = raw_string.split(':').collect();
 
                 let command = split_string[0];
                 let arg = split_string[1];
 
-                interactible_event_writer.send(InteractionEvent(command.to_string(), arg.to_string()));
+                interactible_event_writer
+                    .send(InteractionEvent(command.to_string(), arg.to_string()));
             }
         }
     }
 }
 
-pub fn display_interactive_message (
-    mut interactible_event_reader: EventReader<InteractionEvent>,
-) {
+pub fn display_interactive_message(mut interactible_event_reader: EventReader<InteractionEvent>) {
     for interaction_command in interactible_event_reader.iter() {
         let command = &interaction_command.0;
         if command != "message" {
@@ -285,9 +287,9 @@ pub fn display_interactive_message (
     }
 }
 
-pub fn transition_level (
+pub fn transition_level(
     mut interactible_event_reader: EventReader<InteractionEvent>,
-    mut level: ResMut<LevelSelection>
+    mut level: ResMut<LevelSelection>,
 ) {
     for interaction_command in interactible_event_reader.iter() {
         let command = &interaction_command.0;
