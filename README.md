@@ -4,7 +4,7 @@
 
 ![project image](snapshots/Snapshot_6.png)
 ![project image](snapshots/Snapshot_5.gif)
-![project image](snapshots/Snapshot_7.png)
+![project image](snapshots/Snapshot_7.gif)
 
 ---
 
