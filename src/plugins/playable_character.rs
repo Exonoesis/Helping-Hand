@@ -18,11 +18,11 @@ impl Plugin for PlayableCharacterPlugin {
                 move_entity,
                 animate_entity,
                 interact_entity,
-                display_interactive_message,
-                transition_level,
+                display_interactive_message.after(interact_entity),
+                transition_level.after(interact_entity),
                 bound_player_movement,
-                play_player_movement_sound,
-                play_player_bump_sound,
+                play_player_movement_sound.after(move_entity),
+                play_player_bump_sound.after(move_entity),
             )
                 .run_if(in_state(AppState::InGame)),
         )
