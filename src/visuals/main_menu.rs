@@ -12,6 +12,7 @@ pub enum MainMenuElements {
 #[derive(Component)]
 pub enum ButtonTypes {
     Play,
+    Settings,
     Quit,
 }
 
@@ -106,6 +107,38 @@ pub fn spawn_main_menu(mut commands: Commands) {
                             parent.spawn((
                                 TextBundle::from_section(
                                     "Play",
+                                    TextStyle {
+                                        font_size: 80.0,
+                                        color: WHITE,
+                                        ..default()
+                                    },
+                                ),
+                                MainMenuElements::Text,
+                            ));
+                        });
+                })
+                //Node for the settings button
+                .with_children(|parent| {
+                    parent
+                        .spawn((
+                            ButtonBundle {
+                                style: Style {
+                                    width: Val::Px(370.0),
+                                    height: Val::Px(95.0),
+                                    justify_content: JustifyContent::Center,
+                                    align_items: AlignItems::Center,
+                                    ..default()
+                                },
+                                ..default()
+                            },
+                            ButtonTypes::Settings,
+                            MainMenuElements::Button,
+                        ))
+                        //Node for settings text
+                        .with_children(|parent| {
+                            parent.spawn((
+                                TextBundle::from_section(
+                                    "Settings",
                                     TextStyle {
                                         font_size: 80.0,
                                         color: WHITE,

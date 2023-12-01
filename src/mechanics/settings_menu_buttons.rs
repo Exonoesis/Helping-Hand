@@ -1,11 +1,9 @@
-use bevy::app::AppExit;
 use bevy::prelude::*;
 
-use crate::visuals::main_menu::ButtonTypes;
+use crate::visuals::settings_menu::ButtonTypes;
 use crate::AppState;
 
 pub fn button_system(
-    mut exit_event: EventWriter<AppExit>,
     mut next_state: ResMut<NextState<AppState>>,
     mut interaction_query: Query<
         (&Interaction, &ButtonTypes),
@@ -18,9 +16,8 @@ pub fn button_system(
         }
 
         match button_type {
-            ButtonTypes::Play => next_state.set(AppState::InGame),
-            ButtonTypes::Settings => next_state.set(AppState::SettingsMenu),
-            ButtonTypes::Quit => exit_event.send(AppExit),
+            ButtonTypes::Apply => next_state.set(AppState::MainMenu), //TO-DO Save player preference changes
+            ButtonTypes::Cancel => next_state.set(AppState::MainMenu),
         }
     }
 }
