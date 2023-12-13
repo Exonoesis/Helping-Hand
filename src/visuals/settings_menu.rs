@@ -184,8 +184,8 @@ pub fn spawn_settings_menu(mut commands: Commands) {
                         .spawn((
                             ButtonBundle {
                                 style: Style {
-                                    width: Val::Px(145.0),
-                                    height: Val::Px(45.0),
+                                    width: Val::Percent(11.33),
+                                    height: Val::Percent(40.0),
                                     justify_content: JustifyContent::Center,
                                     align_items: AlignItems::Center,
                                     ..default()
@@ -216,8 +216,8 @@ pub fn spawn_settings_menu(mut commands: Commands) {
                         .spawn((
                             ButtonBundle {
                                 style: Style {
-                                    width: Val::Px(145.0),
-                                    height: Val::Px(45.0),
+                                    width: Val::Percent(11.33),
+                                    height: Val::Percent(40.0),
                                     justify_content: JustifyContent::Center,
                                     align_items: AlignItems::Center,
                                     ..default()

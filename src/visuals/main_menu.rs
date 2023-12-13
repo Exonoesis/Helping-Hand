@@ -91,8 +91,8 @@ pub fn spawn_main_menu(mut commands: Commands) {
                         .spawn((
                             ButtonBundle {
                                 style: Style {
-                                    width: Val::Px(370.0),
-                                    height: Val::Px(95.0),
+                                    width: Val::Percent(23.0),
+                                    height: Val::Percent(23.0),
                                     justify_content: JustifyContent::Center,
                                     align_items: AlignItems::Center,
                                     ..default()
@@ -123,8 +123,8 @@ pub fn spawn_main_menu(mut commands: Commands) {
                         .spawn((
                             ButtonBundle {
                                 style: Style {
-                                    width: Val::Px(370.0),
-                                    height: Val::Px(95.0),
+                                    width: Val::Percent(23.0),
+                                    height: Val::Percent(23.0),
                                     justify_content: JustifyContent::Center,
                                     align_items: AlignItems::Center,
                                     ..default()
@@ -155,8 +155,8 @@ pub fn spawn_main_menu(mut commands: Commands) {
                         .spawn((
                             ButtonBundle {
                                 style: Style {
-                                    width: Val::Px(370.0),
-                                    height: Val::Px(95.0),
+                                    width: Val::Percent(23.0),
+                                    height: Val::Percent(23.0),
                                     justify_content: JustifyContent::Center,
                                     align_items: AlignItems::Center,
                                     ..default()
