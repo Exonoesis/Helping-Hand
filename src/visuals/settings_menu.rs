@@ -21,228 +21,229 @@ pub enum ButtonTypes {
 pub struct SettingsMenuUI;
 
 pub fn spawn_settings_menu(mut commands: Commands) {
-    commands.spawn((Camera2dBundle::default(), SettingsMenuUI));
-    commands
-        //Node that spans entire screen, acts as container for other UI elements
-        .spawn((
-            ImageBundle {
-                style: Style {
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    flex_direction: FlexDirection::Column,
-                    ..default()
+    let ui_container = (
+        ImageBundle {
+            style: Style {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                flex_direction: FlexDirection::Column,
+                ..default()
+            },
+            ..default()
+        },
+        SettingsMenuUI,
+        SettingsMenuElements::BackgroundImage,
+    );
+
+    let top_third = NodeBundle {
+        style: Style {
+            width: Val::Percent(100.0),
+            height: Val::Percent(9.375),
+            align_items: AlignItems::FlexStart,
+            padding: UiRect {
+                left: Val::Percent(2.0),
+                right: Val::Percent(0.0),
+                top: Val::Percent(1.0),
+                bottom: Val::Percent(0.0),
+            },
+            ..default()
+        },
+        ..default()
+    };
+
+    let title_text = (
+        TextBundle::from_section(
+            "Settings",
+            TextStyle {
+                font_size: 37.0,
+                color: WHITE,
+                ..default()
+            },
+        ),
+        SettingsMenuElements::Text,
+    );
+
+    let middle_third = NodeBundle {
+        style: Style {
+            width: Val::Percent(66.0),
+            height: Val::Percent(74.995),
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::FlexStart,
+            justify_content: JustifyContent::FlexStart,
+            ..default()
+        },
+        ..default()
+    };
+
+    let tabs_container = (
+        ButtonBundle {
+            style: Style {
+                width: Val::Percent(18.82),
+                height: Val::Percent(9.434),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                padding: UiRect {
+                    left: Val::Percent(0.0),
+                    right: Val::Percent(0.0),
+                    top: Val::Percent(0.6),
+                    bottom: Val::Percent(0.0),
                 },
                 ..default()
             },
-            SettingsMenuUI,
-            SettingsMenuElements::BackgroundImage,
-        ))
-        .with_children(|parent| {
-            //Node for the top third of the screen
-            parent
-                .spawn(NodeBundle {
-                    style: Style {
-                        width: Val::Percent(100.0),
-                        height: Val::Percent(9.375),
-                        align_items: AlignItems::FlexStart,
-                        padding: UiRect {
-                            left: Val::Percent(2.0),
-                            right: Val::Percent(0.0),
-                            top: Val::Percent(1.0),
-                            bottom: Val::Percent(0.0),
-                        },
-                        ..default()
-                    },
-                    ..default()
-                })
-                //Node for the title text
-                .with_children(|parent| {
-                    parent.spawn((
-                        TextBundle::from_section(
-                            "Settings",
-                            TextStyle {
-                                font_size: 37.0,
-                                color: WHITE,
-                                ..default()
-                            },
-                        ),
-                        SettingsMenuElements::Text,
-                    ));
+            ..default()
+        },
+        SettingsMenuElements::TabBox,
+    );
+
+    let tab_text = (
+        TextBundle::from_section(
+            "Audio",
+            TextStyle {
+                font_size: 29.0,
+                color: WHITE,
+                ..default()
+            },
+        ),
+        SettingsMenuElements::Text,
+    );
+
+    let options_container = (
+        ButtonBundle {
+            style: Style {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                justify_content: JustifyContent::FlexStart,
+                align_items: AlignItems::FlexStart,
+                padding: UiRect {
+                    left: Val::Percent(7.0),
+                    right: Val::Percent(0.0),
+                    top: Val::Percent(3.0),
+                    bottom: Val::Percent(0.0),
+                },
+                ..default()
+            },
+            ..default()
+        },
+        SettingsMenuElements::OptionsBox,
+    );
+
+    let bottom_third = NodeBundle {
+        style: Style {
+            width: Val::Percent(66.0),
+            height: Val::Percent(15.63),
+            flex_direction: FlexDirection::Row,
+            align_items: AlignItems::FlexStart,
+            justify_content: JustifyContent::FlexEnd,
+            column_gap: Val::Percent(2.0),
+            padding: UiRect {
+                left: Val::Percent(0.0),
+                right: Val::Percent(0.0),
+                top: Val::Percent(0.8),
+                bottom: Val::Percent(0.0),
+            },
+            ..default()
+        },
+        ..default()
+    };
+
+    let apply_button = create_button(ButtonTypes::Apply);
+    let cancel_button = create_button(ButtonTypes::Cancel);
+
+    let apply_text = create_button_text(String::from("Apply"));
+    let cancel_text = create_button_text(String::from("Cancel"));
+
+    //Spawn UI Camera
+    commands.spawn((Camera2dBundle::default(), SettingsMenuUI));
+
+    //UI Construction
+    commands
+        .spawn(ui_container)
+        .with_children(|ui_container| {
+            ui_container
+                .spawn(top_third)
+                .with_children(|top_third| {
+                    top_third.spawn(title_text);
                 });
-            //Node for the middle third of the screen
-            parent
-                .spawn(NodeBundle {
-                    style: Style {
-                        width: Val::Percent(66.0),
-                        height: Val::Percent(74.995),
-                        flex_direction: FlexDirection::Column,
-                        align_items: AlignItems::FlexStart,
-                        justify_content: JustifyContent::FlexStart,
-                        ..default()
-                    },
-                    ..default()
-                })
-                //Node for the tabs
-                .with_children(|parent| {
-                    parent
-                        .spawn((
-                            ButtonBundle {
-                                style: Style {
-                                    width: Val::Percent(18.82),
-                                    height: Val::Percent(9.434),
-                                    justify_content: JustifyContent::Center,
-                                    align_items: AlignItems::Center,
-                                    padding: UiRect {
-                                        left: Val::Percent(0.0),
-                                        right: Val::Percent(0.0),
-                                        top: Val::Percent(0.6),
-                                        bottom: Val::Percent(0.0),
-                                    },
-                                    ..default()
-                                },
-                                ..default()
-                            },
-                            SettingsMenuElements::TabBox,
-                        ))
-                        //Node for tab text
-                        .with_children(|parent| {
-                            parent.spawn((
-                                TextBundle::from_section(
-                                    "Audio",
-                                    TextStyle {
-                                        font_size: 29.0,
-                                        color: WHITE,
-                                        ..default()
-                                    },
-                                ),
-                                SettingsMenuElements::Text,
-                            ));
+            ui_container
+                .spawn(middle_third)
+                .with_children(|middle_third| {
+                    middle_third
+                        .spawn(tabs_container)
+                        .with_children(|tabs_container| {
+                            tabs_container.spawn(tab_text);
                         });
                 })
-                //Node for the options container
-                .with_children(|parent| {
-                    parent
-                        .spawn((
-                            ButtonBundle {
-                                style: Style {
-                                    width: Val::Percent(100.0),
-                                    height: Val::Percent(100.0),
-                                    justify_content: JustifyContent::FlexStart,
-                                    align_items: AlignItems::FlexStart,
-                                    padding: UiRect {
-                                        left: Val::Percent(7.0),
-                                        right: Val::Percent(0.0),
-                                        top: Val::Percent(3.0),
-                                        bottom: Val::Percent(0.0),
-                                    },
-                                    ..default()
-                                },
-                                ..default()
-                            },
-                            SettingsMenuElements::OptionsBox,
-                        ))
-                        //Node for individual settings options
-                        .with_children(|parent| {
-                            parent.spawn((
-                                TextBundle::from_section(
-                                    "Music",
-                                    TextStyle {
-                                        font_size: 25.0,
-                                        color: WHITE,
-                                        ..default()
-                                    },
-                                ),
-                                SettingsMenuElements::Text,
-                            ));
-                        });
+                .with_children(|middle_third| {
+                    middle_third
+                        .spawn(options_container);
                 });
-            //Node for the bottom third of the screen
-            parent
-                .spawn(NodeBundle {
-                    style: Style {
-                        width: Val::Percent(66.0),
-                        height: Val::Percent(15.63),
-                        flex_direction: FlexDirection::Row,
-                        align_items: AlignItems::FlexStart,
-                        justify_content: JustifyContent::FlexEnd,
-                        column_gap: Val::Percent(2.0),
-                        padding: UiRect {
-                            left: Val::Percent(0.0),
-                            right: Val::Percent(0.0),
-                            top: Val::Percent(0.8),
-                            bottom: Val::Percent(0.0),
-                        },
-                        ..default()
-                    },
-                    ..default()
-                })
-                //Node for Apply button
-                .with_children(|parent| {
-                    parent
-                        .spawn((
-                            ButtonBundle {
-                                style: Style {
-                                    width: Val::Percent(11.33),
-                                    height: Val::Percent(40.0),
-                                    justify_content: JustifyContent::Center,
-                                    align_items: AlignItems::Center,
-                                    ..default()
-                                },
-                                ..default()
-                            },
-                            ButtonTypes::Apply,
-                            SettingsMenuElements::Button,
-                        ))
-                        //Node for Apply text
-                        .with_children(|parent| {
-                            parent.spawn((
-                                TextBundle::from_section(
-                                    "Apply",
-                                    TextStyle {
-                                        font_size: 25.0,
-                                        color: WHITE,
-                                        ..default()
-                                    },
-                                ),
-                                SettingsMenuElements::Text,
-                            ));
+            ui_container
+                .spawn(bottom_third)
+                .with_children(|bottom_third| {
+                    bottom_third
+                        .spawn(apply_button)
+                        .with_children(|apply_button| {
+                            apply_button.spawn(apply_text);
                         });
                 })
-                //Node for Cancel button
-                .with_children(|parent| {
-                    parent
-                        .spawn((
-                            ButtonBundle {
-                                style: Style {
-                                    width: Val::Percent(11.33),
-                                    height: Val::Percent(40.0),
-                                    justify_content: JustifyContent::Center,
-                                    align_items: AlignItems::Center,
-                                    ..default()
-                                },
-                                ..default()
-                            },
-                            ButtonTypes::Cancel,
-                            SettingsMenuElements::Button,
-                        ))
-                        //Node for Cancel text
-                        .with_children(|parent| {
-                            parent.spawn((
-                                TextBundle::from_section(
-                                    "Cancel",
-                                    TextStyle {
-                                        font_size: 25.0,
-                                        color: WHITE,
-                                        ..default()
-                                    },
-                                ),
-                                SettingsMenuElements::Text,
-                            ));
+                .with_children(|bottom_third| {
+                    bottom_third
+                        .spawn(cancel_button)
+                        .with_children(|cancel_button| {
+                            cancel_button.spawn(cancel_text);
                         });
                 });
         });
+}
+
+fn create_button (b_type: ButtonTypes) -> (ButtonBundle, ButtonTypes, SettingsMenuElements)
+{
+    (
+        ButtonBundle {
+            style: Style {
+                width: Val::Percent(11.33),
+                height: Val::Percent(40.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            ..default()
+        },
+        b_type,
+        SettingsMenuElements::Button,
+    )
+}
+
+fn create_button_text (text: String) -> (TextBundle, SettingsMenuElements)
+{
+    (
+        TextBundle::from_section(
+            text,
+            TextStyle {
+                font_size: 25.0,
+                color: WHITE,
+                ..default()
+            },
+        ),
+        SettingsMenuElements::Text,
+    )
+}
+
+fn create_widget_label (text: String) -> (TextBundle, SettingsMenuElements)
+{
+    (
+        TextBundle::from_section(
+            text,
+            TextStyle {
+                font_size: 25.0,
+                color: WHITE,
+                ..default()
+            },
+        ),
+        SettingsMenuElements::Text,
+    )
 }
 
 pub fn load_background_image(
