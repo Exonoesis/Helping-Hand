@@ -20,168 +20,139 @@ pub enum ButtonTypes {
 pub struct MainMenuUI;
 
 pub fn spawn_main_menu(mut commands: Commands) {
-    commands.spawn((Camera2dBundle::default(), MainMenuUI));
-    commands
-        //Node that spans entire screen, acts as container for other UI elements
-        .spawn((
-            ImageBundle {
-                style: Style {
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    flex_direction: FlexDirection::Column,
-                    ..default()
-                },
+    let ui_container = (ImageBundle {
+        style: Style {
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            flex_direction: FlexDirection::Column,
+            ..default()
+        },
+        ..default()
+    },
+    MainMenuUI,
+    MainMenuElements::BackgroundImage);
+
+    let top_half = NodeBundle {
+        style: Style {
+            width: Val::Percent(100.0),
+            height: Val::Percent(50.0),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::FlexEnd,
+            padding: UiRect {
+                left: Val::Percent(0.0),
+                right: Val::Percent(0.0),
+                top: Val::Percent(0.0),
+                bottom: Val::Percent(3.0),
+            },
+            ..default()
+        },
+        ..default()
+    };
+
+    let title_text = (
+        TextBundle::from_section(
+            "Helping Hand",
+            TextStyle {
+                font_size: 180.0,
+                color: WHITE,
                 ..default()
             },
-            MainMenuUI,
-            MainMenuElements::BackgroundImage,
-        ))
-        .with_children(|parent| {
-            //Node for the top half of the screen
-            parent
-                .spawn(NodeBundle {
-                    style: Style {
-                        width: Val::Percent(100.0),
-                        height: Val::Percent(50.0),
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::FlexEnd,
-                        padding: UiRect {
-                            left: Val::Percent(0.0),
-                            right: Val::Percent(0.0),
-                            top: Val::Percent(0.0),
-                            bottom: Val::Percent(3.0),
-                        },
-                        ..default()
-                    },
-                    ..default()
-                })
-                //Node for the title text
-                .with_children(|parent| {
-                    parent.spawn((
-                        TextBundle::from_section(
-                            "Helping Hand",
-                            TextStyle {
-                                font_size: 180.0,
-                                color: WHITE,
-                                ..default()
-                            },
-                        ),
-                        MainMenuElements::Text,
-                    ));
+        ),
+        MainMenuElements::Text
+    );
+
+    let bottom_half = NodeBundle {
+        style: Style {
+            width: Val::Percent(100.0),
+            height: Val::Percent(50.0),
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            row_gap: Val::Percent(4.2),
+            ..default()
+        },
+        ..default()
+    };
+
+    let play_button = create_button(ButtonTypes::Play);
+    let settings_button = create_button(ButtonTypes::Settings);
+    let quit_button = create_button(ButtonTypes::Quit);
+
+    let play_text = create_button_text(String::from("Play"));
+    let settings_text = create_button_text(String::from("Settings"));
+    let quit_text = create_button_text(String::from("Quit"));
+
+    //Spawn UI Camera
+    commands.spawn((Camera2dBundle::default(), MainMenuUI));
+
+    //UI Construction
+    commands
+        .spawn(ui_container)
+        .with_children(|ui_container| {
+            ui_container
+                .spawn(top_half)
+                .with_children(|top_half| {
+                    top_half.spawn(title_text);
                 });
-            //Node for the bottom half of the screen
-            parent
-                .spawn(NodeBundle {
-                    style: Style {
-                        width: Val::Percent(100.0),
-                        height: Val::Percent(50.0),
-                        flex_direction: FlexDirection::Column,
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        row_gap: Val::Percent(4.2),
-                        ..default()
-                    },
-                    ..default()
-                })
-                //Node for the play button
-                .with_children(|parent| {
-                    parent
-                        .spawn((
-                            ButtonBundle {
-                                style: Style {
-                                    width: Val::Percent(23.0),
-                                    height: Val::Percent(23.0),
-                                    justify_content: JustifyContent::Center,
-                                    align_items: AlignItems::Center,
-                                    ..default()
-                                },
-                                ..default()
-                            },
-                            ButtonTypes::Play,
-                            MainMenuElements::Button,
-                        ))
-                        //Node for play text
-                        .with_children(|parent| {
-                            parent.spawn((
-                                TextBundle::from_section(
-                                    "Play",
-                                    TextStyle {
-                                        font_size: 80.0,
-                                        color: WHITE,
-                                        ..default()
-                                    },
-                                ),
-                                MainMenuElements::Text,
-                            ));
+            ui_container
+                .spawn(bottom_half)
+                .with_children(|bottom_half| {
+                    bottom_half
+                        .spawn(play_button)
+                        .with_children(|play_button| {
+                            play_button.spawn(play_text);
                         });
                 })
-                //Node for the settings button
-                .with_children(|parent| {
-                    parent
-                        .spawn((
-                            ButtonBundle {
-                                style: Style {
-                                    width: Val::Percent(23.0),
-                                    height: Val::Percent(23.0),
-                                    justify_content: JustifyContent::Center,
-                                    align_items: AlignItems::Center,
-                                    ..default()
-                                },
-                                ..default()
-                            },
-                            ButtonTypes::Settings,
-                            MainMenuElements::Button,
-                        ))
-                        //Node for settings text
-                        .with_children(|parent| {
-                            parent.spawn((
-                                TextBundle::from_section(
-                                    "Settings",
-                                    TextStyle {
-                                        font_size: 80.0,
-                                        color: WHITE,
-                                        ..default()
-                                    },
-                                ),
-                                MainMenuElements::Text,
-                            ));
+                .with_children(|bottom_half| {
+                    bottom_half
+                        .spawn(settings_button)
+                        .with_children(|settings_button| {
+                            settings_button.spawn(settings_text);
                         });
                 })
-                //Node for the quit button
-                .with_children(|parent| {
-                    parent
-                        .spawn((
-                            ButtonBundle {
-                                style: Style {
-                                    width: Val::Percent(23.0),
-                                    height: Val::Percent(23.0),
-                                    justify_content: JustifyContent::Center,
-                                    align_items: AlignItems::Center,
-                                    ..default()
-                                },
-                                ..default()
-                            },
-                            ButtonTypes::Quit,
-                            MainMenuElements::Button,
-                        ))
-                        //Node for quit text
-                        .with_children(|parent| {
-                            parent.spawn((
-                                TextBundle::from_section(
-                                    "Quit",
-                                    TextStyle {
-                                        font_size: 80.0,
-                                        color: WHITE,
-                                        ..default()
-                                    },
-                                ),
-                                MainMenuElements::Text,
-                            ));
+                .with_children(|bottom_half| {
+                    bottom_half
+                        .spawn(quit_button)
+                        .with_children(|quit_button| {
+                            quit_button.spawn(quit_text);
                         });
                 });
         });
+}
+
+fn create_button (b_type: ButtonTypes) -> (ButtonBundle, ButtonTypes, MainMenuElements)
+{
+    (
+        ButtonBundle {
+            style: Style {
+                width: Val::Percent(23.0),
+                height: Val::Percent(23.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            ..default()
+        },
+        b_type,
+        MainMenuElements::Button
+    )
+}
+
+fn create_button_text (text: String) -> (TextBundle, MainMenuElements)
+{
+    (
+        TextBundle::from_section(
+            text,
+            TextStyle {
+                font_size: 80.0,
+                color: WHITE,
+                ..default()
+            },
+        ),
+        MainMenuElements::Text
+    )
 }
 
 pub fn load_background_image(
