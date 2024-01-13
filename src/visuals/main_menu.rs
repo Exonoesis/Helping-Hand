@@ -104,15 +104,11 @@ pub fn spawn_main_menu(mut commands: Commands) {
                         .with_children(|play_button| {
                             play_button.spawn(play_text);
                         });
-                })
-                .with_children(|bottom_half| {
                     bottom_half
                         .spawn(settings_button)
                         .with_children(|settings_button| {
                             settings_button.spawn(settings_text);
                         });
-                })
-                .with_children(|bottom_half| {
                     bottom_half
                         .spawn(quit_button)
                         .with_children(|quit_button| {

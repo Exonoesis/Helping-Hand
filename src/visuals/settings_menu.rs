@@ -1,6 +1,13 @@
 use bevy::prelude::*;
 
 const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
+const DBROWN: Color = Color::rgb(0.49, 0.29, 0.14);
+const LBROWN: Color = Color::rgb(0.72, 0.53, 0.36);
+
+//REMOVE
+const RED: Color = Color::rgb(1.0, 0.0, 0.0);
+const GREEN: Color = Color::rgb(0.0, 1.0, 0.0);
+const BLUE: Color = Color::rgb(0.0, 0.0, 1.0);
 
 #[derive(Component)]
 pub enum SettingsMenuElements {
@@ -9,16 +16,26 @@ pub enum SettingsMenuElements {
     TabBox,
     Button,
     Text,
+    SliderButton,
+    SliderFill,
+    Spinner
 }
 
 #[derive(Component)]
 pub enum ButtonTypes {
     Apply,
     Cancel,
+    Slider,
 }
 
 #[derive(Component)]
 pub struct SettingsMenuUI;
+
+struct Slider {
+    back: NodeBundle,
+    handle: (ButtonBundle, ButtonTypes, SettingsMenuElements),
+    fill: (NodeBundle, SettingsMenuElements)
+}
 
 pub fn spawn_settings_menu(mut commands: Commands) {
     let ui_container = (
@@ -110,18 +127,20 @@ pub fn spawn_settings_menu(mut commands: Commands) {
     );
 
     let options_container = (
-        ButtonBundle {
+        ImageBundle {
             style: Style {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
+                flex_direction: FlexDirection::Column,
                 justify_content: JustifyContent::FlexStart,
-                align_items: AlignItems::FlexStart,
+                align_items: AlignItems::Center,
                 padding: UiRect {
-                    left: Val::Percent(7.0),
+                    left: Val::Percent(0.0),
                     right: Val::Percent(0.0),
-                    top: Val::Percent(3.0),
+                    top: Val::Percent(2.0),
                     bottom: Val::Percent(0.0),
                 },
+                row_gap: Val::Percent(2.00),
                 ..default()
             },
             ..default()
@@ -129,6 +148,40 @@ pub fn spawn_settings_menu(mut commands: Commands) {
         SettingsMenuElements::OptionsBox,
     );
 
+    let music_widget_label = NodeBundle {
+        style: Style {
+            width: Val::Percent(20.0),
+            height: Val::Percent(100.0),
+            justify_content: JustifyContent::FlexStart,
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        ..default()
+    };
+
+    let music_slider_container = NodeBundle {
+        style: Style {
+            width: Val::Percent(60.0),
+            height: Val::Percent(100.0),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        ..default()
+    };
+
+    let music_spinner_container = NodeBundle {
+        style: Style {
+            width: Val::Percent(15.0),
+            height: Val::Percent(100.0),
+            justify_content: JustifyContent::FlexEnd,
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        background_color: bevy::prelude::BackgroundColor(GREEN), //REMOVE
+        ..default()
+    };
+    
     let bottom_third = NodeBundle {
         style: Style {
             width: Val::Percent(66.0),
@@ -154,6 +207,10 @@ pub fn spawn_settings_menu(mut commands: Commands) {
     let apply_text = create_button_text(String::from("Apply"));
     let cancel_text = create_button_text(String::from("Cancel"));
 
+    let music_widget_text = create_widget_label(String::from("Music"));
+
+    let music_slider = create_widget_slider();
+
     //Spawn UI Camera
     commands.spawn((Camera2dBundle::default(), SettingsMenuUI));
 
@@ -174,10 +231,32 @@ pub fn spawn_settings_menu(mut commands: Commands) {
                         .with_children(|tabs_container| {
                             tabs_container.spawn(tab_text);
                         });
-                })
-                .with_children(|middle_third| {
                     middle_third
-                        .spawn(options_container);
+                        .spawn(options_container)
+                        .with_children(|options_container| {
+                            options_container.spawn(create_widget_container())
+                            .with_children(|options_container| {
+                                options_container.spawn(music_widget_label)
+                                .with_children(|options_container| {
+                                    options_container.spawn(music_widget_text);
+                                });
+                            })
+                            .with_children(|options_container| {
+                                options_container.spawn(music_slider_container)
+                                .with_children(|options_container| {
+                                    options_container.spawn(music_slider.back)
+                                .with_children(|options_container| {
+                                    options_container.spawn(music_slider.fill);
+                                });
+                                });
+                            })
+                            .with_children(|options_container| {
+                                options_container.spawn(music_spinner_container);
+                        });
+                        })
+                        .with_children(|options_container| {
+                            options_container.spawn(create_widget_container());
+                        });
                 });
             ui_container
                 .spawn(bottom_third)
@@ -187,8 +266,6 @@ pub fn spawn_settings_menu(mut commands: Commands) {
                         .with_children(|apply_button| {
                             apply_button.spawn(apply_text);
                         });
-                })
-                .with_children(|bottom_third| {
                     bottom_third
                         .spawn(cancel_button)
                         .with_children(|cancel_button| {
@@ -231,6 +308,20 @@ fn create_button_text (text: String) -> (TextBundle, SettingsMenuElements)
     )
 }
 
+fn create_widget_container () -> NodeBundle
+{
+    NodeBundle {
+        style: Style {
+            width: Val::Percent(96.0),
+            height: Val::Percent(12.0),
+            justify_content: JustifyContent::SpaceBetween,
+            align_items: AlignItems::FlexStart,
+            ..default()
+        },
+        ..default()
+    }
+}
+
 fn create_widget_label (text: String) -> (TextBundle, SettingsMenuElements)
 {
     (
@@ -245,6 +336,50 @@ fn create_widget_label (text: String) -> (TextBundle, SettingsMenuElements)
         SettingsMenuElements::Text,
     )
 }
+
+fn create_widget_slider () -> Slider {
+    
+    let slider = Slider {
+        back: (
+            NodeBundle {
+            style: Style {
+                width: Val::Percent(100.0),
+                height: Val::Percent(20.0),
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            background_color: bevy::prelude::BackgroundColor(DBROWN),
+            ..default()
+        }),
+        handle: (
+                ButtonBundle {
+                    style: Style {
+                        width: Val::Percent(10.00),
+                        height: Val::Percent(30.00),
+                        ..default()
+                    },
+                    ..default()
+                },
+                ButtonTypes::Slider,
+                SettingsMenuElements::Button,
+            ),
+        fill: (
+            NodeBundle {
+            style: Style {
+                width: Val::Percent(50.0),
+                height: Val::Percent(100.0),
+                ..default()
+            },
+            background_color: bevy::prelude::BackgroundColor(WHITE),
+            ..default()
+        },
+        SettingsMenuElements::SliderFill)
+    };
+
+    return slider;  
+}
+
+//fn create_widget_spinner () -> NodeBundle {} TO-DO
 
 pub fn load_background_image(
     asset_server: Res<AssetServer>,
