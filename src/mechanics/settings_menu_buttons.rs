@@ -18,7 +18,9 @@ pub fn button_system(
         match button_type {
             ButtonTypes::Apply => next_state.set(AppState::MainMenu), //TO-DO Save player preference changes
             ButtonTypes::Cancel => next_state.set(AppState::MainMenu),
-            ButtonTypes::Slider => ()
+            ButtonTypes::Slider => (),
+            ButtonTypes::Increment => (), //TO-DO
+            ButtonTypes::Decrement => (), //TO-DO
         }
     }
 }

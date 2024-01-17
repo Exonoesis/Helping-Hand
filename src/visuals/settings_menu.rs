@@ -26,6 +26,8 @@ pub enum ButtonTypes {
     Apply,
     Cancel,
     Slider,
+    Increment,
+    Decrement,
 }
 
 #[derive(Component)]
@@ -35,6 +37,12 @@ struct Slider {
     back: NodeBundle,
     handle: (ButtonBundle, ButtonTypes, SettingsMenuElements),
     fill: (NodeBundle, SettingsMenuElements)
+}
+
+struct Spinner {
+    index: TextBundle,
+    increment: ButtonBundle,
+    decrement: ButtonBundle,
 }
 
 pub fn spawn_settings_menu(mut commands: Commands) {
@@ -163,7 +171,6 @@ pub fn spawn_settings_menu(mut commands: Commands) {
         style: Style {
             width: Val::Percent(60.0),
             height: Val::Percent(100.0),
-            justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
             ..default()
         },
@@ -245,9 +252,12 @@ pub fn spawn_settings_menu(mut commands: Commands) {
                                 options_container.spawn(music_slider_container)
                                 .with_children(|options_container| {
                                     options_container.spawn(music_slider.back)
-                                .with_children(|options_container| {
-                                    options_container.spawn(music_slider.fill);
-                                });
+                                    .with_children(|options_container| {
+                                        options_container.spawn(music_slider.fill)
+                                        .with_children(|options_container| {
+                                            options_container.spawn(music_slider.handle);
+                                        });
+                                    });
                                 });
                             })
                             .with_children(|options_container| {
@@ -345,7 +355,6 @@ fn create_widget_slider () -> Slider {
             style: Style {
                 width: Val::Percent(100.0),
                 height: Val::Percent(20.0),
-                align_items: AlignItems::Center,
                 ..default()
             },
             background_color: bevy::prelude::BackgroundColor(DBROWN),
@@ -354,8 +363,9 @@ fn create_widget_slider () -> Slider {
         handle: (
                 ButtonBundle {
                     style: Style {
-                        width: Val::Percent(10.00),
-                        height: Val::Percent(30.00),
+                        width: Val::Percent(15.00),
+                        height: Val::Percent(200.00),
+                        align_self: AlignSelf::Center,
                         ..default()
                     },
                     ..default()
@@ -366,8 +376,9 @@ fn create_widget_slider () -> Slider {
         fill: (
             NodeBundle {
             style: Style {
-                width: Val::Percent(50.0),
+                width: Val::Percent(55.0),
                 height: Val::Percent(100.0),
+                justify_content: JustifyContent::FlexEnd,
                 ..default()
             },
             background_color: bevy::prelude::BackgroundColor(WHITE),
@@ -376,10 +387,19 @@ fn create_widget_slider () -> Slider {
         SettingsMenuElements::SliderFill)
     };
 
-    return slider;  
+    slider
 }
 
-//fn create_widget_spinner () -> NodeBundle {} TO-DO
+// fn create_widget_spinner () -> Spinner {
+
+//     let spinner = Spinner {
+//         index: (),
+//         increment: (),
+//         decrement: ()
+//     };
+
+//     spinner
+// }
 
 pub fn load_background_image(
     asset_server: Res<AssetServer>,
