@@ -2,12 +2,7 @@ use bevy::prelude::*;
 
 const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
 const DBROWN: Color = Color::rgb(0.49, 0.29, 0.14);
-const LBROWN: Color = Color::rgb(0.72, 0.53, 0.36);
-
-//REMOVE
-const RED: Color = Color::rgb(1.0, 0.0, 0.0);
-const GREEN: Color = Color::rgb(0.0, 1.0, 0.0);
-const BLUE: Color = Color::rgb(0.0, 0.0, 1.0);
+//const LBROWN: Color = Color::rgb(0.72, 0.53, 0.36);
 
 #[derive(Component)]
 pub enum SettingsMenuElements {
@@ -15,10 +10,9 @@ pub enum SettingsMenuElements {
     OptionsBox,
     TabBox,
     Button,
+    IncrementButton,
+    DecrementButton,
     Text,
-    SliderButton,
-    SliderFill,
-    Spinner
 }
 
 #[derive(Component)]
@@ -36,13 +30,15 @@ pub struct SettingsMenuUI;
 struct Slider {
     back: NodeBundle,
     handle: (ButtonBundle, ButtonTypes, SettingsMenuElements),
-    fill: (NodeBundle, SettingsMenuElements)
+    fill: NodeBundle
 }
 
 struct Spinner {
-    index: TextBundle,
-    increment: ButtonBundle,
-    decrement: ButtonBundle,
+    index_container: NodeBundle,
+    buttons_container: NodeBundle,
+    index: (TextBundle, SettingsMenuElements),
+    increment: (ButtonBundle, ButtonTypes, SettingsMenuElements),
+    decrement: (ButtonBundle, ButtonTypes, SettingsMenuElements)
 }
 
 pub fn spawn_settings_menu(mut commands: Commands) {
@@ -160,7 +156,6 @@ pub fn spawn_settings_menu(mut commands: Commands) {
         style: Style {
             width: Val::Percent(20.0),
             height: Val::Percent(100.0),
-            justify_content: JustifyContent::FlexStart,
             align_items: AlignItems::Center,
             ..default()
         },
@@ -181,13 +176,16 @@ pub fn spawn_settings_menu(mut commands: Commands) {
         style: Style {
             width: Val::Percent(15.0),
             height: Val::Percent(100.0),
-            justify_content: JustifyContent::FlexEnd,
             align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
             ..default()
         },
-        background_color: bevy::prelude::BackgroundColor(GREEN), //REMOVE
         ..default()
     };
+
+    let music_widget_text = create_widget_label(String::from("Music"));
+    let music_slider = create_widget_slider();
+    let music_spinner = create_widget_spinner();
     
     let bottom_third = NodeBundle {
         style: Style {
@@ -209,14 +207,10 @@ pub fn spawn_settings_menu(mut commands: Commands) {
     };
 
     let apply_button = create_button(ButtonTypes::Apply);
-    let cancel_button = create_button(ButtonTypes::Cancel);
-
     let apply_text = create_button_text(String::from("Apply"));
+
+    let cancel_button = create_button(ButtonTypes::Cancel);
     let cancel_text = create_button_text(String::from("Cancel"));
-
-    let music_widget_text = create_widget_label(String::from("Music"));
-
-    let music_slider = create_widget_slider();
 
     //Spawn UI Camera
     commands.spawn((Camera2dBundle::default(), SettingsMenuUI));
@@ -261,8 +255,23 @@ pub fn spawn_settings_menu(mut commands: Commands) {
                                 });
                             })
                             .with_children(|options_container| {
-                                options_container.spawn(music_spinner_container);
-                        });
+                                options_container.spawn(music_spinner_container)
+                                .with_children(|options_container| {
+                                    options_container.spawn(music_spinner.index_container)
+                                    .with_children(|options_container| {
+                                        options_container.spawn(music_spinner.index);
+                                    });
+                                })
+                                .with_children(|options_container| {
+                                    options_container.spawn(music_spinner.buttons_container)
+                                    .with_children(|options_container| {
+                                        options_container.spawn(music_spinner.increment);
+                                    })
+                                    .with_children(|options_container| {
+                                        options_container.spawn(music_spinner.decrement);
+                                    });
+                                });
+                            });
                         })
                         .with_children(|options_container| {
                             options_container.spawn(create_widget_container());
@@ -325,7 +334,6 @@ fn create_widget_container () -> NodeBundle
             width: Val::Percent(96.0),
             height: Val::Percent(12.0),
             justify_content: JustifyContent::SpaceBetween,
-            align_items: AlignItems::FlexStart,
             ..default()
         },
         ..default()
@@ -349,7 +357,7 @@ fn create_widget_label (text: String) -> (TextBundle, SettingsMenuElements)
 
 fn create_widget_slider () -> Slider {
     
-    let slider = Slider {
+    Slider {
         back: (
             NodeBundle {
             style: Style {
@@ -365,7 +373,6 @@ fn create_widget_slider () -> Slider {
                     style: Style {
                         width: Val::Percent(15.00),
                         height: Val::Percent(200.00),
-                        align_self: AlignSelf::Center,
                         ..default()
                     },
                     ..default()
@@ -378,28 +385,70 @@ fn create_widget_slider () -> Slider {
             style: Style {
                 width: Val::Percent(55.0),
                 height: Val::Percent(100.0),
+                align_items: AlignItems::Center,
                 justify_content: JustifyContent::FlexEnd,
                 ..default()
             },
             background_color: bevy::prelude::BackgroundColor(WHITE),
             ..default()
-        },
-        SettingsMenuElements::SliderFill)
-    };
-
-    slider
+        })
+    }
 }
 
-// fn create_widget_spinner () -> Spinner {
+fn create_widget_spinner () -> Spinner {
 
-//     let spinner = Spinner {
-//         index: (),
-//         increment: (),
-//         decrement: ()
-//     };
-
-//     spinner
-// }
+    Spinner {
+        index_container: (
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(50.0),
+                    height: Val::Percent(100.0),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    ..default()
+                },
+                ..default()
+            }
+        ),
+        buttons_container: (
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(30.0),
+                    height: Val::Percent(80.0),
+                    flex_direction: FlexDirection::Column,
+                    justify_content: JustifyContent::SpaceBetween,
+                    ..default()
+                },
+                ..default()
+            }
+        ),
+        index: (create_widget_label(String::from("50"))),
+        increment: (
+            ButtonBundle {
+                style: Style {
+                    width: Val::Percent(100.00),
+                    height: Val::Percent(45.00),
+                    ..default()
+                },
+                ..default()
+            },
+            ButtonTypes::Increment,
+            SettingsMenuElements::IncrementButton,
+        ),
+        decrement: (
+            ButtonBundle {
+                style: Style {
+                    width: Val::Percent(100.00),
+                    height: Val::Percent(45.00),
+                    ..default()
+                },
+                ..default()
+            },
+            ButtonTypes::Decrement,
+            SettingsMenuElements::DecrementButton,
+        )
+    }
+}
 
 pub fn load_background_image(
     asset_server: Res<AssetServer>,
@@ -447,6 +496,28 @@ pub fn load_button_image(
     for (element, mut image) in &mut element_query {
         if let SettingsMenuElements::Button = element {
             *image = asset_server.load("textures/main_menu/button.png").into()
+        }
+    }
+}
+
+pub fn load_increment_button_image(
+    asset_server: Res<AssetServer>,
+    mut element_query: Query<(&SettingsMenuElements, &mut UiImage), Added<SettingsMenuElements>>,
+) {
+    for (element, mut image) in &mut element_query {
+        if let SettingsMenuElements::IncrementButton = element {
+            *image = asset_server.load("textures/settings_menu/increment-button.png").into()
+        }
+    }
+}
+
+pub fn load_decrement_button_image(
+    asset_server: Res<AssetServer>,
+    mut element_query: Query<(&SettingsMenuElements, &mut UiImage), Added<SettingsMenuElements>>,
+) {
+    for (element, mut image) in &mut element_query {
+        if let SettingsMenuElements::DecrementButton = element {
+            *image = asset_server.load("textures/settings_menu/decrement-button.png").into()
         }
     }
 }
