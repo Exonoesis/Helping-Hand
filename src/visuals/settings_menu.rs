@@ -34,9 +34,9 @@ struct Slider {
 }
 
 struct Spinner {
-    index_container: NodeBundle,
+    value_container: NodeBundle,
     buttons_container: NodeBundle,
-    index: (TextBundle, SettingsMenuElements),
+    value: (TextBundle, SettingsMenuElements),
     increment: (ButtonBundle, ButtonTypes, SettingsMenuElements),
     decrement: (ButtonBundle, ButtonTypes, SettingsMenuElements)
 }
@@ -257,9 +257,9 @@ pub fn spawn_settings_menu(mut commands: Commands) {
                             .with_children(|options_container| {
                                 options_container.spawn(music_spinner_container)
                                 .with_children(|options_container| {
-                                    options_container.spawn(music_spinner.index_container)
+                                    options_container.spawn(music_spinner.value_container)
                                     .with_children(|options_container| {
-                                        options_container.spawn(music_spinner.index);
+                                        options_container.spawn(music_spinner.value);
                                     });
                                 })
                                 .with_children(|options_container| {
@@ -398,7 +398,7 @@ fn create_widget_slider () -> Slider {
 fn create_widget_spinner () -> Spinner {
 
     Spinner {
-        index_container: (
+        value_container: (
             NodeBundle {
                 style: Style {
                     width: Val::Percent(50.0),
@@ -422,7 +422,7 @@ fn create_widget_spinner () -> Spinner {
                 ..default()
             }
         ),
-        index: (create_widget_label(String::from("50"))),
+        value: (create_widget_label(String::from("50"))),
         increment: (
             ButtonBundle {
                 style: Style {
