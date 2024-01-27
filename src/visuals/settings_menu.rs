@@ -372,6 +372,9 @@ fn create_widget_slider () -> Slider {
                 ButtonBundle {
                     style: Style {
                         width: Val::Percent(15.00),
+                        //Handle does not clip outside widget container because it is
+                        //parented to fill and subsequently back which is 20% of the
+                        //widget containers height. [200% of 20% = 40%]
                         height: Val::Percent(200.00),
                         ..default()
                     },
