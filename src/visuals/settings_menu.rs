@@ -236,39 +236,39 @@ pub fn spawn_settings_menu(mut commands: Commands) {
                         .spawn(options_container)
                         .with_children(|options_container| {
                             options_container.spawn(create_widget_container())
-                            .with_children(|options_container| {
-                                options_container.spawn(music_widget_label)
-                                .with_children(|options_container| {
-                                    options_container.spawn(music_widget_text);
+                            .with_children(|widget_container| {
+                                widget_container.spawn(music_widget_label)
+                                .with_children(|widget_label| {
+                                    widget_label.spawn(music_widget_text);
                                 });
                             })
-                            .with_children(|options_container| {
-                                options_container.spawn(music_slider_container)
-                                .with_children(|options_container| {
-                                    options_container.spawn(music_slider.back)
-                                    .with_children(|options_container| {
-                                        options_container.spawn(music_slider.fill)
-                                        .with_children(|options_container| {
-                                            options_container.spawn(music_slider.handle);
+                            .with_children(|widget_container| {
+                                widget_container.spawn(music_slider_container)
+                                .with_children(|music_slider_container| {
+                                    music_slider_container.spawn(music_slider.back)
+                                    .with_children(|music_slider_back| {
+                                        music_slider_back.spawn(music_slider.fill)
+                                        .with_children(|music_slider_fill| {
+                                            music_slider_fill.spawn(music_slider.handle);
                                         });
                                     });
                                 });
                             })
-                            .with_children(|options_container| {
-                                options_container.spawn(music_spinner_container)
-                                .with_children(|options_container| {
-                                    options_container.spawn(music_spinner.value_container)
-                                    .with_children(|options_container| {
-                                        options_container.spawn(music_spinner.value);
+                            .with_children(|widget_container| {
+                                widget_container.spawn(music_spinner_container)
+                                .with_children(|music_spinner_container| {
+                                    music_spinner_container.spawn(music_spinner.value_container)
+                                    .with_children(|music_spinner_value_container| {
+                                        music_spinner_value_container.spawn(music_spinner.value);
                                     });
                                 })
-                                .with_children(|options_container| {
-                                    options_container.spawn(music_spinner.buttons_container)
-                                    .with_children(|options_container| {
-                                        options_container.spawn(music_spinner.increment);
+                                .with_children(|music_spinner_container| {
+                                    music_spinner_container.spawn(music_spinner.buttons_container)
+                                    .with_children(|music_spinner_buttons_container| {
+                                        music_spinner_buttons_container.spawn(music_spinner.increment);
                                     })
-                                    .with_children(|options_container| {
-                                        options_container.spawn(music_spinner.decrement);
+                                    .with_children(|music_spinner_buttons_container| {
+                                        music_spinner_buttons_container.spawn(music_spinner.decrement);
                                     });
                                 });
                             });
