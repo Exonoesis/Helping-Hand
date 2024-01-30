@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-
 use crate::mechanics::custom_widgets::*;
 
 #[derive(Component)]
@@ -20,6 +19,11 @@ pub enum ButtonTypes {
     Slider,
     Increment,
     Decrement,
+}
+
+#[derive(Component)]
+pub struct SSKeyEntities {
+    pub array: [Entity; 5]
 }
 
 #[derive(Component)]
@@ -170,6 +174,14 @@ pub fn spawn_settings_menu(mut commands: Commands) {
     let music_widget_text = create_widget_label(String::from("Music"));
     let music_slider = create_widget_slider();
     let music_spinner = create_widget_spinner();
+
+    let mut music_widget_keys = SSKeyEntities {
+        array: [Entity::PLACEHOLDER; 5]
+    };
+
+    let mut sfx_widget_keys = SSKeyEntities {
+        array: [Entity::PLACEHOLDER; 5]
+    };
     
     let bottom_third = NodeBundle {
         style: Style {
@@ -219,7 +231,7 @@ pub fn spawn_settings_menu(mut commands: Commands) {
                     middle_third
                         .spawn(options_container)
                         .with_children(|options_container| {
-                            options_container.spawn(create_widget_container())
+                            options_container.spawn(create_widget_container(music_widget_keys))
                             .with_children(|widget_container| {
                                 widget_container.spawn(music_widget_label)
                                 .with_children(|widget_label| {
@@ -258,7 +270,7 @@ pub fn spawn_settings_menu(mut commands: Commands) {
                             });
                         })
                         .with_children(|options_container| {
-                            options_container.spawn(create_widget_container());
+                            options_container.spawn(create_widget_container(sfx_widget_keys));
                         });
                 });
             ui_container
@@ -311,9 +323,10 @@ fn create_button_text (text: String) -> (TextBundle, SettingsMenuElements)
     )
 }
 
-fn create_widget_container () -> NodeBundle
+fn create_widget_container (keys: SSKeyEntities) -> (NodeBundle, SSKeyEntities)
 {
-    NodeBundle {
+    (
+        NodeBundle {
         style: Style {
             width: Val::Percent(96.0),
             height: Val::Percent(12.0),
@@ -321,7 +334,9 @@ fn create_widget_container () -> NodeBundle
             ..default()
         },
         ..default()
-    }
+        },
+        keys
+    )
 }
 
 pub fn load_background_image(
