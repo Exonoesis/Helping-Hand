@@ -324,21 +324,6 @@ fn create_widget_container () -> NodeBundle
     }
 }
 
-pub fn create_widget_label (text: String) -> (TextBundle, SettingsMenuElements)
-{
-    (
-        TextBundle::from_section(
-            text,
-            TextStyle {
-                font_size: 25.0,
-                color: WHITE,
-                ..default()
-            },
-        ),
-        SettingsMenuElements::Text,
-    )
-}
-
 pub fn load_background_image(
     asset_server: Res<AssetServer>,
     mut element_query: Query<(&SettingsMenuElements, &mut UiImage), Added<SettingsMenuElements>>,

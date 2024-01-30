@@ -5,18 +5,43 @@ pub const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
 pub const DBROWN: Color = Color::rgb(0.49, 0.29, 0.14);
 //pub const LBROWN: Color = Color::rgb(0.72, 0.53, 0.36);
 
+#[derive(Component)]
+pub enum SSWidgetKeys { 
+    Handle = 0,
+    Fill = 1,
+    Value = 2,
+    Decrement = 3,
+    Increment = 4
+}
+
 pub struct Slider {
     pub back: NodeBundle,
-    pub handle: (ButtonBundle, ButtonTypes, SettingsMenuElements),
-    pub fill: NodeBundle
+    pub handle: (ButtonBundle, ButtonTypes, SettingsMenuElements, SSWidgetKeys),
+    pub fill: (NodeBundle, SSWidgetKeys)
 }
 
 pub struct Spinner {
     pub value_container: NodeBundle,
     pub buttons_container: NodeBundle,
-    pub value: (TextBundle, SettingsMenuElements),
-    pub increment: (ButtonBundle, ButtonTypes, SettingsMenuElements),
-    pub decrement: (ButtonBundle, ButtonTypes, SettingsMenuElements)
+    pub value: (TextBundle, SettingsMenuElements, SSWidgetKeys),
+    pub increment: (ButtonBundle, ButtonTypes, SettingsMenuElements, SSWidgetKeys),
+    pub decrement: (ButtonBundle, ButtonTypes, SettingsMenuElements, SSWidgetKeys)
+}
+
+pub fn create_widget_label (text: String) -> (TextBundle, SettingsMenuElements, SSWidgetKeys)
+{
+    (
+        TextBundle::from_section(
+            text,
+            TextStyle {
+                font_size: 25.0,
+                color: WHITE,
+                ..default()
+            },
+        ),
+        SettingsMenuElements::Text,
+        SSWidgetKeys::Value
+    )
 }
 
 pub fn create_widget_slider () -> Slider {
@@ -46,6 +71,7 @@ pub fn create_widget_slider () -> Slider {
                 },
                 ButtonTypes::Slider,
                 SettingsMenuElements::Button,
+                SSWidgetKeys::Handle
             ),
         fill: (
             NodeBundle {
@@ -58,8 +84,9 @@ pub fn create_widget_slider () -> Slider {
             },
             background_color: bevy::prelude::BackgroundColor(WHITE),
             ..default()
-        })
-    }
+        },
+        SSWidgetKeys::Fill
+    )}
 }
 
 pub fn create_widget_spinner () -> Spinner {
@@ -101,6 +128,7 @@ pub fn create_widget_spinner () -> Spinner {
             },
             ButtonTypes::Increment,
             SettingsMenuElements::IncrementButton,
+            SSWidgetKeys::Increment
         ),
         decrement: (
             ButtonBundle {
@@ -113,6 +141,7 @@ pub fn create_widget_spinner () -> Spinner {
             },
             ButtonTypes::Decrement,
             SettingsMenuElements::DecrementButton,
+            SSWidgetKeys::Decrement
         )
     }
 }
