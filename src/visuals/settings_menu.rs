@@ -22,8 +22,8 @@ pub enum ButtonTypes {
 }
 
 #[derive(Component)]
-pub struct SSKeyEntities {
-    pub array: [Entity; 5]
+pub struct CountingSlider {
+    pub array: [Option<Entity>; 5]
 }
 
 #[derive(Component)]
@@ -175,12 +175,12 @@ pub fn spawn_settings_menu(mut commands: Commands) {
     let music_slider = create_widget_slider();
     let music_spinner = create_widget_spinner();
 
-    let mut music_widget_keys = SSKeyEntities {
-        array: [Entity::PLACEHOLDER; 5]
+    let mut music_widget_keys = CountingSlider {
+        array: [None; 5]
     };
 
-    let mut sfx_widget_keys = SSKeyEntities {
-        array: [Entity::PLACEHOLDER; 5]
+    let mut sfx_widget_keys = CountingSlider {
+        array: [None; 5]
     };
     
     let bottom_third = NodeBundle {
@@ -323,7 +323,7 @@ fn create_button_text (text: String) -> (TextBundle, SettingsMenuElements)
     )
 }
 
-fn create_widget_container (keys: SSKeyEntities) -> (NodeBundle, SSKeyEntities)
+fn create_widget_container (keys: CountingSlider) -> (NodeBundle, CountingSlider)
 {
     (
         NodeBundle {
