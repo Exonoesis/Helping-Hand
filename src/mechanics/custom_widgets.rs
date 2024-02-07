@@ -28,7 +28,7 @@ pub struct Spinner {
     pub decrement: (ButtonBundle, ButtonTypes, SettingsMenuElements, CountingSliderKeys)
 }
 
-pub fn create_widget_label (text: String) -> (TextBundle, SettingsMenuElements, CountingSliderKeys)
+pub fn create_widget_label (text: String) -> (TextBundle, SettingsMenuElements)
 {
     (
         TextBundle::from_section(
@@ -39,8 +39,7 @@ pub fn create_widget_label (text: String) -> (TextBundle, SettingsMenuElements, 
                 ..default()
             },
         ),
-        SettingsMenuElements::Text,
-        CountingSliderKeys::Value
+        SettingsMenuElements::Text
     )
 }
 
@@ -116,7 +115,18 @@ pub fn create_widget_spinner () -> Spinner {
                 ..default()
             }
         ),
-        value: (create_widget_label(String::from("50"))),
+        value: (
+            TextBundle::from_section(
+                "50",
+                TextStyle {
+                    font_size: 25.0,
+                    color: WHITE,
+                    ..default()
+                },
+            ),
+            SettingsMenuElements::Text,
+            CountingSliderKeys::Value
+        ),
         increment: (
             ButtonBundle {
                 style: Style {
