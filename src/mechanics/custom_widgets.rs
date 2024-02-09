@@ -5,7 +5,7 @@ pub const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
 pub const DBROWN: Color = Color::rgb(0.49, 0.29, 0.14);
 //pub const LBROWN: Color = Color::rgb(0.72, 0.53, 0.36);
 
-#[derive(Component)]
+#[derive(Component, Copy, Clone)]
 pub enum CountingSliderKeys { 
     Handle = 0,
     Fill = 1,
