@@ -1,35 +1,49 @@
-use bevy::prelude::*;
 use crate::visuals::settings_menu::*;
+use bevy::prelude::*;
 
 pub const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
 pub const DBROWN: Color = Color::rgb(0.49, 0.29, 0.14);
 //pub const LBROWN: Color = Color::rgb(0.72, 0.53, 0.36);
 
 #[derive(Component, Copy, Clone)]
-pub enum CountingSliderKeys { 
+pub enum CountingSliderKeys {
     Handle = 0,
     Fill = 1,
     Value = 2,
     Decrement = 3,
-    Increment = 4
+    Increment = 4,
 }
 
 pub struct Slider {
     pub back: NodeBundle,
-    pub handle: (ButtonBundle, ButtonTypes, SettingsMenuElements, CountingSliderKeys),
-    pub fill: (NodeBundle, CountingSliderKeys)
+    pub handle: (
+        ButtonBundle,
+        ButtonTypes,
+        SettingsMenuElements,
+        CountingSliderKeys,
+    ),
+    pub fill: (NodeBundle, CountingSliderKeys),
 }
 
 pub struct Spinner {
     pub value_container: NodeBundle,
     pub buttons_container: NodeBundle,
     pub value: (TextBundle, SettingsMenuElements, CountingSliderKeys),
-    pub increment: (ButtonBundle, ButtonTypes, SettingsMenuElements, CountingSliderKeys),
-    pub decrement: (ButtonBundle, ButtonTypes, SettingsMenuElements, CountingSliderKeys)
+    pub increment: (
+        ButtonBundle,
+        ButtonTypes,
+        SettingsMenuElements,
+        CountingSliderKeys,
+    ),
+    pub decrement: (
+        ButtonBundle,
+        ButtonTypes,
+        SettingsMenuElements,
+        CountingSliderKeys,
+    ),
 }
 
-pub fn create_widget_label (text: String) -> (TextBundle, SettingsMenuElements)
-{
+pub fn create_widget_label(text: String) -> (TextBundle, SettingsMenuElements) {
     (
         TextBundle::from_section(
             text,
@@ -39,15 +53,13 @@ pub fn create_widget_label (text: String) -> (TextBundle, SettingsMenuElements)
                 ..default()
             },
         ),
-        SettingsMenuElements::Text
+        SettingsMenuElements::Text,
     )
 }
 
-pub fn create_widget_slider () -> Slider {
-    
+pub fn create_widget_slider() -> Slider {
     Slider {
-        back: (
-            NodeBundle {
+        back: (NodeBundle {
             style: Style {
                 width: Val::Percent(100.0),
                 height: Val::Percent(20.0),
@@ -57,64 +69,60 @@ pub fn create_widget_slider () -> Slider {
             ..default()
         }),
         handle: (
-                ButtonBundle {
-                    style: Style {
-                        width: Val::Percent(15.00),
-                        //Handle does not clip outside widget container because it is
-                        //parented to fill and subsequently back which is 20% of the
-                        //widget containers height. [200% of 20% = 40%]
-                        height: Val::Percent(200.00),
-                        ..default()
-                    },
+            ButtonBundle {
+                style: Style {
+                    width: Val::Percent(15.00),
+                    //Handle does not clip outside widget container because it is
+                    //parented to fill and subsequently back which is 20% of the
+                    //widget containers height. [200% of 20% = 40%]
+                    height: Val::Percent(200.00),
                     ..default()
                 },
-                ButtonTypes::Slider,
-                SettingsMenuElements::Button,
-                CountingSliderKeys::Handle
-            ),
-        fill: (
-            NodeBundle {
-            style: Style {
-                width: Val::Percent(55.0),
-                height: Val::Percent(100.0),
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::FlexEnd,
                 ..default()
             },
-            background_color: bevy::prelude::BackgroundColor(WHITE),
-            ..default()
-        },
-        CountingSliderKeys::Fill
-    )}
-}
-
-pub fn create_widget_spinner () -> Spinner {
-
-    Spinner {
-        value_container: (
+            ButtonTypes::Slider,
+            SettingsMenuElements::Button,
+            CountingSliderKeys::Handle,
+        ),
+        fill: (
             NodeBundle {
                 style: Style {
-                    width: Val::Percent(50.0),
+                    width: Val::Percent(55.0),
                     height: Val::Percent(100.0),
                     align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
+                    justify_content: JustifyContent::FlexEnd,
                     ..default()
                 },
+                background_color: bevy::prelude::BackgroundColor(WHITE),
                 ..default()
-            }
+            },
+            CountingSliderKeys::Fill,
         ),
-        buttons_container: (
-            NodeBundle {
-                style: Style {
-                    width: Val::Percent(30.0),
-                    height: Val::Percent(80.0),
-                    flex_direction: FlexDirection::Column,
-                    justify_content: JustifyContent::SpaceBetween,
-                    ..default()
-                },
+    }
+}
+
+pub fn create_widget_spinner() -> Spinner {
+    Spinner {
+        value_container: (NodeBundle {
+            style: Style {
+                width: Val::Percent(50.0),
+                height: Val::Percent(100.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
                 ..default()
-            }
-        ),
+            },
+            ..default()
+        }),
+        buttons_container: (NodeBundle {
+            style: Style {
+                width: Val::Percent(30.0),
+                height: Val::Percent(80.0),
+                flex_direction: FlexDirection::Column,
+                justify_content: JustifyContent::SpaceBetween,
+                ..default()
+            },
+            ..default()
+        }),
         value: (
             TextBundle::from_section(
                 "50",
@@ -125,7 +133,7 @@ pub fn create_widget_spinner () -> Spinner {
                 },
             ),
             SettingsMenuElements::Text,
-            CountingSliderKeys::Value
+            CountingSliderKeys::Value,
         ),
         increment: (
             ButtonBundle {
@@ -138,7 +146,7 @@ pub fn create_widget_spinner () -> Spinner {
             },
             ButtonTypes::Increment,
             SettingsMenuElements::IncrementButton,
-            CountingSliderKeys::Increment
+            CountingSliderKeys::Increment,
         ),
         decrement: (
             ButtonBundle {
@@ -151,7 +159,7 @@ pub fn create_widget_spinner () -> Spinner {
             },
             ButtonTypes::Decrement,
             SettingsMenuElements::DecrementButton,
-            CountingSliderKeys::Decrement
-        )
+            CountingSliderKeys::Decrement,
+        ),
     }
 }

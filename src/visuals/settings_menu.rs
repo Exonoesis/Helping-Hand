@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::mechanics::custom_widgets::*;
+use bevy::prelude::*;
 
 #[derive(Component)]
 pub enum SettingsMenuElements {
@@ -23,7 +23,7 @@ pub enum ButtonTypes {
 
 #[derive(Component)]
 pub struct CountingSlider {
-    pub array: [Option<Entity>; 5]
+    pub array: [Option<Entity>; 5],
 }
 
 #[derive(Component)]
@@ -175,14 +175,10 @@ pub fn spawn_settings_menu(mut commands: Commands) {
     let music_slider = create_widget_slider();
     let music_spinner = create_widget_spinner();
 
-    let mut music_widget_keys = CountingSlider {
-        array: [None; 5]
-    };
+    let mut music_widget_keys = CountingSlider { array: [None; 5] };
 
-    let mut sfx_widget_keys = CountingSlider {
-        array: [None; 5]
-    };
-    
+    let mut sfx_widget_keys = CountingSlider { array: [None; 5] };
+
     let bottom_third = NodeBundle {
         style: Style {
             width: Val::Percent(66.0),
@@ -212,86 +208,93 @@ pub fn spawn_settings_menu(mut commands: Commands) {
     commands.spawn((Camera2dBundle::default(), SettingsMenuUI));
 
     //UI Construction
-    commands
-        .spawn(ui_container)
-        .with_children(|ui_container| {
-            ui_container
-                .spawn(top_third)
-                .with_children(|top_third| {
-                    top_third.spawn(title_text);
-                });
-            ui_container
-                .spawn(middle_third)
-                .with_children(|middle_third| {
-                    middle_third
-                        .spawn(tabs_container)
-                        .with_children(|tabs_container| {
-                            tabs_container.spawn(tab_text);
-                        });
-                    middle_third
-                        .spawn(options_container)
-                        .with_children(|options_container| {
-                            options_container.spawn(create_widget_container(music_widget_keys))
-                            .with_children(|widget_container| {
-                                widget_container.spawn(music_widget_label)
-                                .with_children(|widget_label| {
-                                    widget_label.spawn(music_widget_text);
-                                });
-                            })
-                            .with_children(|widget_container| {
-                                widget_container.spawn(music_slider_container)
-                                .with_children(|music_slider_container| {
-                                    music_slider_container.spawn(music_slider.back)
-                                    .with_children(|music_slider_back| {
-                                        music_slider_back.spawn(music_slider.fill)
-                                        .with_children(|music_slider_fill| {
-                                            music_slider_fill.spawn(music_slider.handle);
-                                        });
-                                    });
-                                });
-                            })
-                            .with_children(|widget_container| {
-                                widget_container.spawn(music_spinner_container)
-                                .with_children(|music_spinner_container| {
-                                    music_spinner_container.spawn(music_spinner.value_container)
-                                    .with_children(|music_spinner_value_container| {
-                                        music_spinner_value_container.spawn(music_spinner.value);
-                                    });
-                                })
-                                .with_children(|music_spinner_container| {
-                                    music_spinner_container.spawn(music_spinner.buttons_container)
-                                    .with_children(|music_spinner_buttons_container| {
-                                        music_spinner_buttons_container.spawn(music_spinner.increment);
-                                    })
-                                    .with_children(|music_spinner_buttons_container| {
-                                        music_spinner_buttons_container.spawn(music_spinner.decrement);
-                                    });
-                                });
-                            });
-                        })
-                        .with_children(|options_container| {
-                            options_container.spawn(create_widget_container(sfx_widget_keys));
-                        });
-                });
-            ui_container
-                .spawn(bottom_third)
-                .with_children(|bottom_third| {
-                    bottom_third
-                        .spawn(apply_button)
-                        .with_children(|apply_button| {
-                            apply_button.spawn(apply_text);
-                        });
-                    bottom_third
-                        .spawn(cancel_button)
-                        .with_children(|cancel_button| {
-                            cancel_button.spawn(cancel_text);
-                        });
-                });
+    commands.spawn(ui_container).with_children(|ui_container| {
+        ui_container.spawn(top_third).with_children(|top_third| {
+            top_third.spawn(title_text);
         });
+        ui_container
+            .spawn(middle_third)
+            .with_children(|middle_third| {
+                middle_third
+                    .spawn(tabs_container)
+                    .with_children(|tabs_container| {
+                        tabs_container.spawn(tab_text);
+                    });
+                middle_third
+                    .spawn(options_container)
+                    .with_children(|options_container| {
+                        options_container
+                            .spawn(create_widget_container(music_widget_keys))
+                            .with_children(|widget_container| {
+                                widget_container.spawn(music_widget_label).with_children(
+                                    |widget_label| {
+                                        widget_label.spawn(music_widget_text);
+                                    },
+                                );
+                            })
+                            .with_children(|widget_container| {
+                                widget_container
+                                    .spawn(music_slider_container)
+                                    .with_children(|music_slider_container| {
+                                        music_slider_container
+                                            .spawn(music_slider.back)
+                                            .with_children(|music_slider_back| {
+                                                music_slider_back
+                                                    .spawn(music_slider.fill)
+                                                    .with_children(|music_slider_fill| {
+                                                        music_slider_fill
+                                                            .spawn(music_slider.handle);
+                                                    });
+                                            });
+                                    });
+                            })
+                            .with_children(|widget_container| {
+                                widget_container
+                                    .spawn(music_spinner_container)
+                                    .with_children(|music_spinner_container| {
+                                        music_spinner_container
+                                            .spawn(music_spinner.value_container)
+                                            .with_children(|music_spinner_value_container| {
+                                                music_spinner_value_container
+                                                    .spawn(music_spinner.value);
+                                            });
+                                    })
+                                    .with_children(|music_spinner_container| {
+                                        music_spinner_container
+                                            .spawn(music_spinner.buttons_container)
+                                            .with_children(|music_spinner_buttons_container| {
+                                                music_spinner_buttons_container
+                                                    .spawn(music_spinner.increment);
+                                            })
+                                            .with_children(|music_spinner_buttons_container| {
+                                                music_spinner_buttons_container
+                                                    .spawn(music_spinner.decrement);
+                                            });
+                                    });
+                            });
+                    })
+                    .with_children(|options_container| {
+                        options_container.spawn(create_widget_container(sfx_widget_keys));
+                    });
+            });
+        ui_container
+            .spawn(bottom_third)
+            .with_children(|bottom_third| {
+                bottom_third
+                    .spawn(apply_button)
+                    .with_children(|apply_button| {
+                        apply_button.spawn(apply_text);
+                    });
+                bottom_third
+                    .spawn(cancel_button)
+                    .with_children(|cancel_button| {
+                        cancel_button.spawn(cancel_text);
+                    });
+            });
+    });
 }
 
-fn create_button (b_type: ButtonTypes) -> (ButtonBundle, ButtonTypes, SettingsMenuElements)
-{
+fn create_button(b_type: ButtonTypes) -> (ButtonBundle, ButtonTypes, SettingsMenuElements) {
     (
         ButtonBundle {
             style: Style {
@@ -308,8 +311,7 @@ fn create_button (b_type: ButtonTypes) -> (ButtonBundle, ButtonTypes, SettingsMe
     )
 }
 
-fn create_button_text (text: String) -> (TextBundle, SettingsMenuElements)
-{
+fn create_button_text(text: String) -> (TextBundle, SettingsMenuElements) {
     (
         TextBundle::from_section(
             text,
@@ -323,19 +325,18 @@ fn create_button_text (text: String) -> (TextBundle, SettingsMenuElements)
     )
 }
 
-fn create_widget_container (keys: CountingSlider) -> (NodeBundle, CountingSlider)
-{
+fn create_widget_container(keys: CountingSlider) -> (NodeBundle, CountingSlider) {
     (
         NodeBundle {
-        style: Style {
-            width: Val::Percent(96.0),
-            height: Val::Percent(12.0),
-            justify_content: JustifyContent::SpaceBetween,
+            style: Style {
+                width: Val::Percent(96.0),
+                height: Val::Percent(12.0),
+                justify_content: JustifyContent::SpaceBetween,
+                ..default()
+            },
             ..default()
         },
-        ..default()
-        },
-        keys
+        keys,
     )
 }
 
@@ -395,7 +396,9 @@ pub fn load_increment_button_image(
 ) {
     for (element, mut image) in &mut element_query {
         if let SettingsMenuElements::IncrementButton = element {
-            *image = asset_server.load("textures/settings_menu/increment-button.png").into()
+            *image = asset_server
+                .load("textures/settings_menu/increment-button.png")
+                .into()
         }
     }
 }
@@ -406,7 +409,9 @@ pub fn load_decrement_button_image(
 ) {
     for (element, mut image) in &mut element_query {
         if let SettingsMenuElements::DecrementButton = element {
-            *image = asset_server.load("textures/settings_menu/decrement-button.png").into()
+            *image = asset_server
+                .load("textures/settings_menu/decrement-button.png")
+                .into()
         }
     }
 }
@@ -428,19 +433,17 @@ pub fn unload_settings_menu(mut commands: Commands, query: Query<Entity, With<Se
     }
 }
 
-pub fn set_keys (
+pub fn set_keys(
     entity_query: Query<(Entity, &CountingSliderKeys), Added<CountingSliderKeys>>,
     parent_query: Query<&Parent>,
-    mut widget_containers_query: Query<(Entity, &mut CountingSlider)>
-)
-{
+    mut widget_containers_query: Query<(Entity, &mut CountingSlider)>,
+) {
     for (entity, key) in &entity_query {
-
-        for parent in parent_query.iter_ancestors(entity)
-        {
-            for (widget_container, mut counting_slider) in &mut widget_containers_query
-            {
-                if widget_container != parent {continue}
+        for parent in parent_query.iter_ancestors(entity) {
+            for (widget_container, mut counting_slider) in &mut widget_containers_query {
+                if widget_container != parent {
+                    continue;
+                }
 
                 counting_slider.array[*key as usize] = Some(entity);
             }

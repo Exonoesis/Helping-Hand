@@ -20,19 +20,21 @@ pub enum ButtonTypes {
 pub struct MainMenuUI;
 
 pub fn spawn_main_menu(mut commands: Commands) {
-    let ui_container = (ImageBundle {
-        style: Style {
-            width: Val::Percent(100.0),
-            height: Val::Percent(100.0),
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            flex_direction: FlexDirection::Column,
+    let ui_container = (
+        ImageBundle {
+            style: Style {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                flex_direction: FlexDirection::Column,
+                ..default()
+            },
             ..default()
         },
-        ..default()
-    },
-    MainMenuUI,
-    MainMenuElements::BackgroundImage);
+        MainMenuUI,
+        MainMenuElements::BackgroundImage,
+    );
 
     let top_half = NodeBundle {
         style: Style {
@@ -60,7 +62,7 @@ pub fn spawn_main_menu(mut commands: Commands) {
                 ..default()
             },
         ),
-        MainMenuElements::Text
+        MainMenuElements::Text,
     );
 
     let bottom_half = NodeBundle {
@@ -88,38 +90,29 @@ pub fn spawn_main_menu(mut commands: Commands) {
     commands.spawn((Camera2dBundle::default(), MainMenuUI));
 
     //UI Construction
-    commands
-        .spawn(ui_container)
-        .with_children(|ui_container| {
-            ui_container
-                .spawn(top_half)
-                .with_children(|top_half| {
-                    top_half.spawn(title_text);
-                });
-            ui_container
-                .spawn(bottom_half)
-                .with_children(|bottom_half| {
-                    bottom_half
-                        .spawn(play_button)
-                        .with_children(|play_button| {
-                            play_button.spawn(play_text);
-                        });
-                    bottom_half
-                        .spawn(settings_button)
-                        .with_children(|settings_button| {
-                            settings_button.spawn(settings_text);
-                        });
-                    bottom_half
-                        .spawn(quit_button)
-                        .with_children(|quit_button| {
-                            quit_button.spawn(quit_text);
-                        });
-                });
+    commands.spawn(ui_container).with_children(|ui_container| {
+        ui_container.spawn(top_half).with_children(|top_half| {
+            top_half.spawn(title_text);
         });
+        ui_container
+            .spawn(bottom_half)
+            .with_children(|bottom_half| {
+                bottom_half.spawn(play_button).with_children(|play_button| {
+                    play_button.spawn(play_text);
+                });
+                bottom_half
+                    .spawn(settings_button)
+                    .with_children(|settings_button| {
+                        settings_button.spawn(settings_text);
+                    });
+                bottom_half.spawn(quit_button).with_children(|quit_button| {
+                    quit_button.spawn(quit_text);
+                });
+            });
+    });
 }
 
-fn create_button (b_type: ButtonTypes) -> (ButtonBundle, ButtonTypes, MainMenuElements)
-{
+fn create_button(b_type: ButtonTypes) -> (ButtonBundle, ButtonTypes, MainMenuElements) {
     (
         ButtonBundle {
             style: Style {
@@ -132,12 +125,11 @@ fn create_button (b_type: ButtonTypes) -> (ButtonBundle, ButtonTypes, MainMenuEl
             ..default()
         },
         b_type,
-        MainMenuElements::Button
+        MainMenuElements::Button,
     )
 }
 
-fn create_button_text (text: String) -> (TextBundle, MainMenuElements)
-{
+fn create_button_text(text: String) -> (TextBundle, MainMenuElements) {
     (
         TextBundle::from_section(
             text,
@@ -147,7 +139,7 @@ fn create_button_text (text: String) -> (TextBundle, MainMenuElements)
                 ..default()
             },
         ),
-        MainMenuElements::Text
+        MainMenuElements::Text,
     )
 }
 
