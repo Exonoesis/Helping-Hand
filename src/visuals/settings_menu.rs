@@ -436,16 +436,13 @@ pub fn unload_settings_menu(mut commands: Commands, query: Query<Entity, With<Se
 pub fn set_keys(
     entity_query: Query<(Entity, &CountingSliderKeys), Added<CountingSliderKeys>>,
     parent_query: Query<&Parent>,
-    mut widget_containers_query: Query<(Entity, &mut CountingSlider)>,
+    mut widget_containers_query: Query<&mut CountingSlider>,
 ) {
     for (entity, key) in &entity_query {
         for parent in parent_query.iter_ancestors(entity) {
-            for (widget_container, mut counting_slider) in &mut widget_containers_query {
-                if widget_container != parent {
-                    continue;
-                }
-
+            if let Ok(mut counting_slider) = widget_containers_query.get_mut(parent) {
                 counting_slider.array[*key as usize] = Some(entity);
+                break;
             }
         }
     }
