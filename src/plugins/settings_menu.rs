@@ -18,6 +18,7 @@ impl Plugin for SettingsMenuPlugin {
                     load_decrement_button_image,
                     load_text_font,
                     set_keys,
+                    add_widget_components,
                 )
                     .run_if(in_state(AppState::SettingsMenu)),
             )

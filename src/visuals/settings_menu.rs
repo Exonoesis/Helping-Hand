@@ -22,9 +22,15 @@ pub enum ButtonTypes {
 }
 
 #[derive(Component)]
-pub struct CountingSlider {
+pub struct SliderKeyComponents {
     pub array: [Option<Entity>; 5],
 }
+
+#[derive(Component, Clone, Copy)]
+pub struct FillReference(Entity);
+
+#[derive(Component, Clone, Copy)]
+pub struct ValueReference(Entity);
 
 #[derive(Component)]
 pub struct SettingsMenuUI;
@@ -175,9 +181,8 @@ pub fn spawn_settings_menu(mut commands: Commands) {
     let music_slider = create_widget_slider();
     let music_spinner = create_widget_spinner();
 
-    let mut music_widget_keys = CountingSlider { array: [None; 5] };
-
-    let mut sfx_widget_keys = CountingSlider { array: [None; 5] };
+    let mut music_widget_keys = SliderKeyComponents { array: [None; 5] };
+    let mut sfx_widget_keys = SliderKeyComponents { array: [None; 5] };
 
     let bottom_third = NodeBundle {
         style: Style {
@@ -325,7 +330,7 @@ fn create_button_text(text: String) -> (TextBundle, SettingsMenuElements) {
     )
 }
 
-fn create_widget_container(keys: CountingSlider) -> (NodeBundle, CountingSlider) {
+fn create_widget_container(keys: SliderKeyComponents) -> (NodeBundle, SliderKeyComponents) {
     (
         NodeBundle {
             style: Style {
@@ -436,7 +441,7 @@ pub fn unload_settings_menu(mut commands: Commands, query: Query<Entity, With<Se
 pub fn set_keys(
     entity_query: Query<(Entity, &CountingSliderKeys), Added<CountingSliderKeys>>,
     parent_query: Query<&Parent>,
-    mut widget_containers_query: Query<&mut CountingSlider>,
+    mut widget_containers_query: Query<&mut SliderKeyComponents>,
 ) {
     for (entity, key) in &entity_query {
         for parent in parent_query.iter_ancestors(entity) {
@@ -445,6 +450,44 @@ pub fn set_keys(
                 break;
             }
         }
+    }
+}
+
+pub fn add_widget_components(
+    key_components_query: Query<&SliderKeyComponents, Changed<SliderKeyComponents>>,
+    mut commands: Commands,
+) {
+    for key_components in key_components_query.iter() {
+        let is_not_full = key_components
+            .array
+            .iter()
+            .any(|key_component| key_component.is_none());
+
+        if is_not_full {
+            continue;
+        }
+
+        let fill = FillReference(key_components.array[1].expect("Fill does not exist"));
+        let value = ValueReference(key_components.array[2].expect("Value does not exist"));
+
+        let handle = key_components.array[0];
+        let increment = key_components.array[4];
+        let decrement = key_components.array[3];
+
+        commands
+            .entity(handle.expect("Handle does not exist"))
+            .insert(fill)
+            .insert(value);
+
+        commands
+            .entity(increment.expect("Increment does not exist"))
+            .insert(fill)
+            .insert(value);
+
+        commands
+            .entity(decrement.expect("Decrement does not exist"))
+            .insert(fill)
+            .insert(value);
     }
 }
 
