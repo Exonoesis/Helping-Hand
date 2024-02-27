@@ -48,7 +48,7 @@ pub fn create_widget_label(text: String) -> (TextBundle, SettingsMenuElements) {
         TextBundle::from_section(
             text,
             TextStyle {
-                font_size: 25.0,
+                font_size: 20.0,
                 color: WHITE,
                 ..default()
             },
@@ -71,7 +71,7 @@ pub fn create_widget_slider() -> Slider {
         handle: (
             ButtonBundle {
                 style: Style {
-                    width: Val::Percent(15.00),
+                    width: Val::Percent(10.00),
                     //Handle does not clip outside widget container because it is
                     //parented to fill and subsequently back which is 20% of the
                     //widget containers height. [200% of 20% = 40%]
@@ -87,7 +87,7 @@ pub fn create_widget_slider() -> Slider {
         fill: (
             NodeBundle {
                 style: Style {
-                    width: Val::Percent(55.0),
+                    width: Val::Percent(50.0),
                     height: Val::Percent(100.0),
                     align_items: AlignItems::Center,
                     justify_content: JustifyContent::FlexEnd,

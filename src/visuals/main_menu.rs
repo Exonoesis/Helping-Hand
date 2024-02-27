@@ -57,7 +57,7 @@ pub fn spawn_main_menu(mut commands: Commands) {
         TextBundle::from_section(
             "Helping Hand",
             TextStyle {
-                font_size: 180.0,
+                font_size: 130.0,
                 color: WHITE,
                 ..default()
             },
@@ -134,7 +134,7 @@ fn create_button_text(text: String) -> (TextBundle, MainMenuElements) {
         TextBundle::from_section(
             text,
             TextStyle {
-                font_size: 80.0,
+                font_size: 40.0,
                 color: WHITE,
                 ..default()
             },
@@ -173,7 +173,7 @@ pub fn load_text_font(
 ) {
     for (element, mut text) in &mut element_query {
         if let MainMenuElements::Text = element {
-            text.sections[0].style.font = asset_server.load("fonts/Huglove.ttf")
+            text.sections[0].style.font = asset_server.load("fonts/Untitled.ttf")
         }
     }
 }

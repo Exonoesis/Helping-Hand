@@ -12,7 +12,7 @@ pub enum SettingsMenuElements {
     Text,
 }
 
-#[derive(Component)]
+#[derive(Component, PartialEq)]
 pub enum ButtonTypes {
     Apply,
     Cancel,
@@ -27,10 +27,10 @@ pub struct SliderKeyComponents {
 }
 
 #[derive(Component, Clone, Copy)]
-pub struct FillReference(Entity);
+pub struct FillReference(pub Entity);
 
 #[derive(Component, Clone, Copy)]
-pub struct ValueReference(Entity);
+pub struct ValueReference(pub Entity);
 
 #[derive(Component)]
 pub struct SettingsMenuUI;
@@ -72,7 +72,7 @@ pub fn spawn_settings_menu(mut commands: Commands) {
         TextBundle::from_section(
             "Settings",
             TextStyle {
-                font_size: 37.0,
+                font_size: 30.0,
                 color: WHITE,
                 ..default()
             },
@@ -116,7 +116,7 @@ pub fn spawn_settings_menu(mut commands: Commands) {
         TextBundle::from_section(
             "Audio",
             TextStyle {
-                font_size: 29.0,
+                font_size: 25.0,
                 color: WHITE,
                 ..default()
             },
@@ -321,7 +321,7 @@ fn create_button_text(text: String) -> (TextBundle, SettingsMenuElements) {
         TextBundle::from_section(
             text,
             TextStyle {
-                font_size: 25.0,
+                font_size: 20.0,
                 color: WHITE,
                 ..default()
             },
@@ -427,7 +427,7 @@ pub fn load_text_font(
 ) {
     for (element, mut text) in &mut element_query {
         if let SettingsMenuElements::Text = element {
-            text.sections[0].style.font = asset_server.load("fonts/Huglove.ttf")
+            text.sections[0].style.font = asset_server.load("fonts/Untitled.ttf")
         }
     }
 }
@@ -467,25 +467,29 @@ pub fn add_widget_components(
             continue;
         }
 
-        let fill = FillReference(key_components.array[1].expect("Fill does not exist"));
-        let value = ValueReference(key_components.array[2].expect("Value does not exist"));
+        let fill = FillReference(
+            key_components.array[1].expect("add_widget_components: Fill does not exist"),
+        );
+        let value = ValueReference(
+            key_components.array[2].expect("add_widget_components: Value does not exist"),
+        );
 
         let handle = key_components.array[0];
         let increment = key_components.array[4];
         let decrement = key_components.array[3];
 
         commands
-            .entity(handle.expect("Handle does not exist"))
+            .entity(handle.expect("add_widget_components: Handle does not exist"))
             .insert(fill)
             .insert(value);
 
         commands
-            .entity(increment.expect("Increment does not exist"))
+            .entity(increment.expect("add_widget_components: Increment does not exist"))
             .insert(fill)
             .insert(value);
 
         commands
-            .entity(decrement.expect("Decrement does not exist"))
+            .entity(decrement.expect("add_widget_components: Decrement does not exist"))
             .insert(fill)
             .insert(value);
     }
