@@ -41,7 +41,7 @@ pub fn increment_button_system(
             .get_mut(fill_reference.0)
             .expect("increment_button_system: Spinner fill value should exist.");
 
-        let new_fill_amount = spinner_value.sections[0].value.parse::<f32>().unwrap();
+        let new_fill_amount = spinner_value.sections[0].value.parse::<f32>().unwrap() - 1.5;
 
         fill_value.width = Val::Percent(new_fill_amount);
     }

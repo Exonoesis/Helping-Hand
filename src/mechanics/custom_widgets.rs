@@ -63,6 +63,7 @@ pub fn create_widget_slider() -> Slider {
             style: Style {
                 width: Val::Percent(100.0),
                 height: Val::Percent(20.0),
+                align_items: AlignItems::Center,
                 ..default()
             },
             background_color: bevy::prelude::BackgroundColor(DBROWN),
@@ -71,7 +72,7 @@ pub fn create_widget_slider() -> Slider {
         handle: (
             ButtonBundle {
                 style: Style {
-                    width: Val::Percent(10.00),
+                    width: Val::Percent(5.00),
                     //Handle does not clip outside widget container because it is
                     //parented to fill and subsequently back which is 20% of the
                     //widget containers height. [200% of 20% = 40%]
@@ -87,10 +88,8 @@ pub fn create_widget_slider() -> Slider {
         fill: (
             NodeBundle {
                 style: Style {
-                    width: Val::Percent(50.0),
+                    width: Val::Percent(0.0),
                     height: Val::Percent(100.0),
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::FlexEnd,
                     ..default()
                 },
                 background_color: bevy::prelude::BackgroundColor(WHITE),
@@ -125,7 +124,7 @@ pub fn create_widget_spinner() -> Spinner {
         }),
         value: (
             TextBundle::from_section(
-                "50",
+                "0",
                 TextStyle {
                     font_size: 25.0,
                     color: WHITE,

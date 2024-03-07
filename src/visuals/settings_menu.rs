@@ -244,12 +244,8 @@ pub fn spawn_settings_menu(mut commands: Commands) {
                                         music_slider_container
                                             .spawn(music_slider.back)
                                             .with_children(|music_slider_back| {
-                                                music_slider_back
-                                                    .spawn(music_slider.fill)
-                                                    .with_children(|music_slider_fill| {
-                                                        music_slider_fill
-                                                            .spawn(music_slider.handle);
-                                                    });
+                                                music_slider_back.spawn(music_slider.fill);
+                                                music_slider_back.spawn(music_slider.handle);
                                             });
                                     });
                             })
