@@ -7,8 +7,8 @@ use crate::AppState;
 
 use super::custom_widgets::CountingSliderKeys;
 
-pub fn increment_button_system(
-    mut increment_button_query: Query<
+pub fn spinner_buttons_system(
+    mut spinner_button_query: Query<
         (&Interaction, &ButtonTypes, &ValueReference, &FillReference),
         (Changed<Interaction>, With<Button>),
     >,
@@ -18,28 +18,38 @@ pub fn increment_button_system(
     >,
     mut spinner_fill_query: Query<&mut Style, With<CountingSliderKeys>>,
 ) {
-    for (interaction, button_type, value_reference, fill_reference) in &mut increment_button_query {
-        if *interaction != Interaction::Pressed || *button_type != ButtonTypes::Increment {
+    for (interaction, button_type, value_reference, fill_reference) in &mut spinner_button_query {
+        if *interaction != Interaction::Pressed
+            || *button_type != ButtonTypes::Increment && *button_type != ButtonTypes::Decrement
+        {
             continue;
         }
 
         let mut spinner_value = spinner_value_query
             .get_mut(value_reference.0)
-            .expect("increment_button_system: Spinner value should exist.");
+            .expect("spinner_buttons_system: Spinner value should exist.");
 
         let old_value = spinner_value.sections[0].value.parse::<u32>().unwrap();
 
-        if old_value == 100 {
+        if *button_type == ButtonTypes::Increment && old_value == 100
+            || *button_type == ButtonTypes::Decrement && old_value == 0
+        {
             continue;
         }
 
-        let new_value = (old_value + 1).to_string();
+        let mut new_value = old_value;
 
-        spinner_value.sections[0].value = new_value;
+        if *button_type == ButtonTypes::Increment {
+            new_value = old_value + 1;
+        } else if *button_type == ButtonTypes::Decrement {
+            new_value = old_value - 1;
+        }
+
+        spinner_value.sections[0].value = new_value.to_string();
 
         let mut fill_value = spinner_fill_query
             .get_mut(fill_reference.0)
-            .expect("increment_button_system: Spinner fill value should exist.");
+            .expect("spinner_buttons_system: Spinner fill value should exist.");
 
         let new_fill_amount = spinner_value.sections[0].value.parse::<f32>().unwrap() - 1.5;
 
