@@ -148,7 +148,7 @@ pub fn spawn_settings_menu(mut commands: Commands) {
 
     let music_widget_label = NodeBundle {
         style: Style {
-            width: Val::Percent(20.0),
+            width: Val::Percent(25.0),
             height: Val::Percent(100.0),
             align_items: AlignItems::Center,
             ..default()

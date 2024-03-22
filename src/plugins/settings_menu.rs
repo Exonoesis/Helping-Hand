@@ -24,7 +24,11 @@ impl Plugin for SettingsMenuPlugin {
             )
             .add_systems(
                 Update,
-                (save_button_system, spinner_buttons_system)
+                (
+                    save_button_system,
+                    spinner_buttons_system,
+                    slider_handle_system,
+                )
                     .run_if(in_state(AppState::SettingsMenu)),
             )
             .add_systems(OnExit(AppState::SettingsMenu), unload_settings_menu);
