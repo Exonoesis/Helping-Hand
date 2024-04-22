@@ -23,7 +23,7 @@ pub enum ButtonTypes {
 
 #[derive(Component)]
 pub struct SliderKeyComponents {
-    pub array: [Option<Entity>; 5],
+    pub array: [Option<Entity>; 6],
 }
 
 #[derive(Component, Clone, Copy)]
@@ -31,6 +31,12 @@ pub struct FillReference(pub Entity);
 
 #[derive(Component, Clone, Copy)]
 pub struct ValueReference(pub Entity);
+
+#[derive(Component, Clone, Copy)]
+pub struct HandleReference(pub Entity);
+
+#[derive(Component, Clone, Copy)]
+pub struct BackReference(pub Entity);
 
 #[derive(Component)]
 pub struct SettingsMenuUI;
@@ -181,8 +187,8 @@ pub fn spawn_settings_menu(mut commands: Commands) {
     let music_slider = create_widget_slider();
     let music_spinner = create_widget_spinner();
 
-    let mut music_widget_keys = SliderKeyComponents { array: [None; 5] };
-    let mut sfx_widget_keys = SliderKeyComponents { array: [None; 5] };
+    let mut music_widget_keys = SliderKeyComponents { array: [None; 6] };
+    let mut sfx_widget_keys = SliderKeyComponents { array: [None; 6] };
 
     let bottom_third = NodeBundle {
         style: Style {
@@ -469,6 +475,12 @@ pub fn add_widget_components(
         let value = ValueReference(
             key_components.array[2].expect("add_widget_components: Value does not exist"),
         );
+        let handle_ref = HandleReference(
+            key_components.array[0].expect("add_widget_componenets: Handle does not exist"),
+        );
+        let back = BackReference(
+            key_components.array[5].expect("add_widget_components: Back does not exist"),
+        );
 
         let handle = key_components.array[0];
         let increment = key_components.array[4];
@@ -477,17 +489,20 @@ pub fn add_widget_components(
         commands
             .entity(handle.expect("add_widget_components: Handle does not exist"))
             .insert(fill)
-            .insert(value);
+            .insert(value)
+            .insert(back);
 
         commands
             .entity(increment.expect("add_widget_components: Increment does not exist"))
             .insert(fill)
-            .insert(value);
+            .insert(value)
+            .insert(handle_ref);
 
         commands
             .entity(decrement.expect("add_widget_components: Decrement does not exist"))
             .insert(fill)
-            .insert(value);
+            .insert(value)
+            .insert(handle_ref);
     }
 }
 

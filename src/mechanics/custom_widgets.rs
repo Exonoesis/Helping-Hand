@@ -12,10 +12,11 @@ pub enum CountingSliderKeys {
     Value = 2,
     Decrement = 3,
     Increment = 4,
+    Back = 5,
 }
 
 pub struct Slider {
-    pub back: NodeBundle,
+    pub back: (NodeBundle, CountingSliderKeys),
     pub handle: (
         ButtonBundle,
         ButtonTypes,
@@ -59,16 +60,19 @@ pub fn create_widget_label(text: String) -> (TextBundle, SettingsMenuElements) {
 
 pub fn create_widget_slider() -> Slider {
     Slider {
-        back: (NodeBundle {
-            style: Style {
-                width: Val::Percent(100.0),
-                height: Val::Percent(20.0),
-                align_items: AlignItems::Center,
+        back: (
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(20.0),
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
+                background_color: bevy::prelude::BackgroundColor(DBROWN),
                 ..default()
             },
-            background_color: bevy::prelude::BackgroundColor(DBROWN),
-            ..default()
-        }),
+            CountingSliderKeys::Back,
+        ),
         handle: (
             ButtonBundle {
                 style: Style {

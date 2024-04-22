@@ -27,7 +27,8 @@ impl Plugin for SettingsMenuPlugin {
                 (
                     save_button_system,
                     spinner_buttons_system,
-                    slider_handle_system,
+                    get_handle_click_position,
+                    update_handle_position_on_hold,
                 )
                     .run_if(in_state(AppState::SettingsMenu)),
             )
