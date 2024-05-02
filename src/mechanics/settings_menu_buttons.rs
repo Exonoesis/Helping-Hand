@@ -119,7 +119,7 @@ pub fn get_handle_click_position(
         };
 
         //Capture original spinner value at time of click
-        let mut spinner_value = slider_value_query
+        let spinner_value = slider_value_query
             .get_mut(value_reference.0)
             .expect("get_handle_click_position: Spinner value should exist.");
 
@@ -136,7 +136,7 @@ pub fn get_handle_click_position(
 }
 
 pub fn update_handle_position_on_hold(
-    mut slider_handle_query: Query<
+    slider_handle_query: Query<
         (
             &BeingClicked,
             &FillReference,
@@ -151,6 +151,8 @@ pub fn update_handle_position_on_hold(
     >,
     mut slider_fill_bar_query: Query<&mut Style, With<CountingSliderKeys>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
+    camera_query: Query<&Camera>,
+    parent_query: Query<&Parent>,
     mouse_button_state: Res<Input<MouseButton>>,
 ) {
     //Detect if left mouse button is being held down
@@ -187,8 +189,7 @@ pub fn update_handle_position_on_hold(
         .get_mut(back_reference.0)
         .expect("update_handle_position_on_hold: Slider back should exist.");
 
-    //HELP?
-    let back_width_in_px = 486.60;
+    let back_width_in_px = get_node_width(back_reference.0, camera_query, parent_query);
 
     let change_as_percent =
         (((current_x_position - original_values.original_x) / back_width_in_px) * 100.00).trunc();
@@ -214,6 +215,32 @@ pub fn update_handle_position_on_hold(
         .expect("update_handle_position_on_hold: Slider fill value should exist.");
 
     fill_value.width = Val::Percent(new_spinner_value);
+}
+
+fn get_node_width(node: Entity, camera_query: Query<&Camera>, parent_query: Query<&Parent>) -> f32 {
+    let mut value_stack = get_all_ancestors(node, parent_query);
+
+    let camera = camera_query.single();
+
+    let viewport_size = camera.logical_viewport_size().unwrap();
+    let mut node_width = viewport_size.x;
+
+    while let Some(val) = value_stack.pop() {
+        //node_width = val.resolve(node_width, viewport_size);
+        node_width = val
+            .evaluate(node_width)
+            .expect("get_node_width: Node width could not be resolved");
+    }
+
+    return node_width;
+}
+
+fn get_all_ancestors(node: Entity, parent_query: Query<&Parent>) -> Vec<bevy::ui::Val> {
+    let mut stack = Vec::new();
+
+    //Build stack
+
+    return stack;
 }
 
 pub fn save_button_system(
