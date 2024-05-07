@@ -13,6 +13,7 @@ use super::custom_widgets::CountingSliderKeys;
 pub struct BeingClicked {
     original_x: f32,
     original_val: f32,
+    handle_width: Val,
 }
 
 pub fn spinner_buttons_system(
@@ -94,7 +95,13 @@ pub fn spinner_buttons_system(
 
 pub fn get_handle_click_position(
     mut slider_handle_query: Query<
-        (&Interaction, &ButtonTypes, &ValueReference, Entity),
+        (
+            &Interaction,
+            &ButtonTypes,
+            &ValueReference,
+            Entity,
+            &mut Style,
+        ),
         (Changed<Interaction>, With<Button>),
     >,
     mut slider_value_query: Query<
@@ -105,7 +112,7 @@ pub fn get_handle_click_position(
     mut commands: Commands,
 ) {
     //Capture handle click
-    for (interaction, button_type, value_reference, handle) in &mut slider_handle_query {
+    for (interaction, button_type, value_reference, handle, style) in &mut slider_handle_query {
         if *interaction != Interaction::Pressed || *button_type != ButtonTypes::Slider {
             commands.entity(handle).remove::<BeingClicked>();
             continue;
@@ -129,6 +136,7 @@ pub fn get_handle_click_position(
         let original_mouse_x_reference = BeingClicked {
             original_x: original_x_position,
             original_val: original_spinner_value,
+            handle_width: style.width,
         };
 
         commands.entity(handle).insert(original_mouse_x_reference);
@@ -149,7 +157,7 @@ pub fn update_handle_position_on_hold(
         &mut Text,
         (With<SettingsMenuElements>, With<CountingSliderKeys>),
     >,
-    mut slider_fill_bar_query: Query<&mut Style, With<CountingSliderKeys>>,
+    mut width_query: Query<&mut Style>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     camera_query: Query<&Camera>,
     parent_query: Query<&Parent>,
@@ -184,12 +192,15 @@ pub fn update_handle_position_on_hold(
     let spinner_value_reference = handle_data_references.2;
     let back_reference = handle_data_references.3;
 
-    //Calculate change in mouse x movement as a percent
-    let slider_back = slider_fill_bar_query
-        .get_mut(back_reference.0)
-        .expect("update_handle_position_on_hold: Slider back should exist.");
+    let read_only_width_query = width_query.to_readonly();
 
-    let back_width_in_px = get_node_width(back_reference.0, camera_query, parent_query);
+    //Calculate change in mouse x movement as a percent
+    let back_width_in_px = get_node_width(
+        back_reference.0,
+        read_only_width_query,
+        camera_query,
+        parent_query,
+    );
 
     let change_as_percent =
         (((current_x_position - original_values.original_x) / back_width_in_px) * 100.00).trunc();
@@ -210,15 +221,35 @@ pub fn update_handle_position_on_hold(
     spinner_value.sections[0].value = new_spinner_value.to_string();
 
     //Change fill bar width
-    let mut fill_value = slider_fill_bar_query
+    let mut fill_value = width_query
         .get_mut(fill_reference.0)
         .expect("update_handle_position_on_hold: Slider fill value should exist.");
 
-    fill_value.width = Val::Percent(new_spinner_value);
+    /*
+    We subtract half the handles width from the fill bar so that the values
+    position is visually accurate to the center of the handle, as is expected,
+    rather than the right edge of the fill bar
+    */
+    let handle_width_percentage =
+        if let Val::Percent(width_percentage) = original_values.handle_width {
+            width_percentage
+        } else {
+            panic!("spinner_buttons_system: Handle width should be a percentage.")
+        };
+
+    let new_fill_amount =
+        spinner_value.sections[0].value.parse::<f32>().unwrap() - (handle_width_percentage / 2.0);
+
+    fill_value.width = Val::Percent(new_fill_amount);
 }
 
-fn get_node_width(node: Entity, camera_query: Query<&Camera>, parent_query: Query<&Parent>) -> f32 {
-    let mut value_stack = get_all_ancestors(node, parent_query);
+fn get_node_width(
+    node: Entity,
+    width_query: Query<&Style>,
+    camera_query: Query<&Camera>,
+    parent_query: Query<&Parent>,
+) -> f32 {
+    let mut value_stack = get_all_ancestors(node, parent_query, width_query);
 
     let camera = camera_query.single();
 
@@ -235,12 +266,31 @@ fn get_node_width(node: Entity, camera_query: Query<&Camera>, parent_query: Quer
     return node_width;
 }
 
-fn get_all_ancestors(node: Entity, parent_query: Query<&Parent>) -> Vec<bevy::ui::Val> {
-    let mut stack = Vec::new();
+fn get_all_ancestors(
+    node: Entity,
+    parent_query: Query<&Parent>,
+    width_query: Query<&Style>,
+) -> Vec<bevy::ui::Val> {
+    let mut to_be_visited_nodes = Vec::new();
+    let mut seen_styles = Vec::new();
 
     //Build stack
+    to_be_visited_nodes.push(node);
 
-    return stack;
+    while let Some(current_node) = to_be_visited_nodes.pop() {
+        let current_node_value = width_query
+            .get(current_node)
+            .expect("get_all_ancestors: Could not get Style for node")
+            .width;
+
+        seen_styles.push(current_node_value);
+
+        if let Ok(parent) = parent_query.get(current_node) {
+            to_be_visited_nodes.push(parent.get());
+        }
+    }
+
+    return seen_styles;
 }
 
 pub fn save_button_system(
