@@ -162,7 +162,27 @@ pub fn spawn_settings_menu(mut commands: Commands) {
         ..default()
     };
 
+    let sfx_widget_label = NodeBundle {
+        style: Style {
+            width: Val::Percent(25.0),
+            height: Val::Percent(100.0),
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        ..default()
+    };
+
     let music_slider_container = NodeBundle {
+        style: Style {
+            width: Val::Percent(60.0),
+            height: Val::Percent(100.0),
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        ..default()
+    };
+
+    let sfx_slider_container = NodeBundle {
         style: Style {
             width: Val::Percent(60.0),
             height: Val::Percent(100.0),
@@ -183,12 +203,28 @@ pub fn spawn_settings_menu(mut commands: Commands) {
         ..default()
     };
 
-    let music_widget_text = create_widget_label(String::from("Music"));
-    let music_slider = create_widget_slider();
-    let music_spinner = create_widget_spinner();
+    let sfx_spinner_container = NodeBundle {
+        style: Style {
+            width: Val::Percent(15.0),
+            height: Val::Percent(100.0),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            ..default()
+        },
+        ..default()
+    };
 
-    let mut music_widget_keys = SliderKeyComponents { array: [None; 6] };
-    let mut sfx_widget_keys = SliderKeyComponents { array: [None; 6] };
+    let music_widget_text = create_widget_label(String::from("Music"));
+    let sfx_widget_text = create_widget_label(String::from("SFX"));
+
+    let music_slider = create_widget_slider();
+    let sfx_slider = create_widget_slider();
+
+    let music_spinner = create_widget_spinner();
+    let sfx_spinner = create_widget_spinner();
+
+    let music_widget_keys = SliderKeyComponents { array: [None; 6] };
+    let sfx_widget_keys = SliderKeyComponents { array: [None; 6] };
 
     let bottom_third = NodeBundle {
         style: Style {
@@ -233,6 +269,7 @@ pub fn spawn_settings_menu(mut commands: Commands) {
                     });
                 middle_third
                     .spawn(options_container)
+                    //Music Slider
                     .with_children(|options_container| {
                         options_container
                             .spawn(create_widget_container(music_widget_keys))
@@ -280,8 +317,53 @@ pub fn spawn_settings_menu(mut commands: Commands) {
                                     });
                             });
                     })
+                    //Sfx Slider
                     .with_children(|options_container| {
-                        options_container.spawn(create_widget_container(sfx_widget_keys));
+                        options_container
+                            .spawn(create_widget_container(sfx_widget_keys))
+                            .with_children(|widget_container| {
+                                widget_container.spawn(sfx_widget_label).with_children(
+                                    |widget_label| {
+                                        widget_label.spawn(sfx_widget_text);
+                                    },
+                                );
+                            })
+                            .with_children(|widget_container| {
+                                widget_container.spawn(sfx_slider_container).with_children(
+                                    |sfx_slider_container| {
+                                        sfx_slider_container.spawn(sfx_slider.back).with_children(
+                                            |sfx_slider_back| {
+                                                sfx_slider_back.spawn(sfx_slider.fill);
+                                                sfx_slider_back.spawn(sfx_slider.handle);
+                                            },
+                                        );
+                                    },
+                                );
+                            })
+                            .with_children(|widget_container| {
+                                widget_container
+                                    .spawn(sfx_spinner_container)
+                                    .with_children(|sfx_spinner_container| {
+                                        sfx_spinner_container
+                                            .spawn(sfx_spinner.value_container)
+                                            .with_children(|sfx_spinner_value_container| {
+                                                sfx_spinner_value_container
+                                                    .spawn(sfx_spinner.value);
+                                            });
+                                    })
+                                    .with_children(|sfx_spinner_container| {
+                                        sfx_spinner_container
+                                            .spawn(sfx_spinner.buttons_container)
+                                            .with_children(|sfx_spinner_buttons_container| {
+                                                sfx_spinner_buttons_container
+                                                    .spawn(sfx_spinner.increment);
+                                            })
+                                            .with_children(|sfx_spinner_buttons_container| {
+                                                sfx_spinner_buttons_container
+                                                    .spawn(sfx_spinner.decrement);
+                                            });
+                                    });
+                            });
                     });
             });
         ui_container
