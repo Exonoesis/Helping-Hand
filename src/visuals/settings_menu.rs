@@ -41,6 +41,11 @@ pub struct BackReference(pub Entity);
 #[derive(Component)]
 pub struct SettingsMenuUI;
 
+#[derive(Component, PartialEq)]
+pub enum SliderType {
+    Music,
+}
+
 pub fn spawn_settings_menu(mut commands: Commands) {
     let ui_container = (
         ImageBundle {
@@ -152,80 +157,6 @@ pub fn spawn_settings_menu(mut commands: Commands) {
         SettingsMenuElements::OptionsBox,
     );
 
-    let music_widget_label = NodeBundle {
-        style: Style {
-            width: Val::Percent(25.0),
-            height: Val::Percent(100.0),
-            align_items: AlignItems::Center,
-            ..default()
-        },
-        ..default()
-    };
-
-    let sfx_widget_label = NodeBundle {
-        style: Style {
-            width: Val::Percent(25.0),
-            height: Val::Percent(100.0),
-            align_items: AlignItems::Center,
-            ..default()
-        },
-        ..default()
-    };
-
-    let music_slider_container = NodeBundle {
-        style: Style {
-            width: Val::Percent(60.0),
-            height: Val::Percent(100.0),
-            align_items: AlignItems::Center,
-            ..default()
-        },
-        ..default()
-    };
-
-    let sfx_slider_container = NodeBundle {
-        style: Style {
-            width: Val::Percent(60.0),
-            height: Val::Percent(100.0),
-            align_items: AlignItems::Center,
-            ..default()
-        },
-        ..default()
-    };
-
-    let music_spinner_container = NodeBundle {
-        style: Style {
-            width: Val::Percent(15.0),
-            height: Val::Percent(100.0),
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            ..default()
-        },
-        ..default()
-    };
-
-    let sfx_spinner_container = NodeBundle {
-        style: Style {
-            width: Val::Percent(15.0),
-            height: Val::Percent(100.0),
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            ..default()
-        },
-        ..default()
-    };
-
-    let music_widget_text = create_widget_label(String::from("Music"));
-    let sfx_widget_text = create_widget_label(String::from("SFX"));
-
-    let music_slider = create_widget_slider();
-    let sfx_slider = create_widget_slider();
-
-    let music_spinner = create_widget_spinner();
-    let sfx_spinner = create_widget_spinner();
-
-    let music_widget_keys = SliderKeyComponents { array: [None; 6] };
-    let sfx_widget_keys = SliderKeyComponents { array: [None; 6] };
-
     let bottom_third = NodeBundle {
         style: Style {
             width: Val::Percent(66.0),
@@ -269,101 +200,9 @@ pub fn spawn_settings_menu(mut commands: Commands) {
                     });
                 middle_third
                     .spawn(options_container)
-                    //Music Slider
                     .with_children(|options_container| {
-                        options_container
-                            .spawn(create_widget_container(music_widget_keys))
-                            .with_children(|widget_container| {
-                                widget_container.spawn(music_widget_label).with_children(
-                                    |widget_label| {
-                                        widget_label.spawn(music_widget_text);
-                                    },
-                                );
-                            })
-                            .with_children(|widget_container| {
-                                widget_container
-                                    .spawn(music_slider_container)
-                                    .with_children(|music_slider_container| {
-                                        music_slider_container
-                                            .spawn(music_slider.back)
-                                            .with_children(|music_slider_back| {
-                                                music_slider_back.spawn(music_slider.fill);
-                                                music_slider_back.spawn(music_slider.handle);
-                                            });
-                                    });
-                            })
-                            .with_children(|widget_container| {
-                                widget_container
-                                    .spawn(music_spinner_container)
-                                    .with_children(|music_spinner_container| {
-                                        music_spinner_container
-                                            .spawn(music_spinner.value_container)
-                                            .with_children(|music_spinner_value_container| {
-                                                music_spinner_value_container
-                                                    .spawn(music_spinner.value);
-                                            });
-                                    })
-                                    .with_children(|music_spinner_container| {
-                                        music_spinner_container
-                                            .spawn(music_spinner.buttons_container)
-                                            .with_children(|music_spinner_buttons_container| {
-                                                music_spinner_buttons_container
-                                                    .spawn(music_spinner.increment);
-                                            })
-                                            .with_children(|music_spinner_buttons_container| {
-                                                music_spinner_buttons_container
-                                                    .spawn(music_spinner.decrement);
-                                            });
-                                    });
-                            });
-                    })
-                    //Sfx Slider
-                    .with_children(|options_container| {
-                        options_container
-                            .spawn(create_widget_container(sfx_widget_keys))
-                            .with_children(|widget_container| {
-                                widget_container.spawn(sfx_widget_label).with_children(
-                                    |widget_label| {
-                                        widget_label.spawn(sfx_widget_text);
-                                    },
-                                );
-                            })
-                            .with_children(|widget_container| {
-                                widget_container.spawn(sfx_slider_container).with_children(
-                                    |sfx_slider_container| {
-                                        sfx_slider_container.spawn(sfx_slider.back).with_children(
-                                            |sfx_slider_back| {
-                                                sfx_slider_back.spawn(sfx_slider.fill);
-                                                sfx_slider_back.spawn(sfx_slider.handle);
-                                            },
-                                        );
-                                    },
-                                );
-                            })
-                            .with_children(|widget_container| {
-                                widget_container
-                                    .spawn(sfx_spinner_container)
-                                    .with_children(|sfx_spinner_container| {
-                                        sfx_spinner_container
-                                            .spawn(sfx_spinner.value_container)
-                                            .with_children(|sfx_spinner_value_container| {
-                                                sfx_spinner_value_container
-                                                    .spawn(sfx_spinner.value);
-                                            });
-                                    })
-                                    .with_children(|sfx_spinner_container| {
-                                        sfx_spinner_container
-                                            .spawn(sfx_spinner.buttons_container)
-                                            .with_children(|sfx_spinner_buttons_container| {
-                                                sfx_spinner_buttons_container
-                                                    .spawn(sfx_spinner.increment);
-                                            })
-                                            .with_children(|sfx_spinner_buttons_container| {
-                                                sfx_spinner_buttons_container
-                                                    .spawn(sfx_spinner.decrement);
-                                            });
-                                    });
-                            });
+                        spawn_counting_slider(options_container, String::from("Music"));
+                        spawn_counting_slider(options_container, String::from("SFX"));
                     });
             });
         ui_container
@@ -381,6 +220,92 @@ pub fn spawn_settings_menu(mut commands: Commands) {
                     });
             });
     });
+}
+
+/// Inserts a Counting Slider with a Label at the given point in the UI.
+fn spawn_counting_slider(ui_container: &mut ChildBuilder, label: String) {
+    let slider_widget_keys = SliderKeyComponents { array: [None; 6] };
+
+    let slider_type = if label == "Music" {
+        SliderType::Music
+    } else {
+        todo!("slider_type: No other types for slider created yet.")
+    };
+
+    let slider_widget_text = create_widget_label(label);
+    let slider_widget_label = NodeBundle {
+        style: Style {
+            width: Val::Percent(25.0),
+            height: Val::Percent(100.0),
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        ..default()
+    };
+
+    let slider = create_widget_slider();
+    let slider_container = NodeBundle {
+        style: Style {
+            width: Val::Percent(60.0),
+            height: Val::Percent(100.0),
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        ..default()
+    };
+
+    let spinner = create_widget_spinner();
+    let spinner_container = NodeBundle {
+        style: Style {
+            width: Val::Percent(15.0),
+            height: Val::Percent(100.0),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            ..default()
+        },
+        ..default()
+    };
+
+    ui_container
+        .spawn((create_widget_container(slider_widget_keys), slider_type))
+        .with_children(|widget_container| {
+            widget_container
+                .spawn(slider_widget_label)
+                .with_children(|widget_label| {
+                    widget_label.spawn(slider_widget_text);
+                });
+        })
+        .with_children(|widget_container| {
+            widget_container
+                .spawn(slider_container)
+                .with_children(|slider_container| {
+                    slider_container
+                        .spawn(slider.back)
+                        .with_children(|slider_back| {
+                            slider_back.spawn(slider.fill);
+                            slider_back.spawn(slider.handle);
+                        });
+                });
+        })
+        .with_children(|widget_container| {
+            widget_container
+                .spawn(spinner_container)
+                .with_children(|spinner_container| {
+                    spinner_container
+                        .spawn(spinner.value_container)
+                        .with_children(|spinner_value_container| {
+                            spinner_value_container.spawn(spinner.value);
+                        });
+                })
+                .with_children(|spinner_container| {
+                    spinner_container
+                        .spawn(spinner.buttons_container)
+                        .with_children(|spinner_buttons_container| {
+                            spinner_buttons_container.spawn(spinner.increment);
+                            spinner_buttons_container.spawn(spinner.decrement);
+                        });
+                });
+        });
 }
 
 fn create_button(b_type: ButtonTypes) -> (ButtonBundle, ButtonTypes, SettingsMenuElements) {
@@ -592,6 +517,52 @@ pub fn add_widget_components(
 mod tests {
     use super::*;
 
+    struct HelpingHand {
+        app: App,
+    }
+
+    enum SoundSource {
+        Music,
+    }
+
+    impl HelpingHand {
+        pub fn new() -> HelpingHand {
+            let mut app = App::new();
+
+            //We test this as a startup system because we cannot test states directly
+            app.add_systems(Startup, spawn_settings_menu);
+
+            HelpingHand { app }
+        }
+
+        pub fn find_slider(&mut self, slider_type: SliderType) -> Entity {
+            self.app.update();
+
+            let slider_entity = self
+                .app
+                .world
+                .query::<(Entity, &SliderType)>()
+                .iter(&self.app.world)
+                .find(|sliders| *sliders.1 == slider_type)
+                .expect("find_slider: Could not find Slider with given type")
+                .0;
+
+            slider_entity
+        }
+
+        pub fn move_slider_to(&mut self, slider: Entity, percentage: usize) {
+            todo!("HelpingHand move_slider_to: Need to implement this.")
+        }
+
+        pub fn get_slider_percentage_of(&self, slider: Entity) -> usize {
+            todo!("HelpingHand get_slider_percentage_of: Need to implement this.")
+        }
+
+        pub fn get_volume_of(&self, sound_source: SoundSource) -> usize {
+            todo!("HelpingHand get_volume_of: Need to implement this.")
+        }
+    }
+
     fn setup_settings_menu_build_and_cleanup_checking() -> App {
         let mut app = App::new();
 
@@ -621,4 +592,24 @@ mod tests {
         item_num = app.world.entities().len();
         assert_eq!(0, item_num);
     }
+
+    // TODO: Implement the rest of these methods with TDD
+    // for the 'Introduce Tests for Existing Features'
+    // Feature Request/GitHub Issue types.
+    //
+    //#[test]
+    //fn music_slider_changes_volume() {
+    //    let mut game = HelpingHand::new();
+
+    //    let slider = game.find_slider(SliderType::Music);
+    //    let percentage = 50;
+
+    //    game.move_slider_to(slider, percentage);
+
+    //    let slider_percentage = game.get_slider_percentage_of(slider);
+    //    let volume_percentage = game.get_volume_of(SoundSource::Music);
+
+    //    assert_eq!(percentage, volume_percentage);
+    //    assert_eq!(slider_percentage, volume_percentage);
+    //}
 }
