@@ -463,6 +463,14 @@ pub fn set_keys(
     }
 }
 
+fn get_percentage_from(spinner_value: Text) -> f32 {
+    let value = spinner_value.sections[0].value.parse::<f32>().unwrap();
+
+    let percentage_value = value * 0.01;
+
+    return percentage_value;
+}
+
 pub fn add_widget_components(
     key_components_query: Query<&SliderKeyComponents, Changed<SliderKeyComponents>>,
     mut commands: Commands,
@@ -592,6 +600,63 @@ mod tests {
         //and ensure that no entities remain
         item_num = app.world.entities().len();
         assert_eq!(0, item_num);
+    }
+
+    #[test]
+    fn get_0_percent_from_text_field() {
+        let spinner_text_bundle = TextBundle::from_section(
+            "0",
+            TextStyle {
+                font_size: 25.0,
+                color: WHITE,
+                ..default()
+            },
+        );
+
+        let spinner_text_field = spinner_text_bundle.text;
+
+        let expected_percentage = 0.0;
+        let actual_percentage = get_percentage_from(spinner_text_field);
+
+        assert_eq!(expected_percentage, actual_percentage);
+    }
+
+    #[test]
+    fn get_50_percent_from_text_field() {
+        let spinner_text_bundle = TextBundle::from_section(
+            "50",
+            TextStyle {
+                font_size: 25.0,
+                color: WHITE,
+                ..default()
+            },
+        );
+
+        let spinner_text_field = spinner_text_bundle.text;
+
+        let expected_percentage = 0.5;
+        let actual_percentage = get_percentage_from(spinner_text_field);
+
+        assert_eq!(expected_percentage, actual_percentage);
+    }
+
+    #[test]
+    fn get_100_percent_from_text_field() {
+        let spinner_text_bundle = TextBundle::from_section(
+            "100",
+            TextStyle {
+                font_size: 25.0,
+                color: WHITE,
+                ..default()
+            },
+        );
+
+        let spinner_text_field = spinner_text_bundle.text;
+
+        let expected_percentage = 1.0;
+        let actual_percentage = get_percentage_from(spinner_text_field);
+
+        assert_eq!(expected_percentage, actual_percentage);
     }
 
     // TODO: Implement the rest of these methods with TDD
