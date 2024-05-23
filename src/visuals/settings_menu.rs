@@ -44,6 +44,7 @@ pub struct SettingsMenuUI;
 #[derive(Component, PartialEq)]
 pub enum SliderType {
     Music,
+    SFX,
 }
 
 pub fn spawn_settings_menu(mut commands: Commands) {
@@ -226,10 +227,10 @@ pub fn spawn_settings_menu(mut commands: Commands) {
 fn spawn_counting_slider(ui_container: &mut ChildBuilder, label: String) {
     let slider_widget_keys = SliderKeyComponents { array: [None; 6] };
 
-    let slider_type = if label == "Music" {
-        SliderType::Music
-    } else {
-        todo!("slider_type: No other types for slider created yet.")
+    let slider_type = match label.as_str() {
+        "Music" => SliderType::Music,
+        "SFX" => SliderType::SFX,
+        _ => panic!("spawn_counting_slider: Label found does not match any current slider type"),
     };
 
     let slider_widget_text = create_widget_label(label);
