@@ -29,6 +29,8 @@ impl Plugin for SettingsMenuPlugin {
                     spinner_buttons_system,
                     get_handle_click_position,
                     update_handle_position_on_hold,
+                    change_music_volume,
+                    change_sfx_volumes,
                 )
                     .run_if(in_state(AppState::SettingsMenu)),
             )

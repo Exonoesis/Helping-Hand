@@ -1,5 +1,10 @@
-use crate::mechanics::custom_widgets::*;
+use crate::{
+    audio::music::MusicChannel,
+    entities::player::{PlayerBumpChannel, PlayerWalkChannel},
+    mechanics::custom_widgets::*,
+};
 use bevy::prelude::*;
+use bevy_kira_audio::{AudioChannel, AudioControl};
 
 #[derive(Component)]
 pub enum SettingsMenuElements {
@@ -355,6 +360,38 @@ fn create_widget_container(keys: SliderKeyComponents) -> (NodeBundle, SliderKeyC
     )
 }
 
+pub fn change_music_volume(
+    spinner_query: Query<(&Text, &SliderType), With<SliderType>>,
+    background_music: Res<AudioChannel<MusicChannel>>,
+) {
+    for (text, slider_type) in &spinner_query {
+        if *slider_type != SliderType::Music {
+            continue;
+        }
+
+        let slider_percentage = get_percentage_from(text.clone());
+
+        background_music.set_volume(slider_percentage);
+    }
+}
+
+pub fn change_sfx_volumes(
+    spinner_query: Query<(&Text, &SliderType), With<SliderType>>,
+    player_movement_sound: Res<AudioChannel<PlayerWalkChannel>>,
+    player_bump_sound: Res<AudioChannel<PlayerBumpChannel>>,
+) {
+    for (text, slider_type) in &spinner_query {
+        if *slider_type != SliderType::SFX {
+            continue;
+        }
+
+        let slider_percentage = get_percentage_from(text.clone());
+
+        player_movement_sound.set_volume(slider_percentage);
+        player_bump_sound.set_volume(slider_percentage);
+    }
+}
+
 pub fn load_background_image(
     asset_server: Res<AssetServer>,
     mut element_query: Query<(&SettingsMenuElements, &mut UiImage), Added<SettingsMenuElements>>,
@@ -463,9 +500,10 @@ pub fn set_keys(
     }
 }
 
-fn get_percentage_from(spinner_value: Text) -> f32 {
-    let value = spinner_value.sections[0].value.parse::<f32>().unwrap();
+fn get_percentage_from(spinner_value: Text) -> f64 {
+    let value = spinner_value.sections[0].value.parse::<f64>().unwrap();
 
+    //Audio is 0-1 normalized so we convert to a decimal percentage
     let percentage_value = value * 0.01;
 
     return percentage_value;
