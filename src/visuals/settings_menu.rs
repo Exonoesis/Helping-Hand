@@ -47,7 +47,7 @@ pub struct BackReference(pub Entity);
 pub struct SettingsMenuUI;
 
 #[derive(Component, PartialEq)]
-pub enum SliderType {
+pub enum AudioType {
     Music,
     SFX,
 }
@@ -207,8 +207,8 @@ pub fn spawn_settings_menu(mut commands: Commands) {
                 middle_third
                     .spawn(options_container)
                     .with_children(|options_container| {
-                        spawn_counting_slider(options_container, String::from("Music"));
-                        spawn_counting_slider(options_container, String::from("SFX"));
+                        spawn_volume_slider(options_container, AudioType::Music);
+                        spawn_volume_slider(options_container, AudioType::SFX);
                     });
             });
         ui_container
@@ -228,17 +228,21 @@ pub fn spawn_settings_menu(mut commands: Commands) {
     });
 }
 
-/// Inserts a Counting Slider with a Label at the given point in the UI.
-fn spawn_counting_slider(ui_container: &mut ChildBuilder, label: String) {
-    let slider_widget_keys = SliderKeyComponents { array: [None; 6] };
+pub struct CountingSlider {
+    barrier_keys: SliderKeyComponents,
 
-    let slider_type = match label.as_str() {
-        "Music" => SliderType::Music,
-        "SFX" => SliderType::SFX,
-        _ => panic!("spawn_counting_slider: Label found does not match any current slider type"),
+    label: (TextBundle, SettingsMenuElements),
+    slider: Slider,
+    spinner: Spinner,
+}
+
+/// Spawns a Volume Slider at a given point in the UI.
+fn spawn_volume_slider(ui_container: &mut ChildBuilder, audio_type: AudioType) {
+    let volume_slider = match audio_type {
+        AudioType::Music => create_counting_slider(String::from("Music")),
+        AudioType::SFX => create_counting_slider(String::from("SFX")),
     };
 
-    let slider_widget_text = create_widget_label(label);
     let slider_widget_label = NodeBundle {
         style: Style {
             width: Val::Percent(25.0),
@@ -249,7 +253,6 @@ fn spawn_counting_slider(ui_container: &mut ChildBuilder, label: String) {
         ..default()
     };
 
-    let slider = create_widget_slider();
     let slider_container = NodeBundle {
         style: Style {
             width: Val::Percent(60.0),
@@ -260,7 +263,6 @@ fn spawn_counting_slider(ui_container: &mut ChildBuilder, label: String) {
         ..default()
     };
 
-    let spinner = create_widget_spinner();
     let spinner_container = NodeBundle {
         style: Style {
             width: Val::Percent(15.0),
@@ -273,12 +275,12 @@ fn spawn_counting_slider(ui_container: &mut ChildBuilder, label: String) {
     };
 
     ui_container
-        .spawn((create_widget_container(slider_widget_keys), slider_type))
+        .spawn(create_widget_container(volume_slider.barrier_keys))
         .with_children(|widget_container| {
             widget_container
                 .spawn(slider_widget_label)
                 .with_children(|widget_label| {
-                    widget_label.spawn(slider_widget_text);
+                    widget_label.spawn(volume_slider.label);
                 });
         })
         .with_children(|widget_container| {
@@ -286,10 +288,10 @@ fn spawn_counting_slider(ui_container: &mut ChildBuilder, label: String) {
                 .spawn(slider_container)
                 .with_children(|slider_container| {
                     slider_container
-                        .spawn(slider.back)
+                        .spawn(volume_slider.slider.back)
                         .with_children(|slider_back| {
-                            slider_back.spawn(slider.fill);
-                            slider_back.spawn(slider.handle);
+                            slider_back.spawn(volume_slider.slider.fill);
+                            slider_back.spawn(volume_slider.slider.handle);
                         });
                 });
         })
@@ -298,20 +300,38 @@ fn spawn_counting_slider(ui_container: &mut ChildBuilder, label: String) {
                 .spawn(spinner_container)
                 .with_children(|spinner_container| {
                     spinner_container
-                        .spawn(spinner.value_container)
+                        .spawn(volume_slider.spinner.value_container)
                         .with_children(|spinner_value_container| {
-                            spinner_value_container.spawn(spinner.value);
+                            spinner_value_container
+                                .spawn((volume_slider.spinner.value, audio_type));
                         });
                 })
                 .with_children(|spinner_container| {
                     spinner_container
-                        .spawn(spinner.buttons_container)
+                        .spawn(volume_slider.spinner.buttons_container)
                         .with_children(|spinner_buttons_container| {
-                            spinner_buttons_container.spawn(spinner.increment);
-                            spinner_buttons_container.spawn(spinner.decrement);
+                            spinner_buttons_container.spawn(volume_slider.spinner.increment);
+                            spinner_buttons_container.spawn(volume_slider.spinner.decrement);
                         });
                 });
         });
+}
+
+/// Creates a Counting Slider with a Label.
+fn create_counting_slider(label: String) -> CountingSlider {
+    let slider_widget_keys = SliderKeyComponents { array: [None; 6] };
+
+    let slider_widget_text = create_widget_label(label);
+    let slider = create_widget_slider();
+    let spinner = create_widget_spinner();
+
+    CountingSlider {
+        barrier_keys: slider_widget_keys,
+
+        label: slider_widget_text,
+        slider,
+        spinner,
+    }
 }
 
 fn create_button(b_type: ButtonTypes) -> (ButtonBundle, ButtonTypes, SettingsMenuElements) {
@@ -361,11 +381,11 @@ fn create_widget_container(keys: SliderKeyComponents) -> (NodeBundle, SliderKeyC
 }
 
 pub fn change_music_volume(
-    spinner_query: Query<(&Text, &SliderType), With<SliderType>>,
+    spinner_query: Query<(&Text, &AudioType), Changed<Text>>,
     background_music: Res<AudioChannel<MusicChannel>>,
 ) {
-    for (text, slider_type) in &spinner_query {
-        if *slider_type != SliderType::Music {
+    for (text, audio_type) in &spinner_query {
+        if *audio_type != AudioType::Music {
             continue;
         }
 
@@ -376,12 +396,12 @@ pub fn change_music_volume(
 }
 
 pub fn change_sfx_volumes(
-    spinner_query: Query<(&Text, &SliderType), With<SliderType>>,
+    spinner_query: Query<(&Text, &AudioType), Changed<Text>>,
     player_movement_sound: Res<AudioChannel<PlayerWalkChannel>>,
     player_bump_sound: Res<AudioChannel<PlayerBumpChannel>>,
 ) {
     for (text, slider_type) in &spinner_query {
-        if *slider_type != SliderType::SFX {
+        if *slider_type != AudioType::SFX {
             continue;
         }
 
@@ -563,52 +583,6 @@ pub fn add_widget_components(
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    struct HelpingHand {
-        app: App,
-    }
-
-    enum SoundSource {
-        Music,
-    }
-
-    impl HelpingHand {
-        pub fn new() -> HelpingHand {
-            let mut app = App::new();
-
-            //We test this as a startup system because we cannot test states directly
-            app.add_systems(Startup, spawn_settings_menu);
-
-            HelpingHand { app }
-        }
-
-        pub fn find_slider(&mut self, slider_type: SliderType) -> Entity {
-            self.app.update();
-
-            let slider_entity = self
-                .app
-                .world
-                .query::<(Entity, &SliderType)>()
-                .iter(&self.app.world)
-                .find(|sliders| *sliders.1 == slider_type)
-                .expect("find_slider: Could not find Slider with given type")
-                .0;
-
-            slider_entity
-        }
-
-        pub fn move_slider_to(&mut self, slider: Entity, percentage: usize) {
-            todo!("HelpingHand move_slider_to: Need to implement this.")
-        }
-
-        pub fn get_slider_percentage_of(&self, slider: Entity) -> usize {
-            todo!("HelpingHand get_slider_percentage_of: Need to implement this.")
-        }
-
-        pub fn get_volume_of(&self, sound_source: SoundSource) -> usize {
-            todo!("HelpingHand get_volume_of: Need to implement this.")
-        }
-    }
 
     fn setup_settings_menu_build_and_cleanup_checking() -> App {
         let mut app = App::new();
