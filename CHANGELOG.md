@@ -7,6 +7,7 @@
 ## [Unreleased]
 ### Added
 - Interaction Events.
+- Settings Menu (accessed via Main Menu.)
 
 ### Fixed
 - macOS Sonoma crashing the application by updating dependencies.
