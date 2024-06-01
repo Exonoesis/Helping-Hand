@@ -68,7 +68,7 @@ pub fn create_widget_slider() -> Slider {
                     align_items: AlignItems::Center,
                     ..default()
                 },
-                background_color: bevy::prelude::BackgroundColor(DBROWN),
+                background_color: BackgroundColor(DBROWN),
                 ..default()
             },
             CountingSliderKeys::Back,
@@ -96,7 +96,7 @@ pub fn create_widget_slider() -> Slider {
                     height: Val::Percent(100.0),
                     ..default()
                 },
-                background_color: bevy::prelude::BackgroundColor(WHITE),
+                background_color: BackgroundColor(WHITE),
                 ..default()
             },
             CountingSliderKeys::Fill,
