@@ -16,6 +16,7 @@ use plugins::smart_asset_io::SmartAssetIoPlugin;
 pub enum AppState {
     #[default]
     MainMenu,
+    SettingsMenu,
     InGame,
 }
 
@@ -39,5 +40,6 @@ fn main() {
         .add_plugins(plugins::levels::LevelsPlugin)
         .add_plugins(plugins::playable_character::PlayableCharacterPlugin)
         .add_plugins(plugins::main_menu::MainMenuPlugin)
+        .add_plugins(plugins::settings_menu::SettingsMenuPlugin)
         .run();
 }
