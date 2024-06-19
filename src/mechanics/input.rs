@@ -6,7 +6,7 @@ use crate::{
 };
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 use bevy_ecs_ldtk::LevelSelection;
-use bevy_ecs_ldtk::{prelude::LdtkFields, EntityInstance, LdtkLevel};
+use bevy_ecs_ldtk::{prelude::LdtkFields, EntityInstance, LevelIid};
 
 #[derive(Event)]
 pub struct InteractionEvent(String, String);
@@ -37,8 +37,8 @@ pub fn player_input(
 }
 
 pub fn update_level_dimensions(
-    level_query: Query<&Handle<LdtkLevel>, Changed<Handle<LdtkLevel>>>,
-    loaded_levels: Res<Assets<LdtkLevel>>,
+    level_query: Query<&Handle<LevelIid>, Changed<Handle<LevelIid>>>,
+    loaded_levels: Res<Assets<LevelIid>>,
     mut level_dimension: ResMut<LevelDimensions>,
 ) {
     if loaded_levels.is_empty() || level_query.is_empty() {
