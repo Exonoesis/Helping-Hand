@@ -10,7 +10,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - uses: rui314/setup-mold@v1
+      - name: Install Audio Driver via Alsa for Linux
+        run: sudo apt update && sudo apt-get install libasound2-dev libudev-dev mold
+        shell: bash
       - uses: mbrobbel/rustfmt-check@master
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
