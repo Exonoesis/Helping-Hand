@@ -23,6 +23,9 @@ jobs:
              fi
         shell: bash
 
+      - name: Install Mold (Linux only)
+        uses: rui314/setup-mold@v1
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
