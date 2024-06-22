@@ -1,5 +1,5 @@
 use bevy::{
-    asset::io::{AssetReader, AssetReaderError, PathStream, Reader},
+    asset::io::{file::FileAssetReader, AssetReader, AssetReaderError, PathStream, Reader},
     prelude::*,
     utils::BoxedFuture,
 };
@@ -86,7 +86,7 @@ fn edit_distance(word1: &str, word2: &str) -> usize {
 /// to the asset directory's entry containing the file or directory of
 /// the original_path.
 fn to_canonical_asset_path(original_path: &Path) -> PathBuf {
-    let asset_directory = FileAssetIo::get_base_path();
+    let asset_directory = FileAssetReader::get_base_path();
 
     Path::new(&asset_directory)
         .join("assets")
@@ -132,39 +132,6 @@ fn get_closest_file_path(original_path: &Path) -> PathBuf {
 }
 
 impl AssetReader for SmartAssetReader {
-//    fn load_path<'a>(&'a self, path: &'a Path) -> BoxedFuture<'a, Result<Vec<u8>, AssetIoError>> {
-//        let asset_path = to_canonical_asset_path(path);
-//        if !asset_path.exists() {
-//            let closest_path = get_closest_file_path(&asset_path);
-//            error!("load_path: path {:?} does not exist.", asset_path);
-//            info!("SUGGESTION: Did you mean {:?}?", closest_path);
-//        }
-//
-//        self.0.load_path(path)
-//    }
-//
-//    fn read_directory(
-//        &self,
-//        path: &Path,
-//    ) -> Result<Box<dyn Iterator<Item = PathBuf>>, AssetIoError> {
-//        self.0.read_directory(path)
-//    }
-//
-//    fn watch_path_for_changes(
-//        &self,
-//        to_watch: &Path,
-//        to_reload: Option<PathBuf>,
-//    ) -> Result<(), AssetIoError> {
-//        self.0.watch_path_for_changes(to_watch, to_reload)
-//    }
-//
-//    fn watch_for_changes(&self, configuration: &ChangeWatcher) -> Result<(), AssetIoError> {
-//        self.0.watch_for_changes(configuration)
-//    }
-//
-//    fn get_metadata(&self, path: &Path) -> Result<Metadata, AssetIoError> {
-//        self.0.get_metadata(path)
-//    }
     fn read<'a>(
         &'a self,
         path: &'a Path,

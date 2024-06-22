@@ -6,9 +6,9 @@ authors = ["Jesse Fischbeck <jlevifisch@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-bevy = { version = "^0.12", features = ["file_watcher"] }
-bevy_ecs_ldtk = "^0.9"
-bevy_kira_audio = { version = "^0.18", features = ["wav"] }
+bevy = { version = "^0.13", features = ["file_watcher"] }
+bevy_ecs_ldtk = { git = "https://github.com/Trouv/bevy_ecs_ldtk.git", rev = "2ee602f" }
+bevy_kira_audio = { version = "^0.19", features = ["wav"] }
 unicode-segmentation = "^1.10"
 
 [dev-dependencies]
@@ -20,3 +20,6 @@ futures = "0.3"
 [[test]]
 name = "menus"
 harness = false
+
+[patch.crates-io]
+bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap/", branch = "main" }

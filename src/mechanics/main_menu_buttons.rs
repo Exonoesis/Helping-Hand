@@ -20,7 +20,9 @@ pub fn button_system(
         match button_type {
             ButtonTypes::Play => next_state.set(AppState::InGame),
             ButtonTypes::Settings => next_state.set(AppState::SettingsMenu),
-            ButtonTypes::Quit => exit_event.send(AppExit),
+            ButtonTypes::Quit => {
+                exit_event.send(AppExit);
+            }
         }
     }
 }

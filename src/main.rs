@@ -5,8 +5,6 @@ mod mechanics;
 mod plugins;
 mod visuals;
 
-use std::time::Duration;
-
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_kira_audio::AudioPlugin;
@@ -29,7 +27,7 @@ fn main() {
                 // https://github.com/bevyengine/bevy/blob/main/examples/asset/custom_asset_io.rs#L69
                 .add_before::<bevy::asset::AssetPlugin, _>(SmartAssetReaderPlugin),
         )
-        .add_state::<AppState>()
+        .init_state::<AppState>()
         .add_plugins(LdtkPlugin)
         .add_plugins(AudioPlugin)
         .add_plugins(plugins::levels::LevelsPlugin)
