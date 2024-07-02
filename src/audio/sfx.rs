@@ -23,7 +23,7 @@ pub fn play_player_movement_sound(
     }
 
     let has_walked = player_movement_receiver
-        .iter()
+        .read()
         .all(|&movement_action| movement_action == PlayerMovementActions::Walking);
 
     if !has_walked {
@@ -54,7 +54,7 @@ pub fn play_player_bump_sound(
     }
 
     let has_bumped = player_movement_receiver
-        .iter()
+        .read()
         .all(|&movement_action| movement_action == PlayerMovementActions::Bumping);
 
     if !has_bumped {

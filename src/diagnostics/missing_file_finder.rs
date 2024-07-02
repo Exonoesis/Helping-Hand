@@ -1,5 +1,5 @@
 use bevy::{
-    asset::{AssetIo, AssetIoError, ChangeWatcher, FileAssetIo, Metadata},
+    asset::io::{file::FileAssetReader, AssetReader, AssetReaderError, PathStream, Reader},
     prelude::*,
     utils::BoxedFuture,
 };
@@ -11,7 +11,7 @@ use unicode_segmentation::UnicodeSegmentation;
 
 /// A custom asset io implementation that logs file suggestions for missing files
 /// in loading.
-pub struct SmartAssetIo(pub Box<dyn AssetIo>);
+pub struct SmartAssetReader(pub Box<dyn AssetReader>);
 
 /// Appends to the results array all files and directories discovered
 /// in a Breadth-First Traversal starting from the current_path as root.
@@ -86,7 +86,7 @@ fn edit_distance(word1: &str, word2: &str) -> usize {
 /// to the asset directory's entry containing the file or directory of
 /// the original_path.
 fn to_canonical_asset_path(original_path: &Path) -> PathBuf {
-    let asset_directory = FileAssetIo::get_base_path();
+    let asset_directory = FileAssetReader::get_base_path();
 
     Path::new(&asset_directory)
         .join("assets")
@@ -131,8 +131,11 @@ fn get_closest_file_path(original_path: &Path) -> PathBuf {
     asset_file_paths[file_indexes[0]].clone()
 }
 
-impl AssetIo for SmartAssetIo {
-    fn load_path<'a>(&'a self, path: &'a Path) -> BoxedFuture<'a, Result<Vec<u8>, AssetIoError>> {
+impl AssetReader for SmartAssetReader {
+    fn read<'a>(
+        &'a self,
+        path: &'a Path,
+    ) -> BoxedFuture<'a, Result<Box<Reader<'a>>, AssetReaderError>> {
         let asset_path = to_canonical_asset_path(path);
         if !asset_path.exists() {
             let closest_path = get_closest_file_path(&asset_path);
@@ -140,30 +143,28 @@ impl AssetIo for SmartAssetIo {
             info!("SUGGESTION: Did you mean {:?}?", closest_path);
         }
 
-        self.0.load_path(path)
+        self.0.read(path)
     }
 
-    fn read_directory(
-        &self,
-        path: &Path,
-    ) -> Result<Box<dyn Iterator<Item = PathBuf>>, AssetIoError> {
+    fn read_meta<'a>(
+        &'a self,
+        path: &'a Path,
+    ) -> BoxedFuture<'a, Result<Box<Reader<'a>>, AssetReaderError>> {
+        self.0.read_meta(path)
+    }
+
+    fn read_directory<'a>(
+        &'a self,
+        path: &'a Path,
+    ) -> BoxedFuture<'a, Result<Box<PathStream>, AssetReaderError>> {
         self.0.read_directory(path)
     }
 
-    fn watch_path_for_changes(
-        &self,
-        to_watch: &Path,
-        to_reload: Option<PathBuf>,
-    ) -> Result<(), AssetIoError> {
-        self.0.watch_path_for_changes(to_watch, to_reload)
-    }
-
-    fn watch_for_changes(&self, configuration: &ChangeWatcher) -> Result<(), AssetIoError> {
-        self.0.watch_for_changes(configuration)
-    }
-
-    fn get_metadata(&self, path: &Path) -> Result<Metadata, AssetIoError> {
-        self.0.get_metadata(path)
+    fn is_directory<'a>(
+        &'a self,
+        path: &'a Path,
+    ) -> BoxedFuture<'a, Result<bool, AssetReaderError>> {
+        self.0.is_directory(path)
     }
 }
 

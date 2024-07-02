@@ -161,7 +161,7 @@ pub fn update_handle_position_on_hold(
     window_query: Query<&Window, With<PrimaryWindow>>,
     camera_query: Query<&Camera>,
     parent_query: Query<&Parent>,
-    mouse_button_state: Res<Input<MouseButton>>,
+    mouse_button_state: Res<ButtonInput<MouseButton>>,
 ) {
     //Detect if left mouse button is being held down
     if !mouse_button_state.pressed(MouseButton::Left) {
@@ -212,11 +212,7 @@ pub fn update_handle_position_on_hold(
 
     let mut new_spinner_value = original_values.original_val + change_as_percent;
 
-    if new_spinner_value > 100.00 {
-        new_spinner_value = 100.00
-    } else if new_spinner_value < 0.00 {
-        new_spinner_value = 0.00
-    }
+    new_spinner_value = new_spinner_value.clamp(0.00, 100.00);
 
     spinner_value.sections[0].value = new_spinner_value.to_string();
 
@@ -257,9 +253,8 @@ fn get_node_width(
     let mut node_width = viewport_size.x;
 
     while let Some(val) = value_stack.pop() {
-        //node_width = val.resolve(node_width, viewport_size);
         node_width = val
-            .evaluate(node_width)
+            .resolve(node_width, viewport_size)
             .expect("get_node_width: Node width could not be resolved");
     }
 
