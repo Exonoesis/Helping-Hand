@@ -8,6 +8,13 @@
 ### Added
 - Interaction Events.
 - Settings Menu (accessed via Main Menu.)
+- Cucumber version 0.21
+
+### Changed
+- Updated Bevy to version 0.13
+- Updated Bevy ECS LDtk to latest version + patch
+- Updated Bevy Kira Audio to version 0.19
+- Updated LDtk app version to 1.5.3
 
 ### Fixed
 - macOS Sonoma crashing the application by updating dependencies.

@@ -1,15 +1,19 @@
 use crate::diagnostics::missing_file_finder::*;
+
+use bevy::asset::io::{AssetSource, AssetSourceId};
 use bevy::prelude::*;
-pub struct SmartAssetIoPlugin;
 
-impl Plugin for SmartAssetIoPlugin {
+pub struct SmartAssetReaderPlugin;
+
+impl Plugin for SmartAssetReaderPlugin {
     fn build(&self, app: &mut App) {
-        let default_io = AssetPlugin::default().create_platform_default_asset_io();
-
-        // create the custom asset io instance
-        let asset_io = SmartAssetIo(default_io);
-
-        // the asset server is constructed and added the resource manager
-        app.insert_resource(AssetServer::new(asset_io));
+        app.register_asset_source(
+            AssetSourceId::Default,
+            AssetSource::build().with_reader(|| {
+                Box::new(SmartAssetReader(AssetSource::get_default_reader(
+                    "assets".to_string(),
+                )()))
+            }),
+        );
     }
 }

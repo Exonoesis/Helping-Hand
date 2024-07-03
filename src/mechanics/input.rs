@@ -4,15 +4,16 @@ use crate::{
     entities::player::{DirectionFacing, Player, PlayerMovementActions},
     visuals::map::LevelDimensions,
 };
-use bevy::{prelude::*, sprite::collide_aabb::collide};
+use bevy::math::bounding::{Aabb2d, IntersectsVolume};
+use bevy::prelude::*;
 use bevy_ecs_ldtk::LevelSelection;
-use bevy_ecs_ldtk::{prelude::LdtkFields, EntityInstance, LdtkLevel};
+use bevy_ecs_ldtk::{prelude::*, EntityInstance, LevelIid};
 
 #[derive(Event)]
 pub struct InteractionEvent(String, String);
 
 pub fn player_input(
-    input: Res<Input<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
     mut player_query: Query<(&mut DirectionFacing, &mut MovementIntent), With<Player>>,
 ) {
     if player_query.is_empty() {
@@ -21,36 +22,45 @@ pub fn player_input(
 
     let (mut facing, mut moving) = player_query.single_mut();
 
-    if input.pressed(KeyCode::W) {
+    if input.pressed(KeyCode::KeyW) {
         *facing = DirectionFacing::Up;
         *moving = MovementIntent::Moving;
-    } else if input.pressed(KeyCode::S) {
+    } else if input.pressed(KeyCode::KeyS) {
         *facing = DirectionFacing::Down;
         *moving = MovementIntent::Moving;
-    } else if input.pressed(KeyCode::A) {
+    } else if input.pressed(KeyCode::KeyA) {
         *facing = DirectionFacing::Left;
         *moving = MovementIntent::Moving;
-    } else if input.pressed(KeyCode::D) {
+    } else if input.pressed(KeyCode::KeyD) {
         *facing = DirectionFacing::Right;
         *moving = MovementIntent::Moving;
     }
 }
 
 pub fn update_level_dimensions(
-    level_query: Query<&Handle<LdtkLevel>, Changed<Handle<LdtkLevel>>>,
-    loaded_levels: Res<Assets<LdtkLevel>>,
+    level_query: Query<&LevelIid, Changed<LevelIid>>,
+    projects: Query<&Handle<LdtkProject>>,
+    project_assets: Res<Assets<LdtkProject>>,
     mut level_dimension: ResMut<LevelDimensions>,
 ) {
-    if loaded_levels.is_empty() || level_query.is_empty() {
+    if project_assets.is_empty() || level_query.is_empty() {
         return;
     }
 
-    let level_info = &loaded_levels
-        .get(level_query.single())
-        .expect("The level should exist by now.")
-        .level;
-    let level_height = level_info.px_hei as usize;
-    let level_width = level_info.px_wid as usize;
+    let level_id = level_query.single();
+    let level_project = project_assets
+        .get(projects.single())
+        .expect("update_level_dimensions: Could not find project for map. Is it loaded?");
+
+    let level_info = level_project
+        .as_standalone()
+        .get_loaded_level_by_iid(level_id.get())
+        .expect(
+            "update_level_dimensions: Could not find Loaded Level in project. Is the map loaded?",
+        );
+
+    let level_height = *level_info.px_hei() as usize;
+    let level_width = *level_info.px_wid() as usize;
 
     level_dimension.width = level_width;
     level_dimension.height = level_height;
@@ -87,7 +97,7 @@ pub fn bound_player_movement(
 }
 
 pub fn animate_entity(
-    mut entity_query: Query<(&mut TextureAtlasSprite, &DirectionFacing), Changed<DirectionFacing>>,
+    mut entity_query: Query<(&mut TextureAtlas, &DirectionFacing), Changed<DirectionFacing>>,
 ) {
     if entity_query.is_empty() {
         return;
@@ -167,14 +177,16 @@ pub fn move_entity(
                 0.0,
             );
 
-            if collide(
-                projected_position,
-                Vec2::new(tile_side_length, tile_side_length),
-                tile_position,
-                Vec2::new(collision_tile.width as f32, collision_tile.height as f32),
-            )
-            .is_some()
-            {
+            let projected_dimensions = Vec2::new(tile_side_length, tile_side_length);
+            let tile_dimensions =
+                Vec2::new(collision_tile.width as f32, collision_tile.height as f32);
+
+            let has_collided =
+                Aabb2d::new(projected_position.truncate(), projected_dimensions / 2.0).intersects(
+                    &Aabb2d::new(tile_position.truncate(), tile_dimensions / 2.0),
+                );
+
+            if has_collided {
                 entity_movement_broadcast.send(PlayerMovementActions::Bumping);
                 *moving = MovementIntent::Idle;
                 return;
@@ -188,7 +200,7 @@ pub fn move_entity(
 }
 
 pub fn interact_entity(
-    input: Res<Input<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
     tile_query: Query<&EntityInstance>,
     player_query: Query<(&Transform, &DirectionFacing), With<Player>>,
     level_dimension: Res<LevelDimensions>,
@@ -198,7 +210,7 @@ pub fn interact_entity(
         return;
     }
 
-    if !input.just_pressed(KeyCode::E) {
+    if !input.just_pressed(KeyCode::KeyE) {
         return;
     }
 
@@ -244,17 +256,18 @@ pub fn interact_entity(
             0.0,
         );
 
-        if collide(
-            projected_position,
-            Vec2::new(tile_side_length, tile_side_length),
-            tile_position,
-            Vec2::new(
-                interactive_tile.width as f32,
-                interactive_tile.height as f32,
-            ),
-        )
-        .is_some()
-        {
+        let projected_dimensions = Vec2::new(tile_side_length, tile_side_length);
+        let tile_dimensions = Vec2::new(
+            interactive_tile.width as f32,
+            interactive_tile.height as f32,
+        );
+
+        let has_collided =
+            Aabb2d::new(projected_position.truncate(), projected_dimensions / 2.0).intersects(
+                &Aabb2d::new(tile_position.truncate(), tile_dimensions / 2.0),
+            );
+
+        if has_collided {
             let text = interactive_tile.field_instances().get(1).expect(
                 "interact_entity: Could not find Interactive command text in Interactive Tile",
             );
@@ -276,7 +289,7 @@ pub fn interact_entity(
 }
 
 pub fn display_interactive_message(mut interactible_event_reader: EventReader<InteractionEvent>) {
-    for interaction_command in interactible_event_reader.iter() {
+    for interaction_command in interactible_event_reader.read() {
         let command = &interaction_command.0;
         if command != "message" {
             continue;
@@ -291,7 +304,7 @@ pub fn transition_level(
     mut interactible_event_reader: EventReader<InteractionEvent>,
     mut level: ResMut<LevelSelection>,
 ) {
-    for interaction_command in interactible_event_reader.iter() {
+    for interaction_command in interactible_event_reader.read() {
         let command = &interaction_command.0;
         if command != "transition" {
             continue;
