@@ -1,5 +1,5 @@
 use crate::entities::player::MovementIntent;
-use crate::FieldValue::String as StringType;
+use bevy_ecs_ldtk::ldtk::FieldValue::String as StringType;
 use crate::{
     entities::player::{DirectionFacing, Player, PlayerMovementActions},
     visuals::map::LevelDimensions,
