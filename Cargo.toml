@@ -21,5 +21,9 @@ futures = "0.3"
 name = "menus"
 harness = false
 
+[[test]]
+name = "grid-based-movement"
+harness = false
+
 [patch.crates-io]
 bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap/", branch = "main" }
