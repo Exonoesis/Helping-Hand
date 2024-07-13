@@ -1,11 +1,11 @@
 use crate::entities::player::MovementIntent;
-use bevy_ecs_ldtk::ldtk::FieldValue::String as StringType;
 use crate::{
     entities::player::{DirectionFacing, Player, PlayerMovementActions},
     visuals::map::LevelDimensions,
 };
 use bevy::math::bounding::{Aabb2d, IntersectsVolume};
 use bevy::prelude::*;
+use bevy_ecs_ldtk::ldtk::FieldValue::String as StringType;
 use bevy_ecs_ldtk::LevelSelection;
 use bevy_ecs_ldtk::{prelude::*, EntityInstance, LevelIid};
 

@@ -2459,6 +2459,8 @@ dependencies = [
  "bevy_kira_audio",
  "cucumber",
  "futures",
+ "serde",
+ "serde_json",
  "unicode-segmentation",
 ]
 

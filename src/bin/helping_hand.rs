@@ -11,7 +11,9 @@ fn main() {
                 .build()
                 // An explanation for this line can be found in the referencing bevy example:
                 // https://github.com/bevyengine/bevy/blob/main/examples/asset/custom_asset_io.rs#L69
-                .add_before::<bevy::asset::AssetPlugin, _>(plugins::smart_asset_io::SmartAssetReaderPlugin),
+                .add_before::<bevy::asset::AssetPlugin, _>(
+                    plugins::smart_asset_io::SmartAssetReaderPlugin,
+                ),
         )
         .init_state::<AppState>()
         .add_plugins(LdtkPlugin)

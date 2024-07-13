@@ -3,6 +3,7 @@ use bevy::prelude::*;
 pub mod audio;
 pub mod diagnostics;
 pub mod entities;
+pub mod map;
 pub mod mechanics;
 pub mod plugins;
 pub mod visuals;

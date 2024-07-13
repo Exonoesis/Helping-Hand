@@ -10,6 +10,8 @@ bevy = { version = "^0.13", features = ["file_watcher"] }
 bevy_ecs_ldtk = { git = "https://github.com/Trouv/bevy_ecs_ldtk.git", rev = "2ee602f" }
 bevy_kira_audio = { version = "^0.19", features = ["wav"] }
 unicode-segmentation = "^1.10"
+serde = "^1.0"
+serde_json = "^1.0"
 
 [dev-dependencies]
 cucumber = "^0.21"
@@ -23,6 +25,10 @@ harness = false
 
 [[test]]
 name = "grid-based-movement"
+harness = false
+
+[[test]]
+name = "tilemap"
 harness = false
 
 [patch.crates-io]
