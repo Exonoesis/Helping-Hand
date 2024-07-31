@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 bevy = { version = "^0.13", features = ["file_watcher"] }
 bevy_ecs_ldtk = { git = "https://github.com/Trouv/bevy_ecs_ldtk.git", rev = "2ee602f" }
+tiled = "^0.12"
 bevy_kira_audio = { version = "^0.19", features = ["wav"] }
 unicode-segmentation = "^1.10"
 serde = "^1.0"
