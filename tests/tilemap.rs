@@ -32,7 +32,11 @@ impl GameWorld {
 
         app.add_plugins(MinimalPlugins);
 
-        Self { app, map_location, loaded_map }
+        Self {
+            app,
+            map_location,
+            loaded_map,
+        }
     }
 }
 
@@ -71,7 +75,7 @@ fn get_tiled_map_location(map_name: String) -> PathBuf {
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
         tiled_map_path.push(manifest_dir);
     }
-    
+
     tiled_map_path.push("tests/test-assets/maps");
     tiled_map_path.push(map_name);
 
@@ -111,8 +115,12 @@ fn get_map_row_num(tiles: &[Tile]) -> u32 {
 #[given("a Tiled map called test_map.tmx,")]
 fn verify_test_map_exists(world: &mut GameWorld) {
     let unloaded_tiled_map = get_tiled_map_location(String::from("test_map.tmx"));
-    assert!(unloaded_tiled_map.exists(), "File does not exist at location {:?}", unloaded_tiled_map.canonicalize().unwrap());
-    
+    assert!(
+        unloaded_tiled_map.exists(),
+        "File does not exist at location {:?}",
+        unloaded_tiled_map.canonicalize().unwrap()
+    );
+
     world.map_location = unloaded_tiled_map;
 }
 
@@ -136,7 +144,7 @@ fn verify_tiles_are_a_grid(world: &mut GameWorld) {
     let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
     let column_num = get_map_column_num(&tiles);
     let row_num = get_map_row_num(&tiles);
-    
+
     assert_eq!(column_num, 4, "Column count is incorrect");
     assert_eq!(row_num, 4, "Row count is incorrect");
 }
