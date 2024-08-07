@@ -82,7 +82,7 @@ fn get_tiled_map_location(map_name: String) -> PathBuf {
     tiled_map_path
 }
 
-fn get_map_column_num(tiles: &[Tile]) -> u32 {
+fn get_num_columns_from_map(tiles: &[Tile]) -> u32 {
     let mut highest_x = 0;
     let tile_width = tiles[0].tile_px_width;
 
@@ -97,7 +97,7 @@ fn get_map_column_num(tiles: &[Tile]) -> u32 {
     (highest_x / tile_width) + 1
 }
 
-fn get_map_row_num(tiles: &[Tile]) -> u32 {
+fn get_num_rows_from_map(tiles: &[Tile]) -> u32 {
     let mut highest_y = 0;
     let tile_height = tiles[0].tile_px_height;
 
@@ -142,11 +142,11 @@ fn verify_loaded_tile_amount(world: &mut GameWorld) {
 #[then("the tiles are in a 4x4 grid.")]
 fn verify_tiles_are_a_grid(world: &mut GameWorld) {
     let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
-    let column_num = get_map_column_num(&tiles);
-    let row_num = get_map_row_num(&tiles);
+    let num_columns = get_num_columns_from_map(&tiles);
+    let num_rows = get_num_rows_from_map(&tiles);
 
-    assert_eq!(column_num, 4, "Column count is incorrect");
-    assert_eq!(row_num, 4, "Row count is incorrect");
+    assert_eq!(num_columns, 4, "Column count is incorrect");
+    assert_eq!(num_rows, 4, "Row count is incorrect");
 }
 
 // This runs before everything else, so you can setup things here.
