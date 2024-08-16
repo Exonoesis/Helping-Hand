@@ -20,26 +20,25 @@ impl GameWorld {
     }
 }
 
-#[given("a Map,")]
-fn load_map(world: &mut GameWorld) {
-    world.app.add_plugins(LevelsPlugin);
-    world.app.update();
-}
+// #[given("a Map,")]
+// fn load_map(world: &mut GameWorld) {
+//     unimplemented!()
+// }
 
-#[given("a Player on a Map on the center of Tile A,")]
-fn verify_player_spawned(world: &mut GameWorld) {
-    unimplemented!()
-}
+// #[given("a Player on a Map on the center of Tile A,")]
+// fn verify_player_spawned(world: &mut GameWorld) {
+//     unimplemented!()
+// }
 
-#[when("the Player is requested to move to the right,")]
-fn move_player_right(world: &mut GameWorld) {
-    unimplemented!()
-}
+// #[when("the Player is requested to move to the right,")]
+// fn move_player_right(world: &mut GameWorld) {
+//     unimplemented!()
+// }
 
-#[then("the Player should be on the center of Tile B.")]
-fn verify_player_moved_to_tile_b(world: &mut GameWorld) {
-    unimplemented!()
-}
+// #[then("the Player should be on the center of Tile B.")]
+// fn verify_player_moved_to_tile_b(world: &mut GameWorld) {
+//     unimplemented!()
+// }
 
 // This runs before everything else, so you can setup things here.
 fn main() {

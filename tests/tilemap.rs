@@ -20,8 +20,14 @@ struct Tile {
     px_x: u32,
     px_y: u32,
     px_z: u32,
+    tile_texture: Option<TileTexture>,
     //layer_number: u32,
     //properties:
+}
+#[derive(Clone)]
+struct TileTexture {
+    spritesheet: PathBuf,
+    sprite_index: usize,
 }
 
 impl GameWorld {
@@ -57,12 +63,33 @@ fn get_tiles(tiled_map: &Map) -> Vec<Tile> {
                 px_x: x * tile_width,
                 px_y: y * tile_height,
                 px_z: 0,
+                tile_texture: get_tile_texture(tiled_map, x, y),
             };
             tiles.push(tile);
         }
     }
 
     tiles
+}
+
+fn get_tile_texture(tiled_map: &Map, x_grid_cord: u32, y_grid_cord: u32) -> Option<TileTexture> {
+    //Layer index hardcoded to 0 as we're currently assuming only one layer in map
+    let tile_layer = tiled_map.get_layer(0).unwrap().as_tile_layer().unwrap();
+    let tile = tile_layer
+        .get_tile(x_grid_cord as i32, y_grid_cord as i32)
+        .unwrap();
+
+    let sprite_index = tile.id() as usize;
+    let spritesheet = tile.get_tileset().image.clone().unwrap().source;
+
+    if tile.id() != 0 {
+        Some(TileTexture {
+            sprite_index: sprite_index,
+            spritesheet,
+        })
+    } else {
+        None
+    }
 }
 
 /// Returns a Path to the specified Tiled Map
@@ -124,6 +151,30 @@ fn verify_test_map_exists(world: &mut GameWorld) {
     world.map_location = unloaded_tiled_map;
 }
 
+#[given("a Tiled map called single_sprite_sheet.tmx,")]
+fn verify_single_sprite_sheet_exists(world: &mut GameWorld) {
+    let unloaded_tiled_map = get_tiled_map_location(String::from("single_sprite_sheet.tmx"));
+    assert!(
+        unloaded_tiled_map.exists(),
+        "File does not exist at location {:?}",
+        unloaded_tiled_map.canonicalize().unwrap()
+    );
+
+    world.map_location = unloaded_tiled_map;
+}
+
+#[given("a Tiled map called multiple_sprite_sheet.tmx,")]
+fn verify_multiple_sprite_sheet_exists(world: &mut GameWorld) {
+    let unloaded_tiled_map = get_tiled_map_location(String::from("multiple_sprite_sheet.tmx"));
+    assert!(
+        unloaded_tiled_map.exists(),
+        "File does not exist at location {:?}",
+        unloaded_tiled_map.canonicalize().unwrap()
+    );
+
+    world.map_location = unloaded_tiled_map;
+}
+
 #[when("the Tiled map is loaded,")]
 fn load_test_map(world: &mut GameWorld) {
     let mut loader = Loader::new();
@@ -134,9 +185,15 @@ fn load_test_map(world: &mut GameWorld) {
 }
 
 #[then("there are 16 tiles loaded.")]
-fn verify_loaded_tile_amount(world: &mut GameWorld) {
+fn verify_16_loaded_tiles(world: &mut GameWorld) {
     let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
     assert_eq!(tiles.len(), 16);
+}
+
+#[then("there are 4 tiles loaded.")]
+fn verify_4_loaded_tiles(world: &mut GameWorld) {
+    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+    assert_eq!(tiles.len(), 4);
 }
 
 #[then("the tiles are in a 4x4 grid.")]
@@ -147,6 +204,78 @@ fn verify_tiles_are_a_grid(world: &mut GameWorld) {
 
     assert_eq!(num_columns, 4, "Column count is incorrect");
     assert_eq!(num_rows, 4, "Row count is incorrect");
+}
+
+#[then("each tile points to the same sprite sheet.")]
+fn verify_tiles_are_same_spritesheet(world: &mut GameWorld) {
+    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+    let spritesheet = world.loaded_map.as_ref().unwrap().tilesets()[0]
+        .image
+        .clone()
+        .unwrap()
+        .source;
+
+    for tile in tiles {
+        assert_eq!(tile.tile_texture.unwrap().spritesheet, spritesheet);
+    }
+}
+
+#[then("each tile points to the correct image on that sprite sheet.")]
+fn verify_single_sheet_tile_images(world: &mut GameWorld) {
+    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+
+    assert_eq!(tiles[0].tile_texture.clone().unwrap().sprite_index, 1);
+    assert_eq!(tiles[1].tile_texture.clone().unwrap().sprite_index, 5);
+    assert_eq!(tiles[2].tile_texture.clone().unwrap().sprite_index, 49);
+    assert_eq!(tiles[3].tile_texture.clone().unwrap().sprite_index, 53);
+}
+
+#[then("the top two tiles point to one sprite sheet,")]
+fn verify_top_two_sprites(world: &mut GameWorld) {
+    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+    let spritesheet = world.loaded_map.as_ref().unwrap().tilesets()[0]
+        .image
+        .clone()
+        .unwrap()
+        .source;
+
+    assert_eq!(
+        tiles[0].tile_texture.clone().unwrap().spritesheet,
+        spritesheet
+    );
+    assert_eq!(
+        tiles[1].tile_texture.clone().unwrap().spritesheet,
+        spritesheet
+    );
+}
+
+#[then("the bottom two tiles point to the other sprite sheet,")]
+fn verify_bottom_two_sprites(world: &mut GameWorld) {
+    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+    let spritesheet = world.loaded_map.as_ref().unwrap().tilesets()[1]
+        .image
+        .clone()
+        .unwrap()
+        .source;
+
+    assert_eq!(
+        tiles[2].tile_texture.clone().unwrap().spritesheet,
+        spritesheet
+    );
+    assert_eq!(
+        tiles[3].tile_texture.clone().unwrap().spritesheet,
+        spritesheet
+    );
+}
+
+#[then("each tile points to the correct on its sprite sheet.")]
+fn verify_multiple_sheet_tile_images(world: &mut GameWorld) {
+    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+
+    assert_eq!(tiles[0].tile_texture.clone().unwrap().sprite_index, 131);
+    assert_eq!(tiles[1].tile_texture.clone().unwrap().sprite_index, 128);
+    assert_eq!(tiles[2].tile_texture.clone().unwrap().sprite_index, 115);
+    assert_eq!(tiles[3].tile_texture.clone().unwrap().sprite_index, 164);
 }
 
 // This runs before everything else, so you can setup things here.
