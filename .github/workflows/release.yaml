@@ -40,7 +40,7 @@ jobs:
       VERSION: ${{needs.get-version.outputs.version}}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install rust toolchain for Apple Silicon
         uses: dtolnay/rust-toolchain@master
         with:
@@ -85,7 +85,7 @@ jobs:
       VERSION: ${{needs.get-version.outputs.version}}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Mold (Linux only)
         uses: rui314/setup-mold@v1
       - name: Install rust toolchain
@@ -93,7 +93,7 @@ jobs:
         with:
           toolchain: stable
       - name: Install Dependencies
-        run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev mold
+        run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev mold libwayland-dev libxkbcommon-dev
       - name: Build release
         run: |
           cargo build --release
@@ -121,7 +121,7 @@ jobs:
       VERSION: ${{needs.get-version.outputs.version}}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install rust toolchain
         uses: dtolnay/rust-toolchain@master
         with:
