@@ -5,6 +5,7 @@ use cucumber::{given, then, when, World};
 use tiled::{Loader, Map};
 
 use std::path::PathBuf;
+use std::ffi::OsString;
 
 #[derive(Debug, Default, World)]
 #[world(init = Self::new)]
@@ -14,6 +15,7 @@ struct GameWorld {
     pub loaded_map: Option<Map>,
 }
 
+#[derive(Clone)]
 struct Tile {
     tile_px_width: u32,
     tile_px_height: u32,
@@ -72,6 +74,9 @@ fn get_tiles(tiled_map: &Map) -> Vec<Tile> {
     tiles
 }
 
+// TODO: Turn this into TiledMapReader if the map kepts being read?
+// Example: tiled_map_reader = TiledMapReader::new(tiled_map);
+//          tile_texture = tiled_map_reader.get_tile_texture(x, y);
 fn get_tile_texture(tiled_map: &Map, x_grid_cord: u32, y_grid_cord: u32) -> Option<TileTexture> {
     //Layer index hardcoded to 0 as we're currently assuming only one layer in map
     let tile_layer = tiled_map.get_layer(0).unwrap().as_tile_layer().unwrap();
@@ -139,33 +144,20 @@ fn get_num_rows_from_map(tiles: &[Tile]) -> u32 {
     (highest_y / tile_height) + 1
 }
 
-#[given("a Tiled map called test_map.tmx,")]
-fn verify_test_map_exists(world: &mut GameWorld) {
-    let unloaded_tiled_map = get_tiled_map_location(String::from("test_map.tmx"));
-    assert!(
-        unloaded_tiled_map.exists(),
-        "File does not exist at location {:?}",
-        unloaded_tiled_map.canonicalize().unwrap()
-    );
+fn get_tile_spritesheet_filename(tile: Tile) -> OsString {
+    let tile_texture = tile.tile_texture.clone().unwrap();
+    let spritesheet = tile_texture.spritesheet.file_name().unwrap();
 
-    world.map_location = unloaded_tiled_map;
+    spritesheet.into()
 }
 
-#[given("a Tiled map called single_sprite_sheet.tmx,")]
-fn verify_single_sprite_sheet_exists(world: &mut GameWorld) {
-    let unloaded_tiled_map = get_tiled_map_location(String::from("single_sprite_sheet.tmx"));
-    assert!(
-        unloaded_tiled_map.exists(),
-        "File does not exist at location {:?}",
-        unloaded_tiled_map.canonicalize().unwrap()
-    );
+////////////////////////////
 
-    world.map_location = unloaded_tiled_map;
-}
+#[given(regex = r"a Tiled map called (test_map.tmx|single_sprite_sheet.tmx|multiple_sprite_sheet.tmx),")]
+fn verify_test_map_exists(world: &mut GameWorld, map_name: String) {
 
-#[given("a Tiled map called multiple_sprite_sheet.tmx,")]
-fn verify_multiple_sprite_sheet_exists(world: &mut GameWorld) {
-    let unloaded_tiled_map = get_tiled_map_location(String::from("multiple_sprite_sheet.tmx"));
+    let unloaded_tiled_map = get_tiled_map_location(map_name);
+
     assert!(
         unloaded_tiled_map.exists(),
         "File does not exist at location {:?}",
@@ -184,16 +176,16 @@ fn load_test_map(world: &mut GameWorld) {
     world.loaded_map = Some(tiled_map.unwrap());
 }
 
-#[then("there are 16 tiles loaded.")]
-fn verify_16_loaded_tiles(world: &mut GameWorld) {
-    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
-    assert_eq!(tiles.len(), 16);
-}
+#[then(regex = r"there are (4|16) tiles loaded.")]
+fn verify_16_loaded_tiles(world: &mut GameWorld, map_tile_count: String) {
+    let tile_num = match map_tile_count.as_str() {
+        "4" => 4,
+        "16" => 16,
+        _ => unreachable!("There's a choice we have not taken care of?")
+    };
 
-#[then("there are 4 tiles loaded.")]
-fn verify_4_loaded_tiles(world: &mut GameWorld) {
     let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
-    assert_eq!(tiles.len(), 4);
+    assert_eq!(tiles.len(), tile_num);
 }
 
 #[then("the tiles are in a 4x4 grid.")]
@@ -209,73 +201,54 @@ fn verify_tiles_are_a_grid(world: &mut GameWorld) {
 #[then("each tile points to the same sprite sheet.")]
 fn verify_tiles_are_same_spritesheet(world: &mut GameWorld) {
     let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
-    let spritesheet = world.loaded_map.as_ref().unwrap().tilesets()[0]
-        .image
-        .clone()
-        .unwrap()
-        .source;
+
+    let spritesheet = OsString::from("atlas_64x.png");
 
     for tile in tiles {
-        assert_eq!(tile.tile_texture.unwrap().spritesheet, spritesheet);
+        assert_eq!(get_tile_spritesheet_filename(tile), spritesheet);
     }
 }
 
-#[then("each tile points to the correct image on that sprite sheet.")]
-fn verify_single_sheet_tile_images(world: &mut GameWorld) {
+#[then(regex = r"each tile points to the correct image on the (single|multiple) sprite (sheet|sheets).")]
+fn verify_single_sheet_tile_images(world: &mut GameWorld, spritesheet_num: String) {
+    let (first_idx, second_idx, third_idx, fourth_idx) = match spritesheet_num.as_str() {
+        "single" => (1,5,49,53),
+        "multiple" => (131,128,115,164),
+        _ => unreachable!()
+    };
+
     let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
 
-    assert_eq!(tiles[0].tile_texture.clone().unwrap().sprite_index, 1);
-    assert_eq!(tiles[1].tile_texture.clone().unwrap().sprite_index, 5);
-    assert_eq!(tiles[2].tile_texture.clone().unwrap().sprite_index, 49);
-    assert_eq!(tiles[3].tile_texture.clone().unwrap().sprite_index, 53);
+    assert_eq!(tiles[0].tile_texture.clone().unwrap().sprite_index, first_idx);
+    assert_eq!(tiles[1].tile_texture.clone().unwrap().sprite_index, second_idx);
+    assert_eq!(tiles[2].tile_texture.clone().unwrap().sprite_index, third_idx);
+    assert_eq!(tiles[3].tile_texture.clone().unwrap().sprite_index, fourth_idx);
 }
 
-#[then("the top two tiles point to one sprite sheet,")]
-fn verify_top_two_sprites(world: &mut GameWorld) {
+#[then(regex = r"the (top|bottom) two tiles point to (one|the other) sprite sheet,")]
+fn verify_top_two_sprites(world: &mut GameWorld, tile_placement: String, spritesheet_choice: String) {
+    let spritesheet_filename = match spritesheet_choice.as_str() {
+        "one" => OsString::from("!CL_DEMO_64.png"),
+        "the other" => OsString::from("atlas_64x.png"),
+        _ => unreachable!("There's a choice we have not taken care of?")
+    };
+    
+    let (first_tile_idx, second_tile_idx) = match tile_placement.as_str() {
+        "top" => (0, 1),
+        "bottom" => (2, 3),
+        _ => unreachable!("There's a choice we have not taken care of?")
+    };
+
     let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
-    let spritesheet = world.loaded_map.as_ref().unwrap().tilesets()[0]
-        .image
-        .clone()
-        .unwrap()
-        .source;
-
+    
     assert_eq!(
-        tiles[0].tile_texture.clone().unwrap().spritesheet,
-        spritesheet
+        get_tile_spritesheet_filename(tiles[first_tile_idx].clone()),
+        spritesheet_filename
     );
     assert_eq!(
-        tiles[1].tile_texture.clone().unwrap().spritesheet,
-        spritesheet
+        get_tile_spritesheet_filename(tiles[second_tile_idx].clone()),
+        spritesheet_filename
     );
-}
-
-#[then("the bottom two tiles point to the other sprite sheet,")]
-fn verify_bottom_two_sprites(world: &mut GameWorld) {
-    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
-    let spritesheet = world.loaded_map.as_ref().unwrap().tilesets()[1]
-        .image
-        .clone()
-        .unwrap()
-        .source;
-
-    assert_eq!(
-        tiles[2].tile_texture.clone().unwrap().spritesheet,
-        spritesheet
-    );
-    assert_eq!(
-        tiles[3].tile_texture.clone().unwrap().spritesheet,
-        spritesheet
-    );
-}
-
-#[then("each tile points to the correct on its sprite sheet.")]
-fn verify_multiple_sheet_tile_images(world: &mut GameWorld) {
-    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
-
-    assert_eq!(tiles[0].tile_texture.clone().unwrap().sprite_index, 131);
-    assert_eq!(tiles[1].tile_texture.clone().unwrap().sprite_index, 128);
-    assert_eq!(tiles[2].tile_texture.clone().unwrap().sprite_index, 115);
-    assert_eq!(tiles[3].tile_texture.clone().unwrap().sprite_index, 164);
 }
 
 // This runs before everything else, so you can setup things here.
