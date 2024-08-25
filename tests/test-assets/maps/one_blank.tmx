@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-up" width="2" height="2" tilewidth="64" tileheight="64" infinite="0" nextlayerid="2" nextobjectid="1">
+ <tileset firstgid="1" name="atlas_64x" tilewidth="64" tileheight="64" tilecount="768" columns="48">
+  <image source="../../../assets/textures/environments/atlas_64x.png" width="3072" height="1024"/>
+ </tileset>
+ <layer id="1" name="Tile Layer 1" width="2" height="2">
+  <data encoding="csv">
+105,106,
+153,0
+</data>
+ </layer>
+</map>

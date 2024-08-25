@@ -80,14 +80,15 @@ fn get_tiles(tiled_map: &Map) -> Vec<Tile> {
 fn get_tile_texture(tiled_map: &Map, x_grid_cord: u32, y_grid_cord: u32) -> Option<TileTexture> {
     //Layer index hardcoded to 0 as we're currently assuming only one layer in map
     let tile_layer = tiled_map.get_layer(0).unwrap().as_tile_layer().unwrap();
-    let tile = tile_layer
-        .get_tile(x_grid_cord as i32, y_grid_cord as i32)
-        .unwrap();
 
-    let sprite_index = tile.id() as usize;
-    let spritesheet = tile.get_tileset().image.clone().unwrap().source;
+    if let Some(tile) = tile_layer.get_tile(x_grid_cord as i32, y_grid_cord as i32) {
+        tile_layer
+            .get_tile(x_grid_cord as i32, y_grid_cord as i32)
+            .unwrap();
 
-    if tile.id() != 0 {
+        let sprite_index = tile.id() as usize;
+        let spritesheet = tile.get_tileset().image.clone().unwrap().source;
+
         Some(TileTexture {
             sprite_index: sprite_index,
             spritesheet,
@@ -154,7 +155,7 @@ fn get_tile_spritesheet_filename(tile: Tile) -> OsString {
 ////////////////////////////
 
 #[given(
-    regex = r"a Tiled map called (test_map.tmx|single_sprite_sheet.tmx|multiple_sprite_sheet.tmx),"
+    regex = r"a Tiled map called (test_map.tmx|single_sprite_sheet.tmx|multiple_sprite_sheet.tmx|one_blank.tmx),"
 )]
 fn verify_test_map_exists(world: &mut GameWorld, map_name: String) {
     let unloaded_tiled_map = get_tiled_map_location(map_name);
@@ -268,6 +269,22 @@ fn verify_sprites_are_different_sprite_sheets(
         get_tile_spritesheet_filename(tiles[second_tile_idx].clone()),
         spritesheet_filename
     );
+}
+
+#[then("the first three tiles contain an image element,")]
+fn verify_3_tiles_contain_images(world: &mut GameWorld) {
+    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+
+    assert!(tiles[0].tile_texture.is_some());
+    assert!(tiles[1].tile_texture.is_some());
+    assert!(tiles[2].tile_texture.is_some());
+}
+
+#[then("the last tile has no image element.")]
+fn verify_tile_image_is_empty(world: &mut GameWorld) {
+    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+
+    assert!(tiles[3].tile_texture.is_none());
 }
 
 // This runs before everything else, so you can setup things here.

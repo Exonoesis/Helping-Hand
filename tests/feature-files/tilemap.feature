@@ -24,3 +24,9 @@ Feature: Load Tilemap from Tiled.
         And the top two tiles point to one sprite sheet,
         And the bottom two tiles point to the other sprite sheet,
         And each tile points to the correct image on the multiple sprite sheets.
+
+    Scenario: Map loads correctly when some tiles have no image.
+        Given a Tiled map called one_blank.tmx,
+        When the Tiled map is loaded,
+        Then the first three tiles contain an image element,
+        And the last tile has no image element.
