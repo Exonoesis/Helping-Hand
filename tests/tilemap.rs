@@ -1,3 +1,4 @@
+use bevy::log::tracing_subscriber::fmt::layer;
 use bevy::prelude::*;
 
 use cucumber::{given, then, when, World};
@@ -23,7 +24,7 @@ struct Tile {
     px_y: u32,
     px_z: u32,
     tile_texture: Option<TileTexture>,
-    //layer_number: u32,
+    layer_number: usize,
     //properties:
 }
 #[derive(Clone)]
@@ -57,17 +58,20 @@ fn get_tiles(tiled_map: &Map) -> Vec<Tile> {
 
     let mut tiles = Vec::new();
 
-    for y in 0..map_height {
-        for x in 0..map_width {
-            let tile = Tile {
-                tile_px_width: tile_width,
-                tile_px_height: tile_height,
-                px_x: x * tile_width,
-                px_y: y * tile_height,
-                px_z: 0,
-                tile_texture: get_tile_texture(tiled_map, x, y),
-            };
-            tiles.push(tile);
+    for z in 0..tiled_map.layers().len() {
+        for y in 0..map_height {
+            for x in 0..map_width {
+                let tile = Tile {
+                    tile_px_width: tile_width,
+                    tile_px_height: tile_height,
+                    px_x: x * tile_width,
+                    px_y: y * tile_height,
+                    px_z: 0,
+                    layer_number: z,
+                    tile_texture: get_tile_texture(tiled_map, x, y, z),
+                };
+                tiles.push(tile);
+            }
         }
     }
 
@@ -77,9 +81,18 @@ fn get_tiles(tiled_map: &Map) -> Vec<Tile> {
 // TODO: Turn this into TiledMapReader if the map kepts being read?
 // Example: tiled_map_reader = TiledMapReader::new(tiled_map);
 //          tile_texture = tiled_map_reader.get_tile_texture(x, y);
-fn get_tile_texture(tiled_map: &Map, x_grid_cord: u32, y_grid_cord: u32) -> Option<TileTexture> {
+fn get_tile_texture(
+    tiled_map: &Map,
+    x_grid_cord: u32,
+    y_grid_cord: u32,
+    layer_num: usize,
+) -> Option<TileTexture> {
     //Layer index hardcoded to 0 as we're currently assuming only one layer in map
-    let tile_layer = tiled_map.get_layer(0).unwrap().as_tile_layer().unwrap();
+    let tile_layer = tiled_map
+        .get_layer(layer_num)
+        .unwrap()
+        .as_tile_layer()
+        .unwrap();
 
     if let Some(tile) = tile_layer.get_tile(x_grid_cord as i32, y_grid_cord as i32) {
         tile_layer
@@ -155,7 +168,7 @@ fn get_tile_spritesheet_filename(tile: Tile) -> OsString {
 ////////////////////////////
 
 #[given(
-    regex = r"a Tiled map called (test_map.tmx|single_sprite_sheet.tmx|multiple_sprite_sheet.tmx|one_blank.tmx),"
+    regex = r"a Tiled map called (test_map.tmx|single_sprite_sheet.tmx|multiple_sprite_sheet.tmx|one_blank.tmx|two_layers.tmx),"
 )]
 fn verify_test_map_exists(world: &mut GameWorld, map_name: String) {
     let unloaded_tiled_map = get_tiled_map_location(map_name);
@@ -285,6 +298,30 @@ fn verify_tile_image_is_empty(world: &mut GameWorld) {
     let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
 
     assert!(tiles[3].tile_texture.is_none());
+}
+
+#[then("there exist two overlapping layers of tiles.")]
+fn verify_two_tile_layers(world: &mut GameWorld) {
+    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+
+    //On a 2x2 map, the first four tiles are layer 0
+    for x in 0..3 {
+        assert_eq!(tiles[x].layer_number, 0);
+    }
+
+    //On a 2x2 map, the second four tiles are layer 1
+    for x in 4..7 {
+        assert_eq!(tiles[x].layer_number, 1);
+    }
+
+    //Each tile on layer one shares an (x,y) position with a tile on layer 0
+    //whose number in the tile list is offset by the number of tiles on layer 1
+    for x in 0..3 {
+        let tile_on_layer_0 = (tiles[x].px_x, tiles[x].px_y);
+        let tile_on_layer_1 = (tiles[x + 4].px_x, tiles[x + 4].px_y);
+
+        assert_eq!(tile_on_layer_0, tile_on_layer_1);
+    }
 }
 
 // This runs before everything else, so you can setup things here.

@@ -30,3 +30,8 @@ Feature: Load Tilemap from Tiled.
         When the Tiled map is loaded,
         Then the first three tiles contain an image element,
         And the last tile has no image element.
+
+    Scenario: Load a Tiled map with multiple layers.
+        Given a Tiled map called two_layers.tmx,
+        When the Tiled map is loaded,
+        Then there exist two overlapping layers of tiles.
