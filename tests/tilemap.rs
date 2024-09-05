@@ -1,4 +1,3 @@
-use bevy::log::tracing_subscriber::fmt::layer;
 use bevy::prelude::*;
 
 use cucumber::{given, then, when, World};
@@ -27,10 +26,16 @@ struct Tile {
     layer_number: usize,
     //properties:
 }
+
 #[derive(Clone)]
 struct TileTexture {
     spritesheet: PathBuf,
     sprite_index: usize,
+}
+
+#[derive(Bundle)]
+struct RenderTileBundle {
+    sprite_sheet_bundle: SpriteSheetBundle,
 }
 
 impl GameWorld {
@@ -40,6 +45,7 @@ impl GameWorld {
         let loaded_map = None;
 
         app.add_plugins(MinimalPlugins);
+        app.add_plugins(AssetPlugin::default());
 
         Self {
             app,
@@ -66,7 +72,9 @@ fn get_tiles(tiled_map: &Map) -> Vec<Tile> {
                     tile_px_height: tile_height,
                     px_x: x * tile_width,
                     px_y: y * tile_height,
-                    px_z: 0,
+                    // Z value is currently equal to layer number,
+                    // this may change in the future
+                    px_z: z as u32,
                     layer_number: z,
                     tile_texture: get_tile_texture(tiled_map, x, y, z),
                 };
@@ -78,6 +86,49 @@ fn get_tiles(tiled_map: &Map) -> Vec<Tile> {
     tiles
 }
 
+/// Returns a list of RenderTileBundles to be spawned by Bevy for the given list of tiles.
+fn get_render_tile_bundles(
+    tiles: &[Tile],
+    asset_server: &AssetServer,
+    texture_atlas_layouts: &mut Assets<TextureAtlasLayout>,
+) -> Vec<Option<RenderTileBundle>> {
+    //make a vector to hold all RenderTileBundles
+    let mut render_tile_bundles = Vec::new();
+
+    for tile in tiles {
+        if tile.tile_texture.is_some() {
+            let texture = asset_server.load(tile.tile_texture.clone().unwrap().spritesheet);
+            let layout = TextureAtlasLayout::from_grid(
+                Vec2::new(tile.tile_px_width as f32, tile.tile_px_height as f32),
+                get_num_columns_from_map(tiles) as usize,
+                get_num_rows_from_map(tiles) as usize,
+                None,
+                None,
+            );
+
+            let render_tile = Some(RenderTileBundle {
+                sprite_sheet_bundle: SpriteSheetBundle {
+                    transform: Transform::from_xyz(
+                        tile.px_x as f32,
+                        tile.px_y as f32,
+                        tile.px_z as f32,
+                    ),
+                    texture,
+                    atlas: TextureAtlas {
+                        layout: texture_atlas_layouts.add(layout),
+                        index: tile.tile_texture.clone().unwrap().sprite_index,
+                    },
+                    ..Default::default()
+                },
+            });
+            render_tile_bundles.push(render_tile);
+        } else {
+            render_tile_bundles.push(None);
+        }
+    }
+    render_tile_bundles
+}
+
 // TODO: Turn this into TiledMapReader if the map kepts being read?
 // Example: tiled_map_reader = TiledMapReader::new(tiled_map);
 //          tile_texture = tiled_map_reader.get_tile_texture(x, y);
@@ -87,7 +138,6 @@ fn get_tile_texture(
     y_grid_cord: u32,
     layer_num: usize,
 ) -> Option<TileTexture> {
-    //Layer index hardcoded to 0 as we're currently assuming only one layer in map
     let tile_layer = tiled_map
         .get_layer(layer_num)
         .unwrap()
@@ -103,7 +153,7 @@ fn get_tile_texture(
         let spritesheet = tile.get_tileset().image.clone().unwrap().source;
 
         Some(TileTexture {
-            sprite_index: sprite_index,
+            sprite_index,
             spritesheet,
         })
     } else {
@@ -167,9 +217,7 @@ fn get_tile_spritesheet_filename(tile: Tile) -> OsString {
 
 ////////////////////////////
 
-#[given(
-    regex = r"a Tiled map called (test_map.tmx|single_sprite_sheet.tmx|multiple_sprite_sheet.tmx|one_blank.tmx|two_layers.tmx),"
-)]
+#[given(regex = r"a Tiled map called (.+\.tmx),")]
 fn verify_test_map_exists(world: &mut GameWorld, map_name: String) {
     let unloaded_tiled_map = get_tiled_map_location(map_name);
 
@@ -191,13 +239,11 @@ fn load_test_map(world: &mut GameWorld) {
     world.loaded_map = Some(tiled_map.unwrap());
 }
 
-#[then(regex = r"there are (4|16) tiles loaded.")]
+#[then(regex = r"there are ([0-9]+) tiles loaded.")]
 fn verify_num_loaded_tiles(world: &mut GameWorld, map_tile_count: String) {
-    let tile_num = match map_tile_count.as_str() {
-        "4" => 4,
-        "16" => 16,
-        _ => unreachable!("There's a choice we have not taken care of?"),
-    };
+    let tile_num = map_tile_count
+        .parse::<usize>()
+        .expect("verify_num_loaded_tiles: map_tile_count is not a number?");
 
     let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
     assert_eq!(tiles.len(), tile_num);
@@ -300,7 +346,7 @@ fn verify_tile_image_is_empty(world: &mut GameWorld) {
     assert!(tiles[3].tile_texture.is_none());
 }
 
-#[then("there exist two overlapping layers of tiles.")]
+#[then("there exist two layers of tiles,")]
 fn verify_two_tile_layers(world: &mut GameWorld) {
     let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
 
@@ -313,6 +359,11 @@ fn verify_two_tile_layers(world: &mut GameWorld) {
     for x in 4..7 {
         assert_eq!(tiles[x].layer_number, 1);
     }
+}
+
+#[then("those two layers are overlapping.")]
+fn verify_two_overlapping_tile_layers(world: &mut GameWorld) {
+    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
 
     //Each tile on layer one shares an (x,y) position with a tile on layer 0
     //whose number in the tile list is offset by the number of tiles on layer 1
@@ -324,10 +375,19 @@ fn verify_two_tile_layers(world: &mut GameWorld) {
     }
 }
 
-// This runs before everything else, so you can setup things here.
+#[then("the first three tiles can be converted to RenderTileBundles,")]
+fn verify_three_render_tile_bundles(world: &mut GameWorld) {
+    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+    let asset_server = world.app.world.resource::<AssetServer>();
+    let texture_atlas_layout = world.app.world.resource::<Assets<TextureAtlasLayout>>();
+
+    let render_tile_bundles = get_render_tile_bundles(&tiles, asset_server, texture_atlas_layout);
+
+    for bundle in render_tile_bundles {
+        assert_eq!(1, 2); //To-do
+    }
+}
+
 fn main() {
-    // You may choose any executor you like (`tokio`, `async-std`, etc.).
-    // You may even have an `async` main, it doesn't matter. The point is that
-    // Cucumber is composable. :)
     futures::executor::block_on(GameWorld::run("tests/feature-files/tilemap.feature"));
 }

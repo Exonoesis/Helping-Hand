@@ -34,4 +34,11 @@ Feature: Load Tilemap from Tiled.
     Scenario: Load a Tiled map with multiple layers.
         Given a Tiled map called two_layers.tmx,
         When the Tiled map is loaded,
-        Then there exist two overlapping layers of tiles.
+        Then there exist two layers of tiles,
+        And those two layers are overlapping.
+
+    Scenario: Adaptor bundles are created correctly.
+        Given a Tiled map called one_blank.tmx,
+        When the Tiled map is loaded,
+        Then the first three tiles can be converted to RenderTileBundles,
+        And the last tile cannot be converted to a RenderTileBundle.
