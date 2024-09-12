@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-
 use bevy::render::settings::WgpuSettings;
 use bevy::render::RenderPlugin;
 use bevy::sprite::SpritePlugin;
@@ -71,7 +70,7 @@ impl GameWorld {
     }
 }
 
-fn get_tiles(tiled_map: &Map) -> Vec<Tile> {
+fn get_map_tiles(tiled_map: &Map) -> Vec<Tile> {
     let tile_width = tiled_map.tile_width;
     let tile_height = tiled_map.tile_height;
 
@@ -108,45 +107,48 @@ fn get_render_tile_bundles(
     asset_server: &AssetServer,
     texture_atlas_assets: &mut Assets<TextureAtlasLayout>,
 ) -> Vec<Option<RenderTileBundle>> {
-    //make a vector to hold all RenderTileBundles
     let mut render_tile_bundles = Vec::new();
 
     for tile in tiles {
-        if tile.tile_texture.is_some() {
-            let texture = asset_server.load(tile.tile_texture.clone().unwrap().spritesheet);
-            let sprite_sheet_column_count =
-                (tile.tile_texture.clone().unwrap().spritesheet_px_width / tile.tile_px_width)
-                    as usize;
-            let sprite_sheet_row_count = (tile.tile_texture.clone().unwrap().spritesheet_px_height
-                / tile.tile_px_height) as usize;
-
-            let sprite_layout = TextureAtlasLayout::from_grid(
-                Vec2::new(tile.tile_px_width as f32, tile.tile_px_height as f32),
-                sprite_sheet_column_count,
-                sprite_sheet_row_count,
-                None,
-                None,
-            );
-
-            let render_tile = Some(RenderTileBundle {
-                sprite_sheet_bundle: SpriteSheetBundle {
-                    transform: Transform::from_xyz(
-                        tile.px_x as f32,
-                        tile.px_y as f32,
-                        tile.px_z as f32,
-                    ),
-                    texture,
-                    atlas: TextureAtlas {
-                        layout: texture_atlas_assets.add(sprite_layout),
-                        index: tile.tile_texture.clone().unwrap().sprite_index,
-                    },
-                    ..Default::default()
-                },
-            });
-            render_tile_bundles.push(render_tile);
-        } else {
+        //Tiles without a texture don't need to be rendered
+        if tile.tile_texture.is_none() {
             render_tile_bundles.push(None);
+            continue;
         }
+
+        let texture = asset_server.load(tile.tile_texture.clone().unwrap().spritesheet);
+        let sprite_sheet_column_count =
+            (tile.tile_texture.clone().unwrap().spritesheet_px_width / tile.tile_px_width) as usize;
+        let sprite_sheet_row_count = (tile.tile_texture.clone().unwrap().spritesheet_px_height
+            / tile.tile_px_height) as usize;
+
+        //This is how the sprite sheet should be cut when creating sprites to render
+        let sheet_layout = TextureAtlasLayout::from_grid(
+            Vec2::new(tile.tile_px_width as f32, tile.tile_px_height as f32),
+            sprite_sheet_column_count,
+            sprite_sheet_row_count,
+            None,
+            None,
+        );
+
+        // Conversion to Bevy specific formatting happens right here
+        // Our:RenderTileBundle -> Bevy's:SpriteSheetBundle
+        let render_tile = Some(RenderTileBundle {
+            sprite_sheet_bundle: SpriteSheetBundle {
+                transform: Transform::from_xyz(
+                    tile.px_x as f32,
+                    tile.px_y as f32,
+                    tile.px_z as f32,
+                ),
+                texture,
+                atlas: TextureAtlas {
+                    layout: texture_atlas_assets.add(sheet_layout),
+                    index: tile.tile_texture.clone().unwrap().sprite_index,
+                },
+                ..Default::default()
+            },
+        });
+        render_tile_bundles.push(render_tile);
     }
     render_tile_bundles
 }
@@ -271,13 +273,13 @@ fn verify_num_loaded_tiles(world: &mut GameWorld, map_tile_count: String) {
         .parse::<usize>()
         .expect("verify_num_loaded_tiles: map_tile_count is not a number?");
 
-    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
     assert_eq!(tiles.len(), tile_num);
 }
 
 #[then("the tiles are in a 4x4 grid.")]
 fn verify_tiles_are_a_grid(world: &mut GameWorld) {
-    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
     let num_columns = get_num_columns_from_map(&tiles);
     let num_rows = get_num_rows_from_map(&tiles);
 
@@ -287,7 +289,7 @@ fn verify_tiles_are_a_grid(world: &mut GameWorld) {
 
 #[then("each tile points to the same sprite sheet.")]
 fn verify_tiles_are_same_spritesheet(world: &mut GameWorld) {
-    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
 
     let spritesheet = OsString::from("atlas_64x.png");
 
@@ -314,7 +316,7 @@ fn verify_sprite_sheet_tile_images(world: &mut GameWorld, spritesheet_num: Strin
         _ => unreachable!(),
     };
 
-    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
 
     assert_eq!(
         tiles[0].tile_texture.clone().unwrap().sprite_index,
@@ -353,7 +355,7 @@ fn verify_sprites_are_different_sprite_sheets(
         _ => unreachable!("There's a choice we have not taken care of?"),
     };
 
-    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
 
     assert_eq!(
         get_tile_spritesheet_filename(tiles[first_tile_idx].clone()),
@@ -384,7 +386,7 @@ fn verify_sprites_are_different_sprite_sheets(
 
 #[then("the first three tiles contain an image element,")]
 fn verify_3_tiles_contain_images(world: &mut GameWorld) {
-    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
 
     assert!(tiles[0].tile_texture.is_some());
     assert!(tiles[1].tile_texture.is_some());
@@ -393,14 +395,14 @@ fn verify_3_tiles_contain_images(world: &mut GameWorld) {
 
 #[then("the last tile has no image element.")]
 fn verify_tile_image_is_empty(world: &mut GameWorld) {
-    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
 
     assert!(tiles[3].tile_texture.is_none());
 }
 
 #[then("there exist two layers of tiles,")]
 fn verify_two_tile_layers(world: &mut GameWorld) {
-    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
 
     //On a 2x2 map, the first four tiles are layer 0
     for x in 0..=3 {
@@ -415,7 +417,7 @@ fn verify_two_tile_layers(world: &mut GameWorld) {
 
 #[then("those two layers are overlapping.")]
 fn verify_two_overlapping_tile_layers(world: &mut GameWorld) {
-    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
 
     //Each tile on layer one shares an (x,y) position with a tile on layer 0
     //whose number in the tile list is offset by the number of tiles on layer 1
@@ -429,7 +431,7 @@ fn verify_two_overlapping_tile_layers(world: &mut GameWorld) {
 
 #[then("the first three tiles can be converted to RenderTileBundles,")]
 fn verify_three_render_tile_bundles(world: &mut GameWorld) {
-    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
     let asset_server = world.app.world.resource::<AssetServer>().clone();
     let mut texture_atlas_layout = world.app.world.resource_mut::<Assets<TextureAtlasLayout>>();
 
@@ -443,7 +445,7 @@ fn verify_three_render_tile_bundles(world: &mut GameWorld) {
 
 #[then("the last tile cannot be converted to a RenderTileBundle.")]
 fn verify_one_render_tile_bundle_is_none(world: &mut GameWorld) {
-    let tiles = get_tiles(world.loaded_map.as_ref().unwrap());
+    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
     let asset_server = world.app.world.resource::<AssetServer>().clone();
     let mut texture_atlas_layout = world.app.world.resource_mut::<Assets<TextureAtlasLayout>>();
 
