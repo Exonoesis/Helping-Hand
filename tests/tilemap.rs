@@ -9,6 +9,7 @@ use tiled::{Loader, Map};
 
 use std::ffi::OsString;
 use std::path::PathBuf;
+use std::str::Split;
 
 #[derive(Debug, Default, World)]
 #[world(init = Self::new)]
@@ -16,6 +17,7 @@ struct GameWorld {
     pub app: App,
     pub map_location: PathBuf,
     pub loaded_map: Option<Map>,
+    pub bevy_asset_path: PathBuf,
 }
 
 #[derive(Clone)]
@@ -48,6 +50,7 @@ impl GameWorld {
         let mut app = App::new();
         let map_location = PathBuf::new();
         let loaded_map = None;
+        let bevy_asset_path = PathBuf::new();
 
         app.add_plugins(MinimalPlugins);
         app.add_plugins(AssetPlugin::default());
@@ -66,6 +69,7 @@ impl GameWorld {
             app,
             map_location,
             loaded_map,
+            bevy_asset_path,
         }
     }
 }
@@ -116,7 +120,10 @@ fn get_render_tile_bundles(
             continue;
         }
 
-        let texture = asset_server.load(tile.tile_texture.clone().unwrap().spritesheet);
+        //We have to trim our path from being absolute to having root at assets
+        let bevy_path = to_bevy_path(&tile.tile_texture.clone().unwrap().spritesheet);
+        let texture = asset_server.load(bevy_path);
+
         let sprite_sheet_column_count =
             (tile.tile_texture.clone().unwrap().spritesheet_px_width / tile.tile_px_width) as usize;
         let sprite_sheet_row_count = (tile.tile_texture.clone().unwrap().spritesheet_px_height
@@ -189,6 +196,20 @@ fn get_tile_texture(
     }
 }
 
+fn to_bevy_path(tiled_path: &PathBuf) -> PathBuf {
+    //Convert to str for slicing
+    let texture_string = tiled_path.to_str().unwrap();
+    //Slice and gather
+    let split_on_str: Split<&str> = texture_string.split("assets/");
+    let string_parts: Vec<&str> = split_on_str.collect();
+    //The very end will be our asset location
+    let trimmed_texture_string = string_parts[string_parts.len() - 1];
+    //Convert back to PathBuf
+    let trimmed_texture_path = PathBuf::from(trimmed_texture_string);
+
+    return trimmed_texture_path;
+}
+
 /// Returns a Path to the specified Tiled Map
 /// for a testing environment.
 fn get_tiled_map_location(map_name: String) -> PathBuf {
@@ -258,6 +279,11 @@ fn verify_test_map_exists(world: &mut GameWorld, map_name: String) {
     world.map_location = unloaded_tiled_map;
 }
 
+#[given("an absolute asset path of assets/textures/environments/atlas_64x.png,")]
+fn set_absolute_path(world: &mut GameWorld) {
+    world.bevy_asset_path = PathBuf::from("assets/textures/environments/atlas_64x.png");
+}
+
 #[when("the Tiled map is loaded,")]
 fn load_test_map(world: &mut GameWorld) {
     let mut loader = Loader::new();
@@ -265,6 +291,14 @@ fn load_test_map(world: &mut GameWorld) {
     assert!(tiled_map.is_ok());
 
     world.loaded_map = Some(tiled_map.unwrap());
+}
+
+#[when("the absolute path is trimmed,")]
+fn trim_to_bevy_path(world: &mut GameWorld) {
+    let original_path = &world.bevy_asset_path;
+    let trimmed_path = to_bevy_path(original_path);
+
+    world.bevy_asset_path = trimmed_path;
 }
 
 #[then(regex = r"there are ([0-9]+) tiles loaded.")]
@@ -453,6 +487,14 @@ fn verify_one_render_tile_bundle_is_none(world: &mut GameWorld) {
         get_render_tile_bundles(&tiles, &asset_server, &mut texture_atlas_layout);
 
     assert!(render_tile_bundles[3].is_none())
+}
+
+#[then("the trimmed path should be textures/environments/atlas_64x.png.")]
+fn verify_trimmed_path(world: &mut GameWorld) {
+    let expected_path = PathBuf::from("textures/environments/atlas_64x.png");
+    let actual_path = &world.bevy_asset_path;
+
+    assert_eq!(expected_path, *actual_path);
 }
 
 fn main() {

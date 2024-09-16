@@ -42,3 +42,8 @@ Feature: Load Tilemap from Tiled.
         When the Tiled map is loaded,
         Then the first three tiles can be converted to RenderTileBundles,
         And the last tile cannot be converted to a RenderTileBundle.
+
+    Scenario: Absolute paths are correctly trimmed to be Bevy-friendly.
+        Given an absolute asset path of assets/textures/environments/atlas_64x.png,
+        When the absolute path is trimmed,
+        Then the trimmed path should be textures/environments/atlas_64x.png.
