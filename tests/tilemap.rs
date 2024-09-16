@@ -197,11 +197,9 @@ fn get_tile_texture(
 }
 
 fn to_bevy_path(tiled_path: &PathBuf) -> PathBuf {
-    //Convert to str for slicing
-    let texture_string = tiled_path.to_str().unwrap();
-    //Slice and gather
-    let split_on_str: Split<&str> = texture_string.split("assets/");
-    let string_parts: Vec<&str> = split_on_str.collect();
+    //Convert to str for slicing and gather all the pieces
+    let texture_string = tiled_path.to_str().unwrap().split("assets/");
+    let string_parts: Vec<&str> = texture_string.collect();
     //The very end will be our asset location
     let trimmed_texture_string = string_parts[string_parts.len() - 1];
     //Convert back to PathBuf
