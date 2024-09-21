@@ -9,7 +9,6 @@ use tiled::{Loader, Map};
 
 use std::ffi::OsString;
 use std::path::PathBuf;
-use std::str::Split;
 
 #[derive(Debug, Default, World)]
 #[world(init = Self::new)]
@@ -197,15 +196,22 @@ fn get_tile_texture(
 }
 
 fn to_bevy_path(tiled_path: &PathBuf) -> PathBuf {
-    //Convert to str for slicing and gather all the pieces
-    let texture_string = tiled_path.to_str().unwrap().split("assets/");
-    let string_parts: Vec<&str> = texture_string.collect();
-    //The very end will be our asset location
-    let trimmed_texture_string = string_parts[string_parts.len() - 1];
-    //Convert back to PathBuf
-    let trimmed_texture_path = PathBuf::from(trimmed_texture_string);
+    let mut trimmed_path = PathBuf::new();
+    let mut path_element_stack = Vec::new();
 
-    return trimmed_texture_path;
+    for path_element in tiled_path.iter().rev() {
+        if path_element == "assets" {
+            break;
+        }
+
+        path_element_stack.push(path_element);
+    }
+
+    while let Some(path_element) = path_element_stack.pop() {
+        trimmed_path.push(path_element);
+    }
+
+    return trimmed_path;
 }
 
 /// Returns a Path to the specified Tiled Map
@@ -277,9 +283,9 @@ fn verify_test_map_exists(world: &mut GameWorld, map_name: String) {
     world.map_location = unloaded_tiled_map;
 }
 
-#[given("an absolute asset path of assets/textures/environments/atlas_64x.png,")]
-fn set_absolute_path(world: &mut GameWorld) {
-    world.bevy_asset_path = PathBuf::from("assets/textures/environments/atlas_64x.png");
+#[given(regex = r"an absolute asset path of (.+\.png),")]
+fn set_absolute_path(world: &mut GameWorld, absolute_asset_path: String) {
+    world.bevy_asset_path = PathBuf::from(absolute_asset_path);
 }
 
 #[when("the Tiled map is loaded,")]
@@ -487,9 +493,9 @@ fn verify_one_render_tile_bundle_is_none(world: &mut GameWorld) {
     assert!(render_tile_bundles[3].is_none())
 }
 
-#[then("the trimmed path should be textures/environments/atlas_64x.png.")]
-fn verify_trimmed_path(world: &mut GameWorld) {
-    let expected_path = PathBuf::from("textures/environments/atlas_64x.png");
+#[then(regex = r"the trimmed path should be (.+\.png).")]
+fn verify_trimmed_path(world: &mut GameWorld, desired_asset_path: String) {
+    let expected_path = PathBuf::from(desired_asset_path);
     let actual_path = &world.bevy_asset_path;
 
     assert_eq!(expected_path, *actual_path);
