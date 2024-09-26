@@ -20,12 +20,22 @@ struct GameWorld {
 }
 
 #[derive(Clone)]
-struct Tile {
-    tile_px_width: u32,
-    tile_px_height: u32,
+struct XyzCords {
     px_x: u32,
     px_y: u32,
     px_z: u32,
+}
+
+#[derive(Clone)]
+struct PxDimensions {
+    px_width: u32,
+    px_height: u32,
+}
+
+#[derive(Clone)]
+struct Tile {
+    tile_dimensions: PxDimensions,
+    px_cords: XyzCords,
     tile_texture: Option<TileTexture>,
     layer_number: usize,
     //properties:
@@ -35,8 +45,7 @@ struct Tile {
 struct TileTexture {
     spritesheet: PathBuf,
     sprite_index: usize,
-    spritesheet_px_width: u32,
-    spritesheet_px_height: u32,
+    spritesheet_demensions: PxDimensions,
 }
 
 #[derive(Bundle)]
@@ -86,13 +95,21 @@ fn get_map_tiles(tiled_map: &Map) -> Vec<Tile> {
         for y in 0..map_height {
             for x in 0..map_width {
                 let tile = Tile {
-                    tile_px_width: tile_width,
-                    tile_px_height: tile_height,
-                    px_x: x * tile_width,
-                    px_y: y * tile_height,
-                    // Z value is currently equal to layer number,
-                    // this may change in the future
-                    px_z: z as u32,
+                    tile_dimensions: {
+                        PxDimensions {
+                            px_width: tile_width,
+                            px_height: tile_height,
+                        }
+                    },
+                    px_cords: {
+                        XyzCords {
+                            px_x: x * tile_width,
+                            px_y: y * tile_height,
+                            // Z value is currently equal to layer number,
+                            // this may change in the future
+                            px_z: z as u32,
+                        }
+                    },
                     layer_number: z,
                     tile_texture: get_tile_texture(tiled_map, x, y, z),
                 };
@@ -123,14 +140,27 @@ fn get_render_tile_bundles(
         let bevy_path = to_bevy_path(&tile.tile_texture.clone().unwrap().spritesheet);
         let texture = asset_server.load(bevy_path);
 
-        let sprite_sheet_column_count =
-            (tile.tile_texture.clone().unwrap().spritesheet_px_width / tile.tile_px_width) as usize;
-        let sprite_sheet_row_count = (tile.tile_texture.clone().unwrap().spritesheet_px_height
-            / tile.tile_px_height) as usize;
+        let sprite_sheet_column_count = (tile
+            .tile_texture
+            .clone()
+            .unwrap()
+            .spritesheet_demensions
+            .px_width
+            / tile.tile_dimensions.px_width) as usize;
+        let sprite_sheet_row_count = (tile
+            .tile_texture
+            .clone()
+            .unwrap()
+            .spritesheet_demensions
+            .px_height
+            / tile.tile_dimensions.px_height) as usize;
 
         //This is how the sprite sheet should be cut when creating sprites to render
         let sheet_layout = TextureAtlasLayout::from_grid(
-            Vec2::new(tile.tile_px_width as f32, tile.tile_px_height as f32),
+            Vec2::new(
+                tile.tile_dimensions.px_width as f32,
+                tile.tile_dimensions.px_height as f32,
+            ),
             sprite_sheet_column_count,
             sprite_sheet_row_count,
             None,
@@ -142,9 +172,9 @@ fn get_render_tile_bundles(
         let render_tile = Some(RenderTileBundle {
             sprite_sheet_bundle: SpriteSheetBundle {
                 transform: Transform::from_xyz(
-                    tile.px_x as f32,
-                    tile.px_y as f32,
-                    tile.px_z as f32,
+                    tile.px_cords.px_x as f32,
+                    tile.px_cords.px_y as f32,
+                    tile.px_cords.px_z as f32,
                 ),
                 texture,
                 atlas: TextureAtlas {
@@ -187,8 +217,12 @@ fn get_tile_texture(
         Some(TileTexture {
             sprite_index,
             spritesheet,
-            spritesheet_px_width,
-            spritesheet_px_height,
+            spritesheet_demensions: {
+                PxDimensions {
+                    px_width: spritesheet_px_width,
+                    px_height: spritesheet_px_height,
+                }
+            },
         })
     } else {
         None
@@ -233,11 +267,11 @@ fn get_tiled_map_location(map_name: String) -> PathBuf {
 
 fn get_num_columns_from_map(tiles: &[Tile]) -> u32 {
     let mut highest_x = 0;
-    let tile_width = tiles[0].tile_px_width;
+    let tile_width = tiles[0].tile_dimensions.px_width;
 
     for tile in tiles {
-        if tile.px_x >= highest_x {
-            highest_x = tile.px_x;
+        if tile.px_cords.px_x >= highest_x {
+            highest_x = tile.px_cords.px_x;
         } else {
             break;
         }
@@ -248,11 +282,11 @@ fn get_num_columns_from_map(tiles: &[Tile]) -> u32 {
 
 fn get_num_rows_from_map(tiles: &[Tile]) -> u32 {
     let mut highest_y = 0;
-    let tile_height = tiles[0].tile_px_height;
+    let tile_height = tiles[0].tile_dimensions.px_height;
 
     for tile in tiles {
-        if tile.px_y >= highest_y {
-            highest_y = tile.px_y;
+        if tile.px_cords.px_y >= highest_y {
+            highest_y = tile.px_cords.px_y;
         } else {
             break;
         }
@@ -334,11 +368,19 @@ fn verify_tiles_are_same_spritesheet(world: &mut GameWorld) {
     for tile in tiles {
         assert_eq!(get_tile_spritesheet_filename(tile.clone()), spritesheet);
         assert_eq!(
-            tile.tile_texture.clone().unwrap().spritesheet_px_height,
+            tile.tile_texture
+                .clone()
+                .unwrap()
+                .spritesheet_demensions
+                .px_height,
             1024
         );
         assert_eq!(
-            tile.tile_texture.clone().unwrap().spritesheet_px_width,
+            tile.tile_texture
+                .clone()
+                .unwrap()
+                .spritesheet_demensions
+                .px_width,
             3072
         );
     }
@@ -409,7 +451,8 @@ fn verify_sprites_are_different_sprite_sheets(
             .clone()
             .tile_texture
             .unwrap()
-            .spritesheet_px_height,
+            .spritesheet_demensions
+            .px_height,
         spritesheet_height
     );
     assert_eq!(
@@ -417,7 +460,8 @@ fn verify_sprites_are_different_sprite_sheets(
             .clone()
             .tile_texture
             .unwrap()
-            .spritesheet_px_width,
+            .spritesheet_demensions
+            .px_width,
         spritesheet_width
     );
 }
@@ -460,8 +504,8 @@ fn verify_two_overlapping_tile_layers(world: &mut GameWorld) {
     //Each tile on layer one shares an (x,y) position with a tile on layer 0
     //whose number in the tile list is offset by the number of tiles on layer 1
     for x in 0..=3 {
-        let tile_on_layer_0 = (tiles[x].px_x, tiles[x].px_y);
-        let tile_on_layer_1 = (tiles[x + 4].px_x, tiles[x + 4].px_y);
+        let tile_on_layer_0 = (tiles[x].px_cords.px_x, tiles[x].px_cords.px_y);
+        let tile_on_layer_1 = (tiles[x + 4].px_cords.px_x, tiles[x + 4].px_cords.px_y);
 
         assert_eq!(tile_on_layer_0, tile_on_layer_1);
     }
