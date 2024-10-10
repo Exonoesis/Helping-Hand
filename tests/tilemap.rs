@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use bevy::prelude::*;
 use bevy::render::settings::WgpuSettings;
 use bevy::render::RenderPlugin;
@@ -15,51 +17,212 @@ use std::path::PathBuf;
 struct GameWorld {
     pub app: App,
     pub map_location: PathBuf,
-    pub loaded_map: Option<Map>,
-    pub bevy_asset_path: PathBuf,
+    pub assets_folder_path: PathBuf,
+
+    pub loaded_map: Tilemap,
+    pub bevy_map: RenderedMap,
 }
 
-#[derive(Clone)]
+#[derive(Debug)]
+struct Tilemap {
+    tiled_tiles: Vec<Tile>,
+    dimensions: MapDimensions,
+}
+
+impl Tilemap {
+    pub fn new(map_location: PathBuf) -> Self {
+        let mut loader = Loader::new();
+        let tiled_map = loader.load_tmx_map(map_location).unwrap();
+        let num_layers = tiled_map.layers().len() as u32;
+
+        let tiled_tiles = get_map_tiles(tiled_map);
+
+        let num_rows = get_num_rows_from_map(&tiled_tiles);
+        let num_columns = get_num_columns_from_map(&tiled_tiles);
+        let dimensions = MapDimensions::new(num_rows, num_columns, num_layers);
+        Self {
+            tiled_tiles,
+            dimensions,
+        }
+    }
+
+    pub fn get_tiles(&self) -> &Vec<Tile> {
+        &self.tiled_tiles
+    }
+
+    pub fn get_dimensions(&self) -> &MapDimensions {
+        &self.dimensions
+    }
+
+    pub fn tiles_overlap(&self, first_tile_index: usize, second_tile_index: usize) -> bool {
+        let first_tile_px_position = &self.tiled_tiles[first_tile_index].px_cords;
+        let second_tile_px_position = &self.tiled_tiles[second_tile_index].px_cords;
+
+        if first_tile_px_position.px_x == second_tile_px_position.px_x
+            && first_tile_px_position.px_y == second_tile_px_position.px_y
+        {
+            true
+        } else {
+            false
+        }
+    }
+}
+
+impl Default for Tilemap {
+    fn default() -> Self {
+        Self {
+            tiled_tiles: Vec::new(),
+            dimensions: MapDimensions::new(0, 0, 0),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
 struct XyzCords {
-    px_x: u32,
-    px_y: u32,
-    px_z: u32,
+    px_x: usize,
+    px_y: usize,
+    px_z: usize,
 }
 
-#[derive(Clone)]
+impl XyzCords {
+    pub fn new(px_x: u32, px_y: u32, px_z: usize) -> Self {
+        XyzCords {
+            px_x: px_x as usize,
+            px_y: px_y as usize,
+            px_z,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
 struct PxDimensions {
-    px_width: u32,
-    px_height: u32,
+    px_width: usize,
+    px_height: usize,
 }
 
-#[derive(Clone)]
+impl PxDimensions {
+    pub fn new(px_width: u32, px_height: u32) -> Self {
+        PxDimensions {
+            px_width: px_width as usize,
+            px_height: px_height as usize,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
+struct MapDimensions {
+    rows: u32,
+    columns: u32,
+    layers: u32,
+}
+
+impl MapDimensions {
+    pub fn new(rows: u32, columns: u32, layers: u32) -> MapDimensions {
+        MapDimensions {
+            rows,
+            columns,
+            layers,
+        }
+    }
+
+    pub fn get_layers(&self) -> u32 {
+        self.layers
+    }
+}
+
+#[derive(Debug)]
 struct Tile {
     tile_dimensions: PxDimensions,
     px_cords: XyzCords,
     tile_texture: Option<TileTexture>,
     layer_number: usize,
-    //properties:
 }
 
-#[derive(Clone)]
+impl Tile {
+    pub fn new(
+        tile_dimensions: PxDimensions,
+        px_cords: XyzCords,
+        tile_texture: Option<TileTexture>,
+        layer_number: usize,
+    ) -> Tile {
+        Tile {
+            tile_dimensions,
+            px_cords,
+            tile_texture,
+            layer_number,
+        }
+    }
+
+    pub fn get_tile_spritesheet_filename(&self) -> OsString {
+        let tiles_texture = self.tile_texture.as_ref().unwrap();
+        let spritesheet_name = tiles_texture.spritesheet.file_name().unwrap();
+
+        spritesheet_name.into()
+    }
+
+    pub fn get_spritesheet_dimensions(&self) -> &PxDimensions {
+        let tile_texture = self.tile_texture.as_ref().unwrap();
+        &tile_texture.spritesheet_dimensions
+    }
+
+    pub fn get_sprite_index(&self) -> usize {
+        self.tile_texture.as_ref().unwrap().sprite_index
+    }
+}
+
+#[derive(Debug)]
 struct TileTexture {
     spritesheet: PathBuf,
     sprite_index: usize,
-    spritesheet_demensions: PxDimensions,
+    spritesheet_dimensions: PxDimensions,
 }
 
 #[derive(Bundle)]
-struct RenderTileBundle {
-    sprite_sheet_bundle: SpriteSheetBundle,
+struct RenderTile {
+    spritesheet_bundle: SpriteSheetBundle,
+}
+
+#[derive(Default)]
+struct RenderedMap {
+    bevy_tiles: Vec<Option<RenderTile>>,
+}
+
+impl Debug for RenderedMap {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RenderedMap")
+            .field(
+                "bevy_tiles",
+                &format_args!(
+                    "{}",
+                    self.bevy_tiles.iter().filter(|tile| tile.is_some()).count()
+                ),
+            )
+            .finish()
+    }
+}
+
+impl RenderedMap {
+    pub fn new(
+        tilemap: &Tilemap,
+        asset_server: &AssetServer,
+        texture_atlas_assets: &mut Assets<TextureAtlasLayout>,
+    ) -> Self {
+        RenderedMap {
+            bevy_tiles: get_render_tile_bundles(&tilemap, &asset_server, texture_atlas_assets),
+        }
+    }
 }
 
 impl GameWorld {
     pub fn new() -> Self {
-        let mut app = App::new();
         let map_location = PathBuf::new();
-        let loaded_map = None;
-        let bevy_asset_path = PathBuf::new();
+        let loaded_map = Tilemap::default();
+        let bevy_map = RenderedMap::default();
 
+        let absolute_assets_folder_path = PathBuf::new();
+
+        // Testable "game"
+        let mut app = App::new();
         app.add_plugins(MinimalPlugins);
         app.add_plugins(AssetPlugin::default());
         app.add_plugins(RenderPlugin {
@@ -77,12 +240,13 @@ impl GameWorld {
             app,
             map_location,
             loaded_map,
-            bevy_asset_path,
+            bevy_map,
+            assets_folder_path: absolute_assets_folder_path,
         }
     }
 }
 
-fn get_map_tiles(tiled_map: &Map) -> Vec<Tile> {
+fn get_map_tiles(tiled_map: Map) -> Vec<Tile> {
     let tile_width = tiled_map.tile_width;
     let tile_height = tiled_map.tile_height;
 
@@ -95,23 +259,10 @@ fn get_map_tiles(tiled_map: &Map) -> Vec<Tile> {
         for y in 0..map_height {
             for x in 0..map_width {
                 let tile = Tile {
-                    tile_dimensions: {
-                        PxDimensions {
-                            px_width: tile_width,
-                            px_height: tile_height,
-                        }
-                    },
-                    px_cords: {
-                        XyzCords {
-                            px_x: x * tile_width,
-                            px_y: y * tile_height,
-                            // Z value is currently equal to layer number,
-                            // this may change in the future
-                            px_z: z as u32,
-                        }
-                    },
+                    tile_dimensions: PxDimensions::new(tile_width, tile_height),
+                    px_cords: XyzCords::new(x * tile_width, y * tile_height, z),
                     layer_number: z,
-                    tile_texture: get_tile_texture(tiled_map, x, y, z),
+                    tile_texture: get_tile_texture(&tiled_map, x, y, z),
                 };
                 tiles.push(tile);
             }
@@ -123,11 +274,13 @@ fn get_map_tiles(tiled_map: &Map) -> Vec<Tile> {
 
 /// Returns a list of RenderTileBundles to be spawned by Bevy for the given list of tiles.
 fn get_render_tile_bundles(
-    tiles: &[Tile],
+    tilemap: &Tilemap,
     asset_server: &AssetServer,
     texture_atlas_assets: &mut Assets<TextureAtlasLayout>,
-) -> Vec<Option<RenderTileBundle>> {
+) -> Vec<Option<RenderTile>> {
     let mut render_tile_bundles = Vec::new();
+
+    let tiles = tilemap.get_tiles();
 
     for tile in tiles {
         //Tiles without a texture don't need to be rendered
@@ -137,21 +290,21 @@ fn get_render_tile_bundles(
         }
 
         //We have to trim our path from being absolute to having root at assets
-        let bevy_path = to_bevy_path(&tile.tile_texture.clone().unwrap().spritesheet);
+        let bevy_path = to_bevy_path(&tile.tile_texture.as_ref().unwrap().spritesheet);
         let texture = asset_server.load(bevy_path);
 
         let sprite_sheet_column_count = (tile
             .tile_texture
-            .clone()
+            .as_ref()
             .unwrap()
-            .spritesheet_demensions
+            .spritesheet_dimensions
             .px_width
             / tile.tile_dimensions.px_width) as usize;
         let sprite_sheet_row_count = (tile
             .tile_texture
-            .clone()
+            .as_ref()
             .unwrap()
-            .spritesheet_demensions
+            .spritesheet_dimensions
             .px_height
             / tile.tile_dimensions.px_height) as usize;
 
@@ -169,8 +322,8 @@ fn get_render_tile_bundles(
 
         // Conversion to Bevy specific formatting happens right here
         // Our:RenderTileBundle -> Bevy's:SpriteSheetBundle
-        let render_tile = Some(RenderTileBundle {
-            sprite_sheet_bundle: SpriteSheetBundle {
+        let render_tile = Some(RenderTile {
+            spritesheet_bundle: SpriteSheetBundle {
                 transform: Transform::from_xyz(
                     tile.px_cords.px_x as f32,
                     tile.px_cords.px_y as f32,
@@ -179,7 +332,7 @@ fn get_render_tile_bundles(
                 texture,
                 atlas: TextureAtlas {
                     layout: texture_atlas_assets.add(sheet_layout),
-                    index: tile.tile_texture.clone().unwrap().sprite_index,
+                    index: tile.tile_texture.as_ref().unwrap().sprite_index,
                 },
                 ..Default::default()
             },
@@ -189,9 +342,6 @@ fn get_render_tile_bundles(
     render_tile_bundles
 }
 
-// TODO: Turn this into TiledMapReader if the map kepts being read?
-// Example: tiled_map_reader = TiledMapReader::new(tiled_map);
-//          tile_texture = tiled_map_reader.get_tile_texture(x, y);
 fn get_tile_texture(
     tiled_map: &Map,
     x_grid_cord: u32,
@@ -211,18 +361,13 @@ fn get_tile_texture(
 
         let sprite_index = tile.id() as usize;
         let spritesheet = tile.get_tileset().image.clone().unwrap().source;
-        let spritesheet_px_width = tile.get_tileset().image.clone().unwrap().width as u32;
-        let spritesheet_px_height = tile.get_tileset().image.clone().unwrap().height as u32;
+        let spritesheet_px_width = tile.get_tileset().image.as_ref().unwrap().width as u32;
+        let spritesheet_px_height = tile.get_tileset().image.as_ref().unwrap().height as u32;
 
         Some(TileTexture {
             sprite_index,
             spritesheet,
-            spritesheet_demensions: {
-                PxDimensions {
-                    px_width: spritesheet_px_width,
-                    px_height: spritesheet_px_height,
-                }
-            },
+            spritesheet_dimensions: PxDimensions::new(spritesheet_px_width, spritesheet_px_height),
         })
     } else {
         None
@@ -248,8 +393,8 @@ fn to_bevy_path(tiled_path: &PathBuf) -> PathBuf {
     return trimmed_path;
 }
 
-/// Returns a Path to the specified Tiled Map
-/// for a testing environment.
+// Returns a Path to the specified Tiled Map
+// for a testing environment.
 fn get_tiled_map_location(map_name: String) -> PathBuf {
     let mut tiled_map_path = PathBuf::new();
 
@@ -277,7 +422,7 @@ fn get_num_columns_from_map(tiles: &[Tile]) -> u32 {
         }
     }
 
-    (highest_x / tile_width) + 1
+    ((highest_x / tile_width) + 1) as u32
 }
 
 fn get_num_rows_from_map(tiles: &[Tile]) -> u32 {
@@ -292,17 +437,10 @@ fn get_num_rows_from_map(tiles: &[Tile]) -> u32 {
         }
     }
 
-    (highest_y / tile_height) + 1
+    ((highest_y / tile_height) + 1) as u32
 }
 
-fn get_tile_spritesheet_filename(tile: Tile) -> OsString {
-    let tile_texture = tile.tile_texture.clone().unwrap();
-    let spritesheet = tile_texture.spritesheet.file_name().unwrap();
-
-    spritesheet.into()
-}
-
-////////////////////////////
+//////////////TEST FUNCTIONS//////////////
 
 #[given(regex = r"a Tiled map called (.+\.tmx),")]
 fn verify_test_map_exists(world: &mut GameWorld, map_name: String) {
@@ -319,228 +457,181 @@ fn verify_test_map_exists(world: &mut GameWorld, map_name: String) {
 
 #[given(regex = r"an absolute asset path of (.+\.png),")]
 fn set_absolute_path(world: &mut GameWorld, absolute_asset_path: String) {
-    world.bevy_asset_path = PathBuf::from(absolute_asset_path);
+    world.assets_folder_path = PathBuf::from(absolute_asset_path);
 }
 
 #[when("the Tiled map is loaded,")]
 fn load_test_map(world: &mut GameWorld) {
-    let mut loader = Loader::new();
-    let tiled_map = loader.load_tmx_map(world.map_location.clone());
-    assert!(tiled_map.is_ok());
-
-    world.loaded_map = Some(tiled_map.unwrap());
+    world.loaded_map = Tilemap::new(world.map_location.clone());
 }
 
 #[when("the absolute path is trimmed,")]
 fn trim_to_bevy_path(world: &mut GameWorld) {
-    let original_path = &world.bevy_asset_path;
+    let original_path = &world.assets_folder_path;
     let trimmed_path = to_bevy_path(original_path);
 
-    world.bevy_asset_path = trimmed_path;
+    world.assets_folder_path = trimmed_path;
+}
+
+#[when("the Tiled map has been converted to a rendered map,")]
+fn tiled_map_to_bevy_tiles(world: &mut GameWorld) {
+    let tilemap = &world.loaded_map;
+    let asset_server = world.app.world.resource::<AssetServer>().clone();
+    let mut texture_atlas_layout = world.app.world.resource_mut::<Assets<TextureAtlasLayout>>();
+
+    let rendered_bevy_map = RenderedMap::new(&tilemap, &asset_server, &mut texture_atlas_layout);
+    world.bevy_map = rendered_bevy_map;
 }
 
 #[then(regex = r"there are ([0-9]+) tiles loaded.")]
 fn verify_num_loaded_tiles(world: &mut GameWorld, map_tile_count: String) {
-    let tile_num = map_tile_count
+    let expected_num_tiles = map_tile_count
         .parse::<usize>()
         .expect("verify_num_loaded_tiles: map_tile_count is not a number?");
-
-    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
-    assert_eq!(tiles.len(), tile_num);
+    let actual_num_tiles = world.loaded_map.get_tiles().len();
+    assert_eq!(expected_num_tiles, actual_num_tiles);
 }
 
-#[then("the tiles are in a 4x4 grid.")]
-fn verify_tiles_are_a_grid(world: &mut GameWorld) {
-    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
-    let num_columns = get_num_columns_from_map(&tiles);
-    let num_rows = get_num_rows_from_map(&tiles);
+#[then(regex = r"the tiles are in a ([0-9]+)x([0-9]+) grid.")]
+fn verify_tiles_are_a_grid(world: &mut GameWorld, column_num: String, row_num: String) {
+    let expected_num_rows = column_num
+        .parse::<u32>()
+        .expect("verify_tiles_are_a_grid: column is not a number?");
 
-    assert_eq!(num_columns, 4, "Column count is incorrect");
-    assert_eq!(num_rows, 4, "Row count is incorrect");
+    let expected_num_columns = row_num
+        .parse::<u32>()
+        .expect("verify_tiles_are_a_grid: row is not a number?");
+
+    let actual_map_dimensions = world.loaded_map.get_dimensions();
+    let expected_map_dimensions = MapDimensions::new(expected_num_rows, expected_num_columns, 1);
+
+    assert_eq!(expected_map_dimensions, *actual_map_dimensions);
 }
 
-#[then("each tile points to the same sprite sheet.")]
-fn verify_tiles_are_same_spritesheet(world: &mut GameWorld) {
-    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
+#[then(regex = r"tile ([0-9]+) points to spritesheet (.+\.png).")]
+fn verify_tile_spritesheet(world: &mut GameWorld, tile_num: String, spritesheet_name: String) {
+    let tile_index = tile_num
+        .parse::<usize>()
+        .expect("verify_tile_spritesheet: tile_num is not a number?");
 
-    let spritesheet = OsString::from("atlas_64x.png");
-
-    for tile in tiles {
-        assert_eq!(get_tile_spritesheet_filename(tile.clone()), spritesheet);
-        assert_eq!(
-            tile.tile_texture
-                .clone()
-                .unwrap()
-                .spritesheet_demensions
-                .px_height,
-            1024
-        );
-        assert_eq!(
-            tile.tile_texture
-                .clone()
-                .unwrap()
-                .spritesheet_demensions
-                .px_width,
-            3072
-        );
-    }
+    let actual_spritesheet =
+        world.loaded_map.tiled_tiles[tile_index - 1].get_tile_spritesheet_filename();
+    let expected_spritesheet = OsString::from(spritesheet_name);
+    assert_eq!(expected_spritesheet, actual_spritesheet);
 }
 
-#[then(
-    regex = r"each tile points to the correct image on the (single|multiple) sprite (sheet|sheets)."
-)]
-fn verify_sprite_sheet_tile_images(world: &mut GameWorld, spritesheet_num: String) {
-    let (first_idx, second_idx, third_idx, fourth_idx) = match spritesheet_num.as_str() {
-        "single" => (1, 5, 49, 53),
-        "multiple" => (131, 128, 115, 164),
-        _ => unreachable!(),
-    };
-
-    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
-
-    assert_eq!(
-        tiles[0].tile_texture.clone().unwrap().sprite_index,
-        first_idx
-    );
-    assert_eq!(
-        tiles[1].tile_texture.clone().unwrap().sprite_index,
-        second_idx
-    );
-    assert_eq!(
-        tiles[2].tile_texture.clone().unwrap().sprite_index,
-        third_idx
-    );
-    assert_eq!(
-        tiles[3].tile_texture.clone().unwrap().sprite_index,
-        fourth_idx
-    );
-}
-
-#[then(regex = r"the (top|bottom) two tiles point to (one|the other) sprite sheet,")]
-fn verify_sprites_are_different_sprite_sheets(
+#[then(regex = r"tile ([0-9]+)'s spritesheet has dimensions ([0-9]+) x ([0-9]+).")]
+fn verify_spritesheet_dimensions(
     world: &mut GameWorld,
-    tile_placement: String,
-    spritesheet_choice: String,
+    tile_num: String,
+    sheet_height: String,
+    sheet_width: String,
 ) {
-    let (spritesheet_filename, spritesheet_width, spritesheet_height) =
-        match spritesheet_choice.as_str() {
-            "one" => (OsString::from("!CL_DEMO_64.png"), 2560, 1984),
-            "the other" => (OsString::from("atlas_64x.png"), 3072, 1024),
-            _ => unreachable!("There's a choice we have not taken care of?"),
-        };
+    let tile_index = tile_num
+        .parse::<usize>()
+        .expect("verify_spritesheet_dimensions: tile_num is not a number?");
 
-    let (first_tile_idx, second_tile_idx) = match tile_placement.as_str() {
-        "top" => (0, 1),
-        "bottom" => (2, 3),
-        _ => unreachable!("There's a choice we have not taken care of?"),
-    };
+    let expected_spritesheet_height = sheet_height
+        .parse::<u32>()
+        .expect("verify_spritesheet_dimensions: sheet_height is not a number?");
 
-    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
+    let expected_spritesheet_width = sheet_width
+        .parse::<u32>()
+        .expect("verify_spritesheet_dimensions: sheet_width is not a number?");
 
-    assert_eq!(
-        get_tile_spritesheet_filename(tiles[first_tile_idx].clone()),
-        spritesheet_filename
-    );
-    assert_eq!(
-        get_tile_spritesheet_filename(tiles[second_tile_idx].clone()),
-        spritesheet_filename
-    );
-
-    assert_eq!(
-        tiles[first_tile_idx]
-            .clone()
-            .tile_texture
-            .unwrap()
-            .spritesheet_demensions
-            .px_height,
-        spritesheet_height
-    );
-    assert_eq!(
-        tiles[second_tile_idx]
-            .clone()
-            .tile_texture
-            .unwrap()
-            .spritesheet_demensions
-            .px_width,
-        spritesheet_width
-    );
+    let actual_dimensions =
+        world.loaded_map.tiled_tiles[tile_index - 1].get_spritesheet_dimensions();
+    let expected_dimensions =
+        PxDimensions::new(expected_spritesheet_width, expected_spritesheet_height);
+    assert_eq!(expected_dimensions, *actual_dimensions);
 }
 
-#[then("the first three tiles contain an image element,")]
-fn verify_3_tiles_contain_images(world: &mut GameWorld) {
-    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
+#[then(regex = r"tile ([0-9]+) points to image number ([0-9]+).")]
+fn verify_spritesheet_tile_image(world: &mut GameWorld, tile_num: String, image_num: String) {
+    let tile_index = tile_num
+        .parse::<usize>()
+        .expect("verify_spritesheet_tile_image: tile_num is not a number?");
+    let image_index = image_num
+        .parse::<usize>()
+        .expect("verify_spritesheet_tile_image: image_num is not a number?");
 
-    assert!(tiles[0].tile_texture.is_some());
-    assert!(tiles[1].tile_texture.is_some());
-    assert!(tiles[2].tile_texture.is_some());
+    let actual_image = world.loaded_map.tiled_tiles[tile_index - 1].get_sprite_index();
+    let expected_image = image_index;
+    assert_eq!(expected_image, actual_image);
 }
 
-#[then("the last tile has no image element.")]
-fn verify_tile_image_is_empty(world: &mut GameWorld) {
-    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
+#[then(regex = r"tile ([0-9]+) contains an image element.")]
+fn verify_tile_contains_image(world: &mut GameWorld, tile_num: String) {
+    let tile_index = tile_num
+        .parse::<usize>()
+        .expect("verify_tile_contains_image: tile_num is not a number?");
 
-    assert!(tiles[3].tile_texture.is_none());
+    let tile_image = &world.loaded_map.tiled_tiles[tile_index - 1].tile_texture;
+
+    assert!(tile_image.is_some());
 }
 
-#[then("there exist two layers of tiles,")]
-fn verify_two_tile_layers(world: &mut GameWorld) {
-    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
+#[then(regex = r"tile ([0-9]+) contains no image element.")]
+fn verify_tile_image_is_empty(world: &mut GameWorld, tile_num: String) {
+    let tile_index = tile_num
+        .parse::<usize>()
+        .expect("verify_tile_contains_image: tile_num is not a number?");
 
-    //On a 2x2 map, the first four tiles are layer 0
-    for x in 0..=3 {
-        assert_eq!(tiles[x].layer_number, 0);
-    }
-
-    //On a 2x2 map, the second four tiles are layer 1
-    for x in 4..=7 {
-        assert_eq!(tiles[x].layer_number, 1);
-    }
+    let tile_image = &world.loaded_map.tiled_tiles[tile_index - 1].tile_texture;
+    assert!(tile_image.is_none());
 }
 
-#[then("those two layers are overlapping.")]
-fn verify_two_overlapping_tile_layers(world: &mut GameWorld) {
-    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
+#[then(regex = r"there exist ([0-9]+) layers of tiles.")]
+fn verify_layer_count(world: &mut GameWorld, num_layers: String) {
+    let layer_count = num_layers
+        .parse::<u32>()
+        .expect("verify_layer_count: num_layers is not a number?");
 
-    //Each tile on layer one shares an (x,y) position with a tile on layer 0
-    //whose number in the tile list is offset by the number of tiles on layer 1
-    for x in 0..=3 {
-        let tile_on_layer_0 = (tiles[x].px_cords.px_x, tiles[x].px_cords.px_y);
-        let tile_on_layer_1 = (tiles[x + 4].px_cords.px_x, tiles[x + 4].px_cords.px_y);
-
-        assert_eq!(tile_on_layer_0, tile_on_layer_1);
-    }
+    let actual_num_layers = world.loaded_map.get_dimensions().get_layers();
+    let expected_num_layers = layer_count;
+    assert_eq!(expected_num_layers, actual_num_layers);
 }
 
-#[then("the first three tiles can be converted to RenderTileBundles,")]
-fn verify_three_render_tile_bundles(world: &mut GameWorld) {
-    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
-    let asset_server = world.app.world.resource::<AssetServer>().clone();
-    let mut texture_atlas_layout = world.app.world.resource_mut::<Assets<TextureAtlasLayout>>();
+#[then(regex = r"tile ([0-9]+) overlaps tile ([0-9]+).")]
+fn verify_overlapping_tiles(world: &mut GameWorld, first_tile: String, second_tile: String) {
+    let first_tile_index = first_tile
+        .parse::<usize>()
+        .expect("verify_overlapping_tiles: first_tile is not a number?");
+    let second_tile_index = second_tile
+        .parse::<usize>()
+        .expect("verify_overlapping_tiles: second_tile is not a number?");
 
-    let render_tile_bundles =
-        get_render_tile_bundles(&tiles, &asset_server, &mut texture_atlas_layout);
+    let is_overlapping = world
+        .loaded_map
+        .tiles_overlap(first_tile_index - 1, second_tile_index - 1);
 
-    for idx in 0..=2 {
-        assert!(render_tile_bundles[idx].is_some())
-    }
+    assert!(is_overlapping);
 }
 
-#[then("the last tile cannot be converted to a RenderTileBundle.")]
-fn verify_one_render_tile_bundle_is_none(world: &mut GameWorld) {
-    let tiles = get_map_tiles(world.loaded_map.as_ref().unwrap());
-    let asset_server = world.app.world.resource::<AssetServer>().clone();
-    let mut texture_atlas_layout = world.app.world.resource_mut::<Assets<TextureAtlasLayout>>();
+#[then(regex = r"tile ([0-9]+) is in the rendered map.")]
+fn verify_render_tile_is_some(world: &mut GameWorld, tile_num: String) {
+    let tile_index = tile_num
+        .parse::<usize>()
+        .expect("verify_render_tile_is_some: tile_num is not a number?");
 
-    let render_tile_bundles =
-        get_render_tile_bundles(&tiles, &asset_server, &mut texture_atlas_layout);
+    let rendered_tile = &world.bevy_map.bevy_tiles[tile_index - 1];
+    assert!(rendered_tile.is_some());
+}
 
-    assert!(render_tile_bundles[3].is_none())
+#[then(regex = r"tile ([0-9]+) is not in the rendered map.")]
+fn verify_render_tile_is_none(world: &mut GameWorld, tile_num: String) {
+    let tile_index = tile_num
+        .parse::<usize>()
+        .expect("verify_render_tile_is_non: tile_num is not a number?");
+
+    let rendered_tile = &world.bevy_map.bevy_tiles[tile_index - 1];
+    assert!(rendered_tile.is_none())
 }
 
 #[then(regex = r"the trimmed path should be (.+\.png).")]
 fn verify_trimmed_path(world: &mut GameWorld, desired_asset_path: String) {
     let expected_path = PathBuf::from(desired_asset_path);
-    let actual_path = &world.bevy_asset_path;
+    let actual_path = &world.assets_folder_path;
 
     assert_eq!(expected_path, *actual_path);
 }

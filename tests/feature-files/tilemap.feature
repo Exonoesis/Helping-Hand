@@ -14,34 +14,58 @@ Feature: Load Tilemap from Tiled.
         Given a Tiled map called single_sprite_sheet.tmx,
         When the Tiled map is loaded,
         Then there are 4 tiles loaded.
-        And each tile points to the same sprite sheet.
-        And each tile points to the correct image on the single sprite sheet.
+        And tile 1 points to spritesheet atlas_64x.png.
+        And tile 1's spritesheet has dimensions 1024 x 3072.
+        And tile 2 points to spritesheet atlas_64x.png.
+        And tile 2's spritesheet has dimensions 1024 x 3072.
+        And tile 3 points to spritesheet atlas_64x.png.
+        And tile 3's spritesheet has dimensions 1024 x 3072.
+        And tile 4 points to spritesheet atlas_64x.png.
+        And tile 4's spritesheet has dimensions 1024 x 3072.
+        And tile 1 points to image number 1.
+        And tile 2 points to image number 5.
+        And tile 3 points to image number 49.
+        And tile 4 points to image number 53.
+
 
     Scenario: Tile textures correctly load from multiple sprite sheets.
         Given a Tiled map called multiple_sprite_sheet.tmx,
         When the Tiled map is loaded,
         Then there are 4 tiles loaded.
-        And the top two tiles point to one sprite sheet,
-        And the bottom two tiles point to the other sprite sheet,
-        And each tile points to the correct image on the multiple sprite sheets.
+        And tile 1 points to spritesheet !CL_DEMO_64.png.
+        And tile 2 points to spritesheet !CL_DEMO_64.png.
+        And tile 3 points to spritesheet atlas_64x.png.
+        And tile 4 points to spritesheet atlas_64x.png.
+        And tile 1 points to image number 131.
+        And tile 2 points to image number 128.
+        And tile 3 points to image number 115.
+        And tile 4 points to image number 164.
 
     Scenario: Map loads correctly when some tiles have no image.
         Given a Tiled map called one_blank.tmx,
         When the Tiled map is loaded,
-        Then the first three tiles contain an image element,
-        And the last tile has no image element.
+        Then tile 1 contains an image element.
+        And tile 2 contains an image element.
+        And tile 3 contains an image element.
+        And tile 4 contains no image element.
 
     Scenario: Load a Tiled map with multiple layers.
         Given a Tiled map called two_layers.tmx,
         When the Tiled map is loaded,
-        Then there exist two layers of tiles,
-        And those two layers are overlapping.
+        Then there exist 2 layers of tiles.
+        And tile 1 overlaps tile 5.
+        And tile 2 overlaps tile 6.
+        And tile 3 overlaps tile 7.
+        And tile 4 overlaps tile 8.
 
     Scenario: Adaptor bundles are created correctly.
         Given a Tiled map called one_blank.tmx,
         When the Tiled map is loaded,
-        Then the first three tiles can be converted to RenderTileBundles,
-        And the last tile cannot be converted to a RenderTileBundle.
+        And the Tiled map has been converted to a rendered map,
+        Then tile 1 is in the rendered map.
+        And tile 2 is in the rendered map.
+        And tile 3 is in the rendered map.
+        And tile 4 is not in the rendered map.
 
     Scenario: Absolute paths starting at assets are correctly trimmed to be Bevy-friendly.
         Given an absolute asset path of assets/textures/environments/atlas_64x.png,
