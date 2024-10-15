@@ -26,7 +26,8 @@ struct GameWorld {
 #[derive(Debug)]
 struct Tilemap {
     tiled_tiles: Vec<Tile>,
-    dimensions: MapDimensions,
+    grid_dimensions: MapGridDimensions,
+    px_dimensions: PxDimensions,
 }
 
 impl Tilemap {
@@ -35,14 +36,17 @@ impl Tilemap {
         let tiled_map = loader.load_tmx_map(map_location).unwrap();
         let num_layers = tiled_map.layers().len() as u32;
 
+        let px_dimensions = Self::get_map_in_px(&tiled_map);
         let tiled_tiles = get_map_tiles(tiled_map);
 
         let num_rows = get_num_rows_from_map(&tiled_tiles);
         let num_columns = get_num_columns_from_map(&tiled_tiles);
-        let dimensions = MapDimensions::new(num_rows, num_columns, num_layers);
+        let grid_dimensions = MapGridDimensions::new(num_rows, num_columns, num_layers);
+
         Self {
             tiled_tiles,
-            dimensions,
+            grid_dimensions,
+            px_dimensions,
         }
     }
 
@@ -50,8 +54,12 @@ impl Tilemap {
         &self.tiled_tiles
     }
 
-    pub fn get_dimensions(&self) -> &MapDimensions {
-        &self.dimensions
+    pub fn get_grid_dimensions(&self) -> &MapGridDimensions {
+        &self.grid_dimensions
+    }
+
+    pub fn get_px_dimensions(&self) -> &PxDimensions {
+        &self.px_dimensions
     }
 
     pub fn tiles_overlap(&self, first_tile_index: usize, second_tile_index: usize) -> bool {
@@ -66,13 +74,23 @@ impl Tilemap {
             false
         }
     }
+
+    fn get_map_in_px(tiled_map: &Map) -> PxDimensions {
+        let px_dimensions = PxDimensions::new(
+            tiled_map.width * &tiled_map.tile_width,
+            tiled_map.height * &tiled_map.tile_height,
+        );
+
+        px_dimensions
+    }
 }
 
 impl Default for Tilemap {
     fn default() -> Self {
         Self {
             tiled_tiles: Vec::new(),
-            dimensions: MapDimensions::new(0, 0, 0),
+            grid_dimensions: MapGridDimensions::new(0, 0, 0),
+            px_dimensions: PxDimensions::new(0, 0),
         }
     }
 }
@@ -110,15 +128,15 @@ impl PxDimensions {
 }
 
 #[derive(Debug, PartialEq)]
-struct MapDimensions {
+struct MapGridDimensions {
     rows: u32,
     columns: u32,
     layers: u32,
 }
 
-impl MapDimensions {
-    pub fn new(rows: u32, columns: u32, layers: u32) -> MapDimensions {
-        MapDimensions {
+impl MapGridDimensions {
+    pub fn new(rows: u32, columns: u32, layers: u32) -> MapGridDimensions {
+        MapGridDimensions {
             rows,
             columns,
             layers,
@@ -211,6 +229,29 @@ impl RenderedMap {
             bevy_tiles: get_render_tile_bundles(&tilemap, &asset_server, texture_atlas_assets),
         }
     }
+
+    pub fn tiled_map_overlap(
+        &self,
+        tiled_map: &Tilemap,
+        tiled_tile_index: usize,
+        bevy_tile_index: usize,
+    ) -> bool {
+        let tiled_tile_px_position = &tiled_map.get_tiles()[tiled_tile_index].px_cords;
+        let bevy_tile_px_position = &self.bevy_tiles[bevy_tile_index]
+            .as_ref()
+            .unwrap()
+            .spritesheet_bundle
+            .transform
+            .translation;
+
+        if tiled_tile_px_position.px_x == bevy_tile_px_position.x as usize
+            && tiled_tile_px_position.px_y == bevy_tile_px_position.y as usize
+        {
+            true
+        } else {
+            false
+        }
+    }
 }
 
 impl GameWorld {
@@ -293,6 +334,7 @@ fn get_render_tile_bundles(
         let bevy_path = to_bevy_path(&tile.tile_texture.as_ref().unwrap().spritesheet);
         let texture = asset_server.load(bevy_path);
 
+        //Getting Spritesheet Dimensions
         let sprite_sheet_column_count = (tile
             .tile_texture
             .as_ref()
@@ -326,7 +368,12 @@ fn get_render_tile_bundles(
             spritesheet_bundle: SpriteSheetBundle {
                 transform: Transform::from_xyz(
                     tile.px_cords.px_x as f32,
-                    tile.px_cords.px_y as f32,
+                    //y-axis flip because Bevy is Y-Up while Tiled is Y-Down
+                    flip_y_axis(
+                        tilemap.get_px_dimensions().px_height,
+                        tile.px_cords.px_y as f32,
+                        tile.tile_dimensions.px_height,
+                    ),
                     tile.px_cords.px_z as f32,
                 ),
                 texture,
@@ -391,6 +438,12 @@ fn to_bevy_path(tiled_path: &PathBuf) -> PathBuf {
     }
 
     return trimmed_path;
+}
+
+fn flip_y_axis(map_height: usize, tile_y: f32, tile_height: usize) -> f32 {
+    let flipped_y = map_height as f32 - tile_y - tile_height as f32;
+
+    return flipped_y;
 }
 
 // Returns a Path to the specified Tiled Map
@@ -502,8 +555,9 @@ fn verify_tiles_are_a_grid(world: &mut GameWorld, column_num: String, row_num: S
         .parse::<u32>()
         .expect("verify_tiles_are_a_grid: row is not a number?");
 
-    let actual_map_dimensions = world.loaded_map.get_dimensions();
-    let expected_map_dimensions = MapDimensions::new(expected_num_rows, expected_num_columns, 1);
+    let actual_map_dimensions = world.loaded_map.get_grid_dimensions();
+    let expected_map_dimensions =
+        MapGridDimensions::new(expected_num_rows, expected_num_columns, 1);
 
     assert_eq!(expected_map_dimensions, *actual_map_dimensions);
 }
@@ -515,7 +569,7 @@ fn verify_tile_spritesheet(world: &mut GameWorld, tile_num: String, spritesheet_
         .expect("verify_tile_spritesheet: tile_num is not a number?");
 
     let actual_spritesheet =
-        world.loaded_map.tiled_tiles[tile_index - 1].get_tile_spritesheet_filename();
+        world.loaded_map.get_tiles()[tile_index - 1].get_tile_spritesheet_filename();
     let expected_spritesheet = OsString::from(spritesheet_name);
     assert_eq!(expected_spritesheet, actual_spritesheet);
 }
@@ -540,7 +594,7 @@ fn verify_spritesheet_dimensions(
         .expect("verify_spritesheet_dimensions: sheet_width is not a number?");
 
     let actual_dimensions =
-        world.loaded_map.tiled_tiles[tile_index - 1].get_spritesheet_dimensions();
+        world.loaded_map.get_tiles()[tile_index - 1].get_spritesheet_dimensions();
     let expected_dimensions =
         PxDimensions::new(expected_spritesheet_width, expected_spritesheet_height);
     assert_eq!(expected_dimensions, *actual_dimensions);
@@ -555,7 +609,7 @@ fn verify_spritesheet_tile_image(world: &mut GameWorld, tile_num: String, image_
         .parse::<usize>()
         .expect("verify_spritesheet_tile_image: image_num is not a number?");
 
-    let actual_image = world.loaded_map.tiled_tiles[tile_index - 1].get_sprite_index();
+    let actual_image = world.loaded_map.get_tiles()[tile_index - 1].get_sprite_index();
     let expected_image = image_index;
     assert_eq!(expected_image, actual_image);
 }
@@ -577,7 +631,7 @@ fn verify_tile_image_is_empty(world: &mut GameWorld, tile_num: String) {
         .parse::<usize>()
         .expect("verify_tile_contains_image: tile_num is not a number?");
 
-    let tile_image = &world.loaded_map.tiled_tiles[tile_index - 1].tile_texture;
+    let tile_image = &world.loaded_map.get_tiles()[tile_index - 1].tile_texture;
     assert!(tile_image.is_none());
 }
 
@@ -587,7 +641,7 @@ fn verify_layer_count(world: &mut GameWorld, num_layers: String) {
         .parse::<u32>()
         .expect("verify_layer_count: num_layers is not a number?");
 
-    let actual_num_layers = world.loaded_map.get_dimensions().get_layers();
+    let actual_num_layers = world.loaded_map.get_grid_dimensions().get_layers();
     let expected_num_layers = layer_count;
     assert_eq!(expected_num_layers, actual_num_layers);
 }
@@ -606,6 +660,26 @@ fn verify_overlapping_tiles(world: &mut GameWorld, first_tile: String, second_ti
         .tiles_overlap(first_tile_index - 1, second_tile_index - 1);
 
     assert!(is_overlapping);
+}
+
+#[then(regex = r"Tiled tile ([0-9]+) overlaps Bevy tile ([0-9]+)")]
+fn verify_y_axis_flip(world: &mut GameWorld, tiled_tile_num: String, bevy_tile_num: String) {
+    let tiled_tile_index = tiled_tile_num
+        .parse::<usize>()
+        .expect("verify_y_axis_flip: Tiled tile is not a number?");
+
+    let bevy_tile_index = bevy_tile_num
+        .parse::<usize>()
+        .expect("verify_y_axis_flip: Bevy tile is not a number?");
+
+    let tiled_map = &world.loaded_map;
+
+    let cross_map_overlap =
+        world
+            .bevy_map
+            .tiled_map_overlap(tiled_map, tiled_tile_index - 1, bevy_tile_index - 1);
+
+    assert!(cross_map_overlap);
 }
 
 #[then(regex = r"tile ([0-9]+) is in the rendered map.")]

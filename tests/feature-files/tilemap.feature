@@ -81,3 +81,15 @@ Feature: Load Tilemap from Tiled.
         Given an absolute asset path of stuff/files/assets/textures/image-assets/environments/atlas_64x.png,
         When the absolute path is trimmed,
         Then the trimmed path should be textures/image-assets/environments/atlas_64x.png.
+
+    # Tiled  ->  Bevy
+    # [1][2]    [3][4]
+    # [3][4]    [1][2]
+    Scenario: Tiled (Y-Down) tiles are converted to Bevy (Y-Up) axis alignment.
+        Given a Tiled map called single_sprite_sheet.tmx,
+        When the Tiled map is loaded,
+        And the Tiled map has been converted to a rendered map,
+        Then Tiled tile 1 overlaps Bevy tile 3.
+        And Tiled tile 2 overlaps Bevy tile 4.
+        And Tiled tile 3 overlaps Bevy tile 1.
+        And Tiled tile 4 overlaps Bevy tile 2.
