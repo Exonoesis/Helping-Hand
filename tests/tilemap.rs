@@ -276,7 +276,7 @@ fn verify_render_tile_is_some(world: &mut GameWorld, tile_num: String) {
 fn verify_render_tile_is_none(world: &mut GameWorld, tile_num: String) {
     let tile_index = tile_num
         .parse::<usize>()
-        .expect("verify_render_tile_is_non: tile_num is not a number?");
+        .expect("verify_render_tile_is_none: tile_num is not a number?");
 
     let rendered_tile = &world.bevy_map.get_bevy_tiles()[tile_index - 1];
     assert!(rendered_tile.is_none())
@@ -288,6 +288,29 @@ fn verify_trimmed_path(world: &mut GameWorld, desired_asset_path: String) {
     let actual_path = &world.assets_folder_path;
 
     assert_eq!(expected_path, *actual_path);
+}
+
+#[then(regex = r"there is ([0-9]+) players? in the Tiled map.")]
+fn verify_number_of_players(world: &mut GameWorld, player_num: String) {
+    let expected_player_amount = player_num
+        .parse::<usize>()
+        .expect("verify_number_of_players: player_num is not a number?");
+
+    let actual_player_amount = world.loaded_map.get_players().len();
+
+    assert_eq!(expected_player_amount, actual_player_amount)
+}
+
+#[then(regex = r"that player is at tile ([0-9]+).")]
+fn verify_player_location(world: &mut GameWorld, tile_num: String) {
+    let tile_index = tile_num
+        .parse::<usize>()
+        .expect("verify_player_location: tile_num is not a number?");
+
+    let player_tile = &world.loaded_map.get_tiles()[tile_index - 1];
+    let player_at_tile = *player_tile.get_tile_type() == TileType::Player;
+
+    assert!(player_at_tile);
 }
 
 fn main() {

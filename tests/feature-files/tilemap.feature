@@ -93,3 +93,9 @@ Feature: Load Tilemap from Tiled.
         And Tiled tile 2 overlaps Bevy tile 4.
         And Tiled tile 3 overlaps Bevy tile 1.
         And Tiled tile 4 overlaps Bevy tile 2.
+
+    Scenario: A player is found on the Tiled map.
+        Given a Tiled map called player.tmx,
+        When the Tiled map is loaded,
+        Then there is 1 player in the Tiled map.
+        And that player is at tile 7.

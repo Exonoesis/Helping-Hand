@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, path::Path};
 
 use std::ffi::OsString;
 use std::path::PathBuf;
@@ -102,6 +102,18 @@ impl Tilemap {
             tiled_map.height * tiled_map.tile_height,
         )
     }
+
+    pub fn get_players(&self) -> Vec<&Tile> {
+        let mut found_players = Vec::new();
+
+        for tile in &self.tiled_tiles {
+            if *tile.get_tile_type() == TileType::Player {
+                found_players.push(tile);
+            }
+        }
+
+        found_players
+    }
 }
 
 impl Default for Tilemap {
@@ -112,6 +124,13 @@ impl Default for Tilemap {
             px_dimensions: PxDimensions::new(0, 0),
         }
     }
+}
+
+#[derive(Debug, PartialEq)]
+pub enum TileType {
+    Empty,
+    Normal,
+    Player,
 }
 
 #[derive(Debug, PartialEq)]
@@ -181,6 +200,7 @@ pub struct Tile {
     px_cords: XyzCords,
     tile_texture: Option<TileTexture>,
     layer_number: usize,
+    tile_type: TileType,
 }
 
 impl Tile {
@@ -189,12 +209,14 @@ impl Tile {
         px_cords: XyzCords,
         tile_texture: Option<TileTexture>,
         layer_number: usize,
+        tile_type: TileType,
     ) -> Tile {
         Tile {
             tile_dimensions,
             px_cords,
             tile_texture,
             layer_number,
+            tile_type,
         }
     }
 
@@ -216,6 +238,10 @@ impl Tile {
 
     pub fn get_tile_texture(&self) -> &Option<TileTexture> {
         &self.tile_texture
+    }
+
+    pub fn get_tile_type(&self) -> &TileType {
+        &self.tile_type
     }
 }
 
@@ -296,12 +322,19 @@ fn get_map_tiles(tiled_map: Map) -> Vec<Tile> {
     for z in 0..tiled_map.layers().len() {
         for y in 0..map_height {
             for x in 0..map_width {
-                let tile = Tile {
-                    tile_dimensions: PxDimensions::new(tile_width, tile_height),
-                    px_cords: XyzCords::new(x * tile_width, y * tile_height, z),
-                    layer_number: z,
-                    tile_texture: get_tile_texture(&tiled_map, x, y, z),
-                };
+                let tile_dimensions = PxDimensions::new(tile_width, tile_height);
+                let px_cords = XyzCords::new(x * tile_width, y * tile_height, z);
+                let layer_number = z;
+                let tile_texture = get_tile_texture(&tiled_map, x, y, z);
+                let tile_type = get_tile_type(&tiled_map, x, y, z);
+
+                let tile = Tile::new(
+                    tile_dimensions,
+                    px_cords,
+                    tile_texture,
+                    layer_number,
+                    tile_type,
+                );
                 tiles.push(tile);
             }
         }
@@ -418,7 +451,40 @@ fn get_tile_texture(
     }
 }
 
-pub fn to_bevy_path(tiled_path: &PathBuf) -> PathBuf {
+fn get_tile_type(
+    tiled_map: &Map,
+    x_grid_cord: u32,
+    y_grid_cord: u32,
+    layer_num: usize,
+) -> TileType {
+    let tile_layer = tiled_map.get_layer(layer_num).unwrap();
+    let layer_name = tile_layer.name.clone();
+
+    /*
+     "This is equivalent to a pit-stop, where we grab name along the way." - Exo
+
+    let tile_layer = tiled_map
+        .get_layer(layer_num)
+        .unwrap() <- tile_layer, before the variable shadowing occurs.
+        .as_tile_layer() <- tile_layer, after the variable shadowing occurs, getting this part and onward without having to redine the whole thing.
+        .unwrap();
+     */
+    let tile_layer = tile_layer.as_tile_layer().unwrap();
+
+    let has_tile_at_layer = tile_layer
+        .get_tile(x_grid_cord as i32, y_grid_cord as i32)
+        .is_some();
+    if !has_tile_at_layer {
+        return TileType::Empty;
+    }
+
+    match layer_name.as_str() {
+        "Player" => TileType::Player,
+        _ => TileType::Normal,
+    }
+}
+
+pub fn to_bevy_path(tiled_path: &Path) -> PathBuf {
     let mut trimmed_path = PathBuf::new();
     let mut path_element_stack = Vec::new();
 
