@@ -52,7 +52,7 @@ pub fn spawn_map(
 #[derive(Debug)]
 pub struct Tilemap {
     tiled_tiles: Vec<Tile>,
-    grid_dimensions: MapGridDimensions,
+    grid_dimensions: GridDimensions,
     px_dimensions: PxDimensions,
 }
 
@@ -67,7 +67,7 @@ impl Tilemap {
 
         let num_rows = get_num_rows_from_map(&tiled_tiles);
         let num_columns = get_num_columns_from_map(&tiled_tiles);
-        let grid_dimensions = MapGridDimensions::new(num_rows, num_columns, num_layers);
+        let grid_dimensions = GridDimensions::new(num_columns, num_rows, num_layers);
 
         Self {
             tiled_tiles,
@@ -80,7 +80,7 @@ impl Tilemap {
         &self.tiled_tiles
     }
 
-    pub fn get_grid_dimensions(&self) -> &MapGridDimensions {
+    pub fn get_grid_dimensions(&self) -> &GridDimensions {
         &self.grid_dimensions
     }
 
@@ -120,7 +120,7 @@ impl Default for Tilemap {
     fn default() -> Self {
         Self {
             tiled_tiles: Vec::new(),
-            grid_dimensions: MapGridDimensions::new(0, 0, 0),
+            grid_dimensions: GridDimensions::new(0, 0, 0),
             px_dimensions: PxDimensions::new(0, 0),
         }
     }
@@ -174,17 +174,17 @@ impl PxDimensions {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct MapGridDimensions {
-    rows: u32,
+pub struct GridDimensions {
     columns: u32,
+    rows: u32,
     layers: u32,
 }
 
-impl MapGridDimensions {
-    pub fn new(rows: u32, columns: u32, layers: u32) -> MapGridDimensions {
-        MapGridDimensions {
-            rows,
+impl GridDimensions {
+    pub fn new(columns: u32, rows: u32, layers: u32) -> GridDimensions {
+        GridDimensions {
             columns,
+            rows,
             layers,
         }
     }
@@ -198,6 +198,7 @@ impl MapGridDimensions {
 pub struct Tile {
     tile_dimensions: PxDimensions,
     px_cords: XyzCords,
+    grid_cords: GridDimensions,
     tile_texture: Option<TileTexture>,
     layer_number: usize,
     tile_type: TileType,
@@ -207,6 +208,7 @@ impl Tile {
     pub fn new(
         tile_dimensions: PxDimensions,
         px_cords: XyzCords,
+        grid_cords: GridDimensions,
         tile_texture: Option<TileTexture>,
         layer_number: usize,
         tile_type: TileType,
@@ -214,6 +216,7 @@ impl Tile {
         Tile {
             tile_dimensions,
             px_cords,
+            grid_cords,
             tile_texture,
             layer_number,
             tile_type,
@@ -324,6 +327,7 @@ fn get_map_tiles(tiled_map: Map) -> Vec<Tile> {
             for x in 0..map_width {
                 let tile_dimensions = PxDimensions::new(tile_width, tile_height);
                 let px_cords = XyzCords::new(x * tile_width, y * tile_height, z);
+                let grid_cords = GridDimensions::new(x, y, z as u32);
                 let layer_number = z;
                 let tile_texture = get_tile_texture(&tiled_map, x, y, z);
                 let tile_type = get_tile_type(&tiled_map, x, y, z);
@@ -331,6 +335,7 @@ fn get_map_tiles(tiled_map: Map) -> Vec<Tile> {
                 let tile = Tile::new(
                     tile_dimensions,
                     px_cords,
+                    grid_cords,
                     tile_texture,
                     layer_number,
                     tile_type,
@@ -535,4 +540,17 @@ fn get_num_rows_from_map(tiles: &[Tile]) -> u32 {
     }
 
     ((highest_y / tile_height) + 1) as u32
+}
+
+pub fn three_d_to_one_d_cords(
+    tile_grid_cords: &GridDimensions,
+    map_grid_dimensions: &GridDimensions,
+) -> u32 {
+    let map_area = map_grid_dimensions.columns * map_grid_dimensions.rows;
+    let map_height = map_grid_dimensions.rows;
+    let tile_x = tile_grid_cords.columns;
+    let tile_y = tile_grid_cords.rows;
+    let tile_z = tile_grid_cords.layers;
+
+    (map_area * tile_z) + (map_height * tile_y) + tile_x
 }

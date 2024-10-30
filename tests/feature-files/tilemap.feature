@@ -14,58 +14,58 @@ Feature: Load Tilemap from Tiled.
         Given a Tiled map called single_sprite_sheet.tmx,
         When the Tiled map is loaded,
         Then there are 4 tiles loaded.
-        And tile 1 points to spritesheet atlas_64x.png.
-        And tile 1's spritesheet has dimensions 1024 x 3072.
-        And tile 2 points to spritesheet atlas_64x.png.
-        And tile 2's spritesheet has dimensions 1024 x 3072.
-        And tile 3 points to spritesheet atlas_64x.png.
-        And tile 3's spritesheet has dimensions 1024 x 3072.
-        And tile 4 points to spritesheet atlas_64x.png.
-        And tile 4's spritesheet has dimensions 1024 x 3072.
-        And tile 1 points to image number 1.
-        And tile 2 points to image number 5.
-        And tile 3 points to image number 49.
-        And tile 4 points to image number 53.
+        And tile 0,0,0 points to spritesheet atlas_64x.png.
+        And tile 0,0,0's spritesheet has dimensions 1024 x 3072.
+        And tile 1,0,0 points to spritesheet atlas_64x.png.
+        And tile 1,0,0's spritesheet has dimensions 1024 x 3072.
+        And tile 0,1,0 points to spritesheet atlas_64x.png.
+        And tile 0,1,0's spritesheet has dimensions 1024 x 3072.
+        And tile 1,1,0 points to spritesheet atlas_64x.png.
+        And tile 1,1,0's spritesheet has dimensions 1024 x 3072.
+        And tile 0,0,0 points to image number 1.
+        And tile 1,0,0 points to image number 5.
+        And tile 0,1,0 points to image number 49.
+        And tile 1,1,0 points to image number 53.
 
 
     Scenario: Tile textures correctly load from multiple sprite sheets.
         Given a Tiled map called multiple_sprite_sheet.tmx,
         When the Tiled map is loaded,
         Then there are 4 tiles loaded.
-        And tile 1 points to spritesheet !CL_DEMO_64.png.
-        And tile 2 points to spritesheet !CL_DEMO_64.png.
-        And tile 3 points to spritesheet atlas_64x.png.
-        And tile 4 points to spritesheet atlas_64x.png.
-        And tile 1 points to image number 131.
-        And tile 2 points to image number 128.
-        And tile 3 points to image number 115.
-        And tile 4 points to image number 164.
+        And tile 0,0,0 points to spritesheet !CL_DEMO_64.png.
+        And tile 1,0,0 points to spritesheet !CL_DEMO_64.png.
+        And tile 0,1,0 points to spritesheet atlas_64x.png.
+        And tile 1,1,0 points to spritesheet atlas_64x.png.
+        And tile 0,0,0 points to image number 131.
+        And tile 1,0,0 points to image number 128.
+        And tile 0,1,0 points to image number 115.
+        And tile 1,1,0 points to image number 164.
 
     Scenario: Map loads correctly when some tiles have no image.
         Given a Tiled map called one_blank.tmx,
         When the Tiled map is loaded,
-        Then tile 1 contains an image element.
-        And tile 2 contains an image element.
-        And tile 3 contains an image element.
-        And tile 4 contains no image element.
+        Then tile 0,0,0 contains an image element.
+        And tile 1,0,0 contains an image element.
+        And tile 0,1,0 contains an image element.
+        And tile 1,1,0 contains no image element.
 
     Scenario: Load a Tiled map with multiple layers.
         Given a Tiled map called two_layers.tmx,
         When the Tiled map is loaded,
         Then there exist 2 layers of tiles.
-        And tile 1 overlaps tile 5.
-        And tile 2 overlaps tile 6.
-        And tile 3 overlaps tile 7.
-        And tile 4 overlaps tile 8.
+        And tile 0,0,0 overlaps tile 0,0,1.
+        And tile 1,0,0 overlaps tile 1,0,1.
+        And tile 0,1,0 overlaps tile 0,1,1.
+        And tile 1,1,0 overlaps tile 1,1,1.
 
     Scenario: Adaptor bundles are created correctly.
         Given a Tiled map called one_blank.tmx,
         When the Tiled map is loaded,
         And the Tiled map has been converted to a rendered map,
-        Then tile 1 is in the rendered map.
-        And tile 2 is in the rendered map.
-        And tile 3 is in the rendered map.
-        And tile 4 is not in the rendered map.
+        Then tile 0,0,0 is in the rendered map.
+        And tile 1,0,0 is in the rendered map.
+        And tile 0,1,0 is in the rendered map.
+        And tile 1,1,0 is not in the rendered map.
 
     Scenario: Absolute paths starting at assets are correctly trimmed to be Bevy-friendly.
         Given an absolute asset path of assets/textures/environments/atlas_64x.png,
@@ -89,13 +89,18 @@ Feature: Load Tilemap from Tiled.
         Given a Tiled map called single_sprite_sheet.tmx,
         When the Tiled map is loaded,
         And the Tiled map has been converted to a rendered map,
-        Then Tiled tile 1 overlaps Bevy tile 3.
-        And Tiled tile 2 overlaps Bevy tile 4.
-        And Tiled tile 3 overlaps Bevy tile 1.
-        And Tiled tile 4 overlaps Bevy tile 2.
+        Then Tiled tile 0,0,0 is equivalent to Bevy tile 0,1,0.
+        And Tiled tile 1,0,0 is equivalent to Bevy tile 1,1,0.
+        And Tiled tile 0,1,0 is equivalent to Bevy tile 0,0,0.
+        And Tiled tile 1,1,0 is equivalent to Bevy tile 1,0,0.
 
     Scenario: A player is found on the Tiled map.
         Given a Tiled map called player.tmx,
         When the Tiled map is loaded,
         Then there is 1 player in the Tiled map.
-        And that player is at tile 7.
+        And that player is at tile 0,1,1.
+
+    Scenario: Translate 3D cords to 1D cords.
+        Given a Tiled map called player.tmx,
+        When the Tiled map is loaded,
+        Then 3D cords 0,1,1 point to tile index 6.

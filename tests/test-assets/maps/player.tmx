@@ -5,11 +5,11 @@
  </tileset>
  <layer id="1" name="Tile Layer 1" width="2" height="2">
   <data encoding="csv">
-42,42,
-42,42
+42,43,
+82,83
 </data>
  </layer>
- <layer id="2" name="Player" width="2" height="2">
+ <layer id="2" name="Player" width="2" height="2" visible="0">
   <data encoding="csv">
 0,0,
 60,0
