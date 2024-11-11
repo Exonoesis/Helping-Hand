@@ -62,10 +62,7 @@ Feature: Load Tilemap from Tiled.
         Given a Tiled map called one_blank.tmx,
         When the Tiled map is loaded,
         And the Tiled map has been converted to a rendered map,
-        Then tile 0,0,0 is in the rendered map.
-        And tile 1,0,0 is in the rendered map.
-        And tile 0,1,0 is in the rendered map.
-        And tile 1,1,0 is not in the rendered map.
+        Then there should be 4 rendered tiles created.
 
     Scenario: Absolute paths starting at assets are correctly trimmed to be Bevy-friendly.
         Given an absolute asset path of assets/textures/environments/atlas_64x.png,
@@ -82,9 +79,10 @@ Feature: Load Tilemap from Tiled.
         When the absolute path is trimmed,
         Then the trimmed path should be textures/image-assets/environments/atlas_64x.png.
 
-    # Tiled  ->  Bevy
-    # [1][2]    [3][4]
-    # [3][4]    [1][2]
+    #   Tiled  ->    Bevy
+    #    0  1        0  1
+    # 0 [1][2]    1 [3][4]
+    # 1 [3][4]    0 [1][2]
     Scenario: Tiled (Y-Down) tiles are converted to Bevy (Y-Up) axis alignment.
         Given a Tiled map called single_sprite_sheet.tmx,
         When the Tiled map is loaded,

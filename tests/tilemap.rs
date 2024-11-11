@@ -386,52 +386,11 @@ fn verify_y_axis_flip(
     assert!(cross_map_overlap);
 }
 
-#[then(regex = r"tile ([0-9]+),([0-9]+),([0-9]+) is in the rendered map.")]
-fn verify_render_tile_is_some(
-    world: &mut GameWorld,
-    tile_x: String,
-    tile_y: String,
-    tile_z: String,
-) {
-    let tile_x_cord = tile_x
-        .parse::<u32>()
-        .expect("verify_render_tile_is_some: x is not a number?");
-    let tile_y_cord = tile_y
-        .parse::<u32>()
-        .expect("verify_render_tile_is_some: y is not a number?");
-    let tile_z_cord = tile_z
-        .parse::<u32>()
-        .expect("verify_render_tile_is_some: z is not a number?");
-
-    let tile = GridDimensions::new(tile_x_cord, tile_y_cord, tile_z_cord);
-    let tile_index = three_d_to_one_d_cords(&tile, world.loaded_map.get_grid_dimensions()) as usize;
-
-    let rendered_tile = &world.bevy_map.get_bevy_tiles()[tile_index];
-    assert!(rendered_tile.is_some());
-}
-
-#[then(regex = r"tile ([0-9]+),([0-9]+),([0-9]+) is not in the rendered map.")]
-fn verify_render_tile_is_none(
-    world: &mut GameWorld,
-    tile_x: String,
-    tile_y: String,
-    tile_z: String,
-) {
-    let tile_x_cord = tile_x
-        .parse::<u32>()
-        .expect("verify_render_tile_is_none: x is not a number?");
-    let tile_y_cord = tile_y
-        .parse::<u32>()
-        .expect("verify_render_tile_is_none: y is not a number?");
-    let tile_z_cord = tile_z
-        .parse::<u32>()
-        .expect("verify_render_tile_is_none: z is not a number?");
-
-    let tile = GridDimensions::new(tile_x_cord, tile_y_cord, tile_z_cord);
-    let tile_index = three_d_to_one_d_cords(&tile, world.loaded_map.get_grid_dimensions()) as usize;
-
-    let rendered_tile = &world.bevy_map.get_bevy_tiles()[tile_index];
-    assert!(rendered_tile.is_none())
+#[then("there should be 4 rendered tiles created.")]
+fn verify_number_of_rendered_tiles(world: &mut GameWorld) {
+    let expected_number_of_tiles = 4;
+    let actual_number_of_tiles = world.bevy_map.get_bevy_tiles().len();
+    assert_eq!(expected_number_of_tiles, actual_number_of_tiles);
 }
 
 #[then(regex = r"the trimmed path should be (.+\.png).")]

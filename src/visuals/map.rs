@@ -40,9 +40,7 @@ pub fn spawn_map(
     let rendered_tiles = bevy_map.get_bevy_tiles();
 
     for render_tile in rendered_tiles {
-        if let Some(rendered_tile) = render_tile {
-            commands.spawn(rendered_tile.clone());
-        }
+        commands.spawn(render_tile.clone());
     }
 
     let camera_centered_to_map = create_centered_camera(&map);
@@ -126,14 +124,14 @@ impl Default for Tilemap {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Component, Debug, PartialEq)]
 pub enum TileType {
     Empty,
     Normal,
     Player,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Component, Clone, Copy, Debug, PartialEq)]
 pub struct XyzCords {
     px_x: usize,
     px_y: usize,
@@ -257,24 +255,27 @@ pub struct TileTexture {
 
 #[derive(Bundle, Clone)]
 pub struct RenderTile {
+    //grid_coordinate: XyzCords,
     spritesheet_bundle: SpriteSheetBundle,
+}
+
+impl RenderTile {
+    pub fn new(spritesheet: SpriteSheetBundle) -> Self {
+        Self {
+            spritesheet_bundle: spritesheet,
+        }
+    }
 }
 
 #[derive(Default)]
 pub struct RenderedMap {
-    bevy_tiles: Vec<Option<RenderTile>>,
+    bevy_tiles: Vec<RenderTile>,
 }
 
 impl Debug for RenderedMap {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RenderedMap")
-            .field(
-                "bevy_tiles",
-                &format_args!(
-                    "{}",
-                    self.bevy_tiles.iter().filter(|tile| tile.is_some()).count()
-                ),
-            )
+            .field("bevy_tiles", &format_args!("{}", self.bevy_tiles.len()))
             .finish()
     }
 }
@@ -298,8 +299,6 @@ impl RenderedMap {
     ) -> bool {
         let tiled_tile_px_position = &tiled_map.get_tiles()[tiled_tile_index].px_cords;
         let bevy_tile_px_position = &self.bevy_tiles[bevy_tile_index]
-            .as_ref()
-            .unwrap()
             .spritesheet_bundle
             .transform
             .translation;
@@ -308,7 +307,7 @@ impl RenderedMap {
             && tiled_tile_px_position.px_y == bevy_tile_px_position.y as usize
     }
 
-    pub fn get_bevy_tiles(&self) -> &Vec<Option<RenderTile>> {
+    pub fn get_bevy_tiles(&self) -> &Vec<RenderTile> {
         &self.bevy_tiles
     }
 }
@@ -348,77 +347,91 @@ fn get_map_tiles(tiled_map: Map) -> Vec<Tile> {
     tiles
 }
 
+/// Returns a Spritesheet for some Tile.
+fn get_spritesheet_for_tile(
+    tile: &Tile,
+    tilemap: &Tilemap,
+    asset_server: &AssetServer,
+    texture_atlas_assets: &mut Assets<TextureAtlasLayout>,
+) -> SpriteSheetBundle {
+    let mut tile_spritesheet = SpriteSheetBundle::default();
+
+    if tile.get_tile_texture().is_none() {
+        tile_spritesheet.transform = Transform::from_xyz(
+            tile.px_cords.px_x as f32,
+            //y-axis flip because Bevy is Y-Up while Tiled is Y-Down
+            flip_y_axis(
+                tilemap.get_px_dimensions().px_height,
+                tile.px_cords.px_y as f32,
+                tile.tile_dimensions.px_height,
+            ),
+            tile.px_cords.px_z as f32,
+        );
+
+        return tile_spritesheet;
+    }
+
+    //We have to trim our path from being absolute to having root at assets
+    let bevy_path = to_bevy_path(&tile.tile_texture.as_ref().unwrap().spritesheet);
+    let texture = asset_server.load(bevy_path);
+
+    //Getting Spritesheet Dimensions
+    let sprite_sheet_column_count =
+        tile.get_spritesheet_dimensions().get_width() / tile.tile_dimensions.px_width;
+    let sprite_sheet_row_count =
+        tile.get_spritesheet_dimensions().get_height() / tile.tile_dimensions.px_height;
+
+    //This is how the sprite sheet should be cut when creating sprites to render
+    let sheet_layout = TextureAtlasLayout::from_grid(
+        Vec2::new(
+            tile.tile_dimensions.px_width as f32,
+            tile.tile_dimensions.px_height as f32,
+        ),
+        sprite_sheet_column_count,
+        sprite_sheet_row_count,
+        None,
+        None,
+    );
+
+    // First we set the physical coordinates.
+    tile_spritesheet.transform = Transform::from_xyz(
+        tile.px_cords.px_x as f32,
+        //y-axis flip because Bevy is Y-Up while Tiled is Y-Down
+        flip_y_axis(
+            tilemap.get_px_dimensions().px_height,
+            tile.px_cords.px_y as f32,
+            tile.tile_dimensions.px_height,
+        ),
+        tile.px_cords.px_z as f32,
+    );
+    // Then we point to the spritesheet file to use as reference.
+    tile_spritesheet.texture = texture;
+    // And finally, in the spritesheet, we specify _which_ sprite in the spritesheet to render right now*.
+    tile_spritesheet.atlas = TextureAtlas {
+        layout: texture_atlas_assets.add(sheet_layout),
+        // * specifically happening right here.
+        index: tile.tile_texture.as_ref().unwrap().sprite_index,
+    };
+
+    tile_spritesheet
+}
+
 /// Returns a list of RenderTileBundles to be spawned by Bevy for the given list of tiles.
 fn get_render_tile_bundles(
     tilemap: &Tilemap,
     asset_server: &AssetServer,
     texture_atlas_assets: &mut Assets<TextureAtlasLayout>,
-) -> Vec<Option<RenderTile>> {
+) -> Vec<RenderTile> {
     let mut render_tile_bundles = Vec::new();
 
     let tiles = tilemap.get_tiles();
 
     for tile in tiles {
-        //Tiles without a texture don't need to be rendered
-        if tile.tile_texture.is_none() {
-            render_tile_bundles.push(None);
-            continue;
-        }
-
-        //We have to trim our path from being absolute to having root at assets
-        let bevy_path = to_bevy_path(&tile.tile_texture.as_ref().unwrap().spritesheet);
-        let texture = asset_server.load(bevy_path);
-
-        //Getting Spritesheet Dimensions
-        let sprite_sheet_column_count = tile
-            .tile_texture
-            .as_ref()
-            .unwrap()
-            .spritesheet_dimensions
-            .px_width
-            / tile.tile_dimensions.px_width;
-        let sprite_sheet_row_count = tile
-            .tile_texture
-            .as_ref()
-            .unwrap()
-            .spritesheet_dimensions
-            .px_height
-            / tile.tile_dimensions.px_height;
-
-        //This is how the sprite sheet should be cut when creating sprites to render
-        let sheet_layout = TextureAtlasLayout::from_grid(
-            Vec2::new(
-                tile.tile_dimensions.px_width as f32,
-                tile.tile_dimensions.px_height as f32,
-            ),
-            sprite_sheet_column_count,
-            sprite_sheet_row_count,
-            None,
-            None,
-        );
-
         // Conversion to Bevy specific formatting happens right here
         // Our:RenderTileBundle -> Bevy's:SpriteSheetBundle
-        let render_tile = Some(RenderTile {
-            spritesheet_bundle: SpriteSheetBundle {
-                transform: Transform::from_xyz(
-                    tile.px_cords.px_x as f32,
-                    //y-axis flip because Bevy is Y-Up while Tiled is Y-Down
-                    flip_y_axis(
-                        tilemap.get_px_dimensions().px_height,
-                        tile.px_cords.px_y as f32,
-                        tile.tile_dimensions.px_height,
-                    ),
-                    tile.px_cords.px_z as f32,
-                ),
-                texture,
-                atlas: TextureAtlas {
-                    layout: texture_atlas_assets.add(sheet_layout),
-                    index: tile.tile_texture.as_ref().unwrap().sprite_index,
-                },
-                ..Default::default()
-            },
-        });
+        let render_tile_spritesheet =
+            get_spritesheet_for_tile(tile, tilemap, asset_server, texture_atlas_assets);
+        let render_tile = RenderTile::new(render_tile_spritesheet);
         render_tile_bundles.push(render_tile);
     }
     render_tile_bundles

@@ -9,7 +9,7 @@
 82,83
 </data>
  </layer>
- <layer id="2" name="Player" width="2" height="2" visible="0">
+ <layer id="2" name="Player" width="2" height="2">
   <data encoding="csv">
 0,0,
 60,0
