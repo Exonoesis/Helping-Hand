@@ -1,4 +1,7 @@
+use std::time::Duration;
+
 use crate::entities::player::MovementIntent;
+use crate::visuals::map::PxDimensions;
 use crate::{
     entities::player::{DirectionFacing, Player, PlayerMovementActions},
     visuals::map::LevelDimensions,
@@ -11,6 +14,206 @@ use bevy_ecs_ldtk::{prelude::*, EntityInstance, LevelIid};
 
 #[derive(Event)]
 pub struct InteractionEvent(String, String);
+
+#[derive(Event)]
+pub enum MovementDirection {
+    Right,
+}
+
+#[derive(Component)]
+pub struct Target {
+    position: Transform,
+}
+
+#[derive(Resource)]
+pub struct ArrivalTime {
+    time: Duration,
+}
+
+impl ArrivalTime {
+    pub fn new(time: Duration) -> Self {
+        Self { time }
+    }
+
+    pub fn get_duration(&self) -> &Duration {
+        &self.time
+    }
+}
+
+#[derive(Component)]
+pub struct ArrivalTimer {
+    timer: Timer,
+}
+
+impl ArrivalTimer {
+    pub fn new(timer: Timer) -> Self {
+        Self { timer }
+    }
+
+    pub fn elapsed(&self) -> Duration {
+        self.timer.elapsed()
+    }
+
+    pub fn total(&self) -> Duration {
+        self.timer.duration()
+    }
+
+    pub fn advance(&mut self, time_passed: Duration) {
+        self.timer.tick(time_passed);
+    }
+}
+
+impl Target {
+    pub fn new(px_position: Transform) -> Self {
+        Self {
+            position: px_position,
+        }
+    }
+
+    pub fn get_position(&self) -> &Transform {
+        &self.position
+    }
+}
+
+/// Returns a new position shifted away from a starting position in a given direction
+pub fn set_destination(
+    current_position: &Transform,
+    tile_dimensions: &PxDimensions,
+    direction: &MovementDirection,
+) -> Transform {
+    let current_px_position = current_position.translation;
+    match direction {
+        MovementDirection::Right => Transform::from_xyz(
+            current_px_position.x + tile_dimensions.get_width() as f32,
+            current_px_position.y,
+            current_px_position.z,
+        ),
+    }
+}
+
+/// Sets the target location of the player on the map.
+pub fn set_player_target(
+    mut requests_to_move: EventReader<MovementDirection>,
+    mut commands: Commands,
+    player: Query<
+        (Entity, &PxDimensions, &Transform),
+        (With<Player>, Without<Target>, Without<ArrivalTimer>),
+    >,
+    arrival_time: Res<ArrivalTime>,
+) {
+    if player.is_empty() {
+        return;
+    }
+
+    if requests_to_move.is_empty() {
+        return;
+    }
+
+    let (player_entity, player_tile_dimensions, current_player_position) = player.single();
+    let direction = requests_to_move
+        .read()
+        .next()
+        .expect("set_player_target: There are no requests to move.");
+
+    let new_target_position =
+        set_destination(current_player_position, player_tile_dimensions, direction);
+    let new_target = Target::new(new_target_position);
+
+    let timer = Timer::new(*arrival_time.get_duration(), TimerMode::Once);
+    let arrival_timer = ArrivalTimer::new(timer);
+
+    commands
+        .entity(player_entity)
+        .insert((new_target, arrival_timer));
+}
+
+/// Returns a direction for some starting and target position.
+fn get_direction(position: &Transform, target: &Target) -> MovementDirection {
+    let x_difference = target.get_position().translation.x - position.translation.x;
+    let y_difference = target.get_position().translation.y - position.translation.y;
+
+    if x_difference != 0.0 {
+        return match x_difference.is_sign_positive() {
+            true => MovementDirection::Right,
+            false => todo!("Need to implement x negative as Left"),
+        };
+    }
+
+    if y_difference != 0.0 {
+        return match y_difference.is_sign_positive() {
+            true => todo!("Need to implement y positive as Down"),
+            false => todo!("Need to implement y negative as Up"),
+        };
+    }
+
+    panic!("get_direction: There's no difference in the starting and ending position.");
+}
+
+/// Moves some entities's position towards a target in a given amount of time.
+fn move_towards(
+    position: &Transform,
+    target: &Target,
+    distance: &PxDimensions,
+    time_to_reach_destination: &ArrivalTimer,
+) -> Transform {
+    let mut new_position = Transform::from(*position);
+
+    let time_elapsed = time_to_reach_destination.elapsed();
+    let total_time = time_to_reach_destination.total();
+
+    let direction_facing = get_direction(position, target);
+
+    match direction_facing {
+        MovementDirection::Right => {
+            let new_position_x = if total_time.is_zero() {
+                distance.get_width() as f32
+            } else {
+                (distance.get_width() as f32 * time_elapsed.as_secs_f32())
+                    / total_time.as_secs_f32()
+            };
+            new_position.translation.x = new_position_x;
+        }
+    }
+
+    new_position
+}
+
+/// Moves some entity towards a Target position.
+pub fn move_entity_to_target(
+    mut movable_entities: Query<(
+        Entity,
+        &mut Transform,
+        &PxDimensions,
+        &Target,
+        &mut ArrivalTimer,
+    )>,
+    mut commands: Commands,
+    time: Res<Time>,
+) {
+    for (
+        entity,
+        mut entity_position,
+        entity_dimensions,
+        entity_target,
+        mut time_to_reach_destination,
+    ) in &mut movable_entities
+    {
+        if entity_position.as_ref() == entity_target.get_position() {
+            commands.entity(entity).remove::<Target>();
+            commands.entity(entity).remove::<ArrivalTimer>();
+            continue;
+        }
+
+        time_to_reach_destination.advance(time.delta());
+
+        *entity_position = move_towards(
+            entity_position.as_ref(),
+            entity_target,
+            entity_dimensions,
+            time_to_reach_destination.as_ref(),
+        );
+    }
+}
 
 pub fn player_input(
     input: Res<ButtonInput<KeyCode>>,

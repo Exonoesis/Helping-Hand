@@ -117,24 +117,17 @@ fn tiled_map_to_bevy_tiles(world: &mut GameWorld) {
 }
 
 #[then(regex = r"there are ([0-9]+) tiles loaded.")]
-fn verify_num_loaded_tiles(world: &mut GameWorld, map_tile_count: String) {
-    let expected_num_tiles = map_tile_count
-        .parse::<usize>()
-        .expect("verify_num_loaded_tiles: map_tile_count is not a number?");
+fn verify_num_loaded_tiles(world: &mut GameWorld, expected_num_tiles: usize) {
     let actual_num_tiles = world.loaded_map.get_tiles().len();
     assert_eq!(expected_num_tiles, actual_num_tiles);
 }
 
 #[then(regex = r"the tiles are in a ([0-9]+)x([0-9]+) grid.")]
-fn verify_tiles_are_a_grid(world: &mut GameWorld, column_num: String, row_num: String) {
-    let expected_num_rows = column_num
-        .parse::<u32>()
-        .expect("verify_tiles_are_a_grid: column is not a number?");
-
-    let expected_num_columns = row_num
-        .parse::<u32>()
-        .expect("verify_tiles_are_a_grid: row is not a number?");
-
+fn verify_tiles_are_a_grid(
+    world: &mut GameWorld,
+    expected_num_rows: u32,
+    expected_num_columns: u32,
+) {
     let actual_map_dimensions = world.loaded_map.get_grid_dimensions();
     let expected_map_dimensions = GridDimensions::new(expected_num_columns, expected_num_rows, 1);
 
@@ -144,21 +137,11 @@ fn verify_tiles_are_a_grid(world: &mut GameWorld, column_num: String, row_num: S
 #[then(regex = r"tile ([0-9]+),([0-9]+),([0-9]+) points to spritesheet (.+\.png).")]
 fn verify_tile_spritesheet(
     world: &mut GameWorld,
-    tile_x: String,
-    tile_y: String,
-    tile_z: String,
+    tile_x_cord: u32,
+    tile_y_cord: u32,
+    tile_z_cord: u32,
     spritesheet_name: String,
 ) {
-    let tile_x_cord = tile_x
-        .parse::<u32>()
-        .expect("verify_tile_spritesheet: x is not a number?");
-    let tile_y_cord = tile_y
-        .parse::<u32>()
-        .expect("verify_tile_spritesheet: y is not a number?");
-    let tile_z_cord = tile_z
-        .parse::<u32>()
-        .expect("verify_tile_spritesheet: z is not a number?");
-
     let tile = GridDimensions::new(tile_x_cord, tile_y_cord, tile_z_cord);
     let tile_index = three_d_to_one_d_cords(&tile, world.loaded_map.get_grid_dimensions()) as usize;
 
@@ -173,28 +156,12 @@ fn verify_tile_spritesheet(
 )]
 fn verify_spritesheet_dimensions(
     world: &mut GameWorld,
-    tile_x: String,
-    tile_y: String,
-    tile_z: String,
-    sheet_height: String,
-    sheet_width: String,
+    tile_x_cord: u32,
+    tile_y_cord: u32,
+    tile_z_cord: u32,
+    expected_spritesheet_height: u32,
+    expected_spritesheet_width: u32,
 ) {
-    let tile_x_cord = tile_x
-        .parse::<u32>()
-        .expect("verify_spritesheet_dimensions: x is not a number?");
-    let tile_y_cord = tile_y
-        .parse::<u32>()
-        .expect("verify_spritesheet_dimensions: y is not a number?");
-    let tile_z_cord = tile_z
-        .parse::<u32>()
-        .expect("verify_spritesheet_dimensions: z is not a number?");
-    let expected_spritesheet_height = sheet_height
-        .parse::<u32>()
-        .expect("verify_spritesheet_dimensions: sheet_height is not a number?");
-    let expected_spritesheet_width = sheet_width
-        .parse::<u32>()
-        .expect("verify_spritesheet_dimensions: sheet_width is not a number?");
-
     let tile = GridDimensions::new(tile_x_cord, tile_y_cord, tile_z_cord);
     let tile_index = three_d_to_one_d_cords(&tile, world.loaded_map.get_grid_dimensions()) as usize;
 
@@ -207,24 +174,11 @@ fn verify_spritesheet_dimensions(
 #[then(regex = r"tile ([0-9]+),([0-9]+),([0-9]+) points to image number ([0-9]+).")]
 fn verify_spritesheet_tile_image(
     world: &mut GameWorld,
-    tile_x: String,
-    tile_y: String,
-    tile_z: String,
-    image_num: String,
+    tile_x_cord: u32,
+    tile_y_cord: u32,
+    tile_z_cord: u32,
+    image_index: usize,
 ) {
-    let tile_x_cord = tile_x
-        .parse::<u32>()
-        .expect("verify_spritesheet_tile_image: x is not a number?");
-    let tile_y_cord = tile_y
-        .parse::<u32>()
-        .expect("verify_spritesheet_tile_image: y is not a number?");
-    let tile_z_cord = tile_z
-        .parse::<u32>()
-        .expect("verify_spritesheet_tile_image: z is not a number?");
-    let image_index = image_num
-        .parse::<usize>()
-        .expect("verify_spritesheet_tile_image: image_num is not a number?");
-
     let tile = GridDimensions::new(tile_x_cord, tile_y_cord, tile_z_cord);
     let tile_index = three_d_to_one_d_cords(&tile, world.loaded_map.get_grid_dimensions()) as usize;
 
@@ -236,20 +190,10 @@ fn verify_spritesheet_tile_image(
 #[then(regex = r"tile ([0-9]+),([0-9]+),([0-9]+) contains an image element.")]
 fn verify_tile_contains_image(
     world: &mut GameWorld,
-    tile_x: String,
-    tile_y: String,
-    tile_z: String,
+    tile_x_cord: u32,
+    tile_y_cord: u32,
+    tile_z_cord: u32,
 ) {
-    let tile_x_cord = tile_x
-        .parse::<u32>()
-        .expect("verify_tile_contains_image: x is not a number?");
-    let tile_y_cord = tile_y
-        .parse::<u32>()
-        .expect("verify_tile_contains_image: y is not a number?");
-    let tile_z_cord = tile_z
-        .parse::<u32>()
-        .expect("verify_tile_contains_image: z is not a number?");
-
     let tile = GridDimensions::new(tile_x_cord, tile_y_cord, tile_z_cord);
     let tile_index = three_d_to_one_d_cords(&tile, world.loaded_map.get_grid_dimensions()) as usize;
 
@@ -261,20 +205,10 @@ fn verify_tile_contains_image(
 #[then(regex = r"tile ([0-9]+),([0-9]+),([0-9]+) contains no image element.")]
 fn verify_tile_image_is_empty(
     world: &mut GameWorld,
-    tile_x: String,
-    tile_y: String,
-    tile_z: String,
+    tile_x_cord: u32,
+    tile_y_cord: u32,
+    tile_z_cord: u32,
 ) {
-    let tile_x_cord = tile_x
-        .parse::<u32>()
-        .expect("verify_tile_image_is_empty: x is not a number?");
-    let tile_y_cord = tile_y
-        .parse::<u32>()
-        .expect("verify_tile_image_is_empty: y is not a number?");
-    let tile_z_cord = tile_z
-        .parse::<u32>()
-        .expect("verify_tile_image_is_empty: z is not a number?");
-
     let tile = GridDimensions::new(tile_x_cord, tile_y_cord, tile_z_cord);
     let tile_index = three_d_to_one_d_cords(&tile, world.loaded_map.get_grid_dimensions()) as usize;
 
@@ -283,11 +217,7 @@ fn verify_tile_image_is_empty(
 }
 
 #[then(regex = r"there exist ([0-9]+) layers of tiles.")]
-fn verify_layer_count(world: &mut GameWorld, num_layers: String) {
-    let layer_count = num_layers
-        .parse::<u32>()
-        .expect("verify_layer_count: num_layers is not a number?");
-
+fn verify_layer_count(world: &mut GameWorld, layer_count: u32) {
     let actual_num_layers = world.loaded_map.get_grid_dimensions().get_layers();
     let expected_num_layers = layer_count;
     assert_eq!(expected_num_layers, actual_num_layers);
@@ -296,32 +226,13 @@ fn verify_layer_count(world: &mut GameWorld, num_layers: String) {
 #[then(regex = r"tile ([0-9]+),([0-9]+),([0-9]+) overlaps tile ([0-9]+),([0-9]+),([0-9]+).")]
 fn verify_overlapping_tiles(
     world: &mut GameWorld,
-    tile_x_1: String,
-    tile_y_1: String,
-    tile_z_1: String,
-    tile_x_2: String,
-    tile_y_2: String,
-    tile_z_2: String,
+    tile_x_cord_1: u32,
+    tile_y_cord_1: u32,
+    tile_z_cord_1: u32,
+    tile_x_cord_2: u32,
+    tile_y_cord_2: u32,
+    tile_z_cord_2: u32,
 ) {
-    let tile_x_cord_1 = tile_x_1
-        .parse::<u32>()
-        .expect("verify_overlapping_tiles: x_1 is not a number?");
-    let tile_y_cord_1 = tile_y_1
-        .parse::<u32>()
-        .expect("verify_overlapping_tiles: y_1 is not a number?");
-    let tile_z_cord_1 = tile_z_1
-        .parse::<u32>()
-        .expect("verify_overlapping_tiles: z_1 is not a number?");
-    let tile_x_cord_2 = tile_x_2
-        .parse::<u32>()
-        .expect("verify_overlapping_tiles: x_2 is not a number?");
-    let tile_y_cord_2 = tile_y_2
-        .parse::<u32>()
-        .expect("verify_overlapping_tiles: y_2 is not a number?");
-    let tile_z_cord_2 = tile_z_2
-        .parse::<u32>()
-        .expect("verify_overlapping_tiles: z_2 is not a number?");
-
     let tile_1 = GridDimensions::new(tile_x_cord_1, tile_y_cord_1, tile_z_cord_1);
     let first_tile_index =
         three_d_to_one_d_cords(&tile_1, world.loaded_map.get_grid_dimensions()) as usize;
@@ -342,32 +253,13 @@ fn verify_overlapping_tiles(
 )]
 fn verify_y_axis_flip(
     world: &mut GameWorld,
-    tiled_tile_x: String,
-    tiled_tile_y: String,
-    tiled_tile_z: String,
-    bevy_tile_x: String,
-    bevy_tile_y: String,
-    bevy_tile_z: String,
+    tiled_tile_x_cord: u32,
+    tiled_tile_y_cord: u32,
+    tiled_tile_z_cord: u32,
+    bevy_tile_x_cord: u32,
+    bevy_tile_y_cord: u32,
+    bevy_tile_z_cord: u32,
 ) {
-    let tiled_tile_x_cord = tiled_tile_x
-        .parse::<u32>()
-        .expect("verify_y_axis_flip: tiled_tile_x is not a number?");
-    let tiled_tile_y_cord = tiled_tile_y
-        .parse::<u32>()
-        .expect("verify_y_axis_flip: tiled_tile_y is not a number?");
-    let tiled_tile_z_cord = tiled_tile_z
-        .parse::<u32>()
-        .expect("verify_y_axis_flip: tiled_tile_z is not a number?");
-    let bevy_tile_x_cord = bevy_tile_x
-        .parse::<u32>()
-        .expect("verify_y_axis_flip: bevy_tile_x is not a number?");
-    let bevy_tile_y_cord = bevy_tile_y
-        .parse::<u32>()
-        .expect("verify_y_axis_flip: bevy_tile_y is not a number?");
-    let bevy_tile_z_cord = bevy_tile_z
-        .parse::<u32>()
-        .expect("verify_y_axis_flip: bevy_tile_z is not a number?");
-
     let tiled_map = &world.loaded_map;
 
     let tiled_tile = GridDimensions::new(tiled_tile_x_cord, tiled_tile_y_cord, tiled_tile_z_cord);
@@ -386,9 +278,8 @@ fn verify_y_axis_flip(
     assert!(cross_map_overlap);
 }
 
-#[then("there should be 4 rendered tiles created.")]
-fn verify_number_of_rendered_tiles(world: &mut GameWorld) {
-    let expected_number_of_tiles = 4;
+#[then(regex = r"there should be ([0-9]+) rendered tiles created.")]
+fn verify_number_of_rendered_tiles(world: &mut GameWorld, expected_number_of_tiles: usize) {
     let actual_number_of_tiles = world.bevy_map.get_bevy_tiles().len();
     assert_eq!(expected_number_of_tiles, actual_number_of_tiles);
 }
@@ -402,28 +293,19 @@ fn verify_trimmed_path(world: &mut GameWorld, desired_asset_path: String) {
 }
 
 #[then(regex = r"there is ([0-9]+) players? in the Tiled map.")]
-fn verify_number_of_players(world: &mut GameWorld, player_num: String) {
-    let expected_player_amount = player_num
-        .parse::<usize>()
-        .expect("verify_number_of_players: player_num is not a number?");
-
+fn verify_number_of_players(world: &mut GameWorld, expected_player_amount: usize) {
     let actual_player_amount = world.loaded_map.get_players().len();
 
     assert_eq!(expected_player_amount, actual_player_amount)
 }
 
 #[then(regex = r"that player is at tile ([0-9]+),([0-9]+),([0-9]+).")]
-fn verify_player_location(world: &mut GameWorld, tile_x: String, tile_y: String, tile_z: String) {
-    let tile_x_cord = tile_x
-        .parse::<u32>()
-        .expect("verify_player_location: x is not a number?");
-    let tile_y_cord = tile_y
-        .parse::<u32>()
-        .expect("verify_player_location: y is not a number?");
-    let tile_z_cord = tile_z
-        .parse::<u32>()
-        .expect("verify_player_location: z is not a number?");
-
+fn verify_player_location(
+    world: &mut GameWorld,
+    tile_x_cord: u32,
+    tile_y_cord: u32,
+    tile_z_cord: u32,
+) {
     let tile = GridDimensions::new(tile_x_cord, tile_y_cord, tile_z_cord);
     let tile_index = three_d_to_one_d_cords(&tile, world.loaded_map.get_grid_dimensions()) as usize;
 
@@ -436,24 +318,11 @@ fn verify_player_location(world: &mut GameWorld, tile_x: String, tile_y: String,
 #[then(regex = r"3D cords ([0-9]+),([0-9]+),([0-9]+) point to tile index ([0-9]+).")]
 fn verify_cords_convert_from_3d_to_1d(
     world: &mut GameWorld,
-    tile_x: String,
-    tile_y: String,
-    tile_z: String,
-    tile_num: String,
+    tile_x_cord: u32,
+    tile_y_cord: u32,
+    tile_z_cord: u32,
+    tile_index: u32,
 ) {
-    let tile_x_cord = tile_x
-        .parse::<u32>()
-        .expect("verify_cords_convert_from_3d_to_1d: x is not a number?");
-    let tile_y_cord = tile_y
-        .parse::<u32>()
-        .expect("verify_cords_convert_from_3d_to_1d: y is not a number?");
-    let tile_z_cord = tile_z
-        .parse::<u32>()
-        .expect("verify_cords_convert_from_3d_to_1d: z is not a number?");
-    let tile_index = tile_num
-        .parse::<u32>()
-        .expect("verify_cords_convert_from_3d_to_1d: tile index is not a number?");
-
     let map_dimensions = world.loaded_map.get_grid_dimensions();
 
     let expected_tile_num = tile_index;

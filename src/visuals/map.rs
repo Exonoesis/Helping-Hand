@@ -7,10 +7,29 @@ use tiled::{Loader, Map};
 
 use bevy::prelude::*;
 
+use crate::entities::player::Player;
+
 #[derive(Default, Resource)]
 pub struct LevelDimensions {
     pub width: usize,
     pub height: usize,
+}
+
+#[derive(Event)]
+pub struct ChangeLevel {
+    level_name: String,
+}
+
+impl ChangeLevel {
+    pub fn new(desired_level_name: &str) -> Self {
+        Self {
+            level_name: String::from(desired_level_name),
+        }
+    }
+
+    pub fn get_level_name(&self) -> &str {
+        &self.level_name
+    }
 }
 
 /// Returns a camera centered to some map.
@@ -27,24 +46,32 @@ fn create_centered_camera(map: &Tilemap) -> Camera2dBundle {
 }
 
 /// Loads the Tiled test map with a Camera into the game at the center of the map.
-pub fn spawn_map(
+pub fn load_map(
+    mut change_level_requests: EventReader<ChangeLevel>,
     mut commands: Commands,
     asset_spawner: Res<AssetServer>,
     mut texture_atlas_assets: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    let map = Tilemap::new(PathBuf::from(
-        "tests/test-assets/maps/test_map_with_collision.tmx",
-    ));
-    let bevy_map = RenderedMap::new(&map, &asset_spawner, &mut texture_atlas_assets);
+    // TODO: We need to clear the old tiles if a map is already loaded.
+    for change_level_request in change_level_requests.read() {
+        let map = Tilemap::new(PathBuf::from(change_level_request.get_level_name()));
+        let bevy_map = RenderedMap::new(&map, &asset_spawner, &mut texture_atlas_assets);
 
-    let rendered_tiles = bevy_map.get_bevy_tiles();
+        let rendered_tiles = bevy_map.get_bevy_tiles();
 
-    for render_tile in rendered_tiles {
-        commands.spawn(render_tile.clone());
+        for render_tile in rendered_tiles {
+            let render_tile = render_tile.clone();
+            if render_tile.get_tile_type() == &TileType::Player {
+                commands.spawn((render_tile, Player));
+                continue;
+            }
+
+            commands.spawn(render_tile);
+        }
+
+        let camera_centered_to_map = create_centered_camera(&map);
+        commands.spawn(camera_centered_to_map);
     }
-
-    let camera_centered_to_map = create_centered_camera(&map);
-    commands.spawn(camera_centered_to_map);
 }
 
 #[derive(Debug)]
@@ -124,7 +151,7 @@ impl Default for Tilemap {
     }
 }
 
-#[derive(Component, Debug, PartialEq)]
+#[derive(Component, Clone, Copy, Debug, PartialEq)]
 pub enum TileType {
     Empty,
     Normal,
@@ -148,7 +175,7 @@ impl XyzCords {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Component, Debug, Clone, Copy, PartialEq)]
 pub struct PxDimensions {
     px_width: usize,
     px_height: usize,
@@ -196,7 +223,7 @@ impl GridDimensions {
 pub struct Tile {
     tile_dimensions: PxDimensions,
     px_cords: XyzCords,
-    grid_cords: GridDimensions,
+    grid_cords: XyzCords,
     tile_texture: Option<TileTexture>,
     layer_number: usize,
     tile_type: TileType,
@@ -206,7 +233,7 @@ impl Tile {
     pub fn new(
         tile_dimensions: PxDimensions,
         px_cords: XyzCords,
-        grid_cords: GridDimensions,
+        grid_cords: XyzCords,
         tile_texture: Option<TileTexture>,
         layer_number: usize,
         tile_type: TileType,
@@ -233,6 +260,14 @@ impl Tile {
         &tile_texture.spritesheet_dimensions
     }
 
+    pub fn get_tile_dimensions(&self) -> &PxDimensions {
+        &self.tile_dimensions
+    }
+
+    pub fn get_grid_coordinates(&self) -> &XyzCords {
+        &self.grid_cords
+    }
+
     pub fn get_sprite_index(&self) -> usize {
         self.tile_texture.as_ref().unwrap().sprite_index
     }
@@ -255,15 +290,29 @@ pub struct TileTexture {
 
 #[derive(Bundle, Clone)]
 pub struct RenderTile {
-    //grid_coordinate: XyzCords,
+    grid_coordinate: XyzCords,
+    tile_type: TileType,
+    tile_dimensions: PxDimensions,
     spritesheet_bundle: SpriteSheetBundle,
 }
 
 impl RenderTile {
-    pub fn new(spritesheet: SpriteSheetBundle) -> Self {
+    pub fn new(
+        grid_coordinate: XyzCords,
+        tile_type: TileType,
+        tile_dimensions: PxDimensions,
+        spritesheet: SpriteSheetBundle,
+    ) -> Self {
         Self {
+            grid_coordinate,
+            tile_type,
+            tile_dimensions,
             spritesheet_bundle: spritesheet,
         }
+    }
+
+    pub fn get_tile_type(&self) -> &TileType {
+        &self.tile_type
     }
 }
 
@@ -326,7 +375,7 @@ fn get_map_tiles(tiled_map: Map) -> Vec<Tile> {
             for x in 0..map_width {
                 let tile_dimensions = PxDimensions::new(tile_width, tile_height);
                 let px_cords = XyzCords::new(x * tile_width, y * tile_height, z);
-                let grid_cords = GridDimensions::new(x, y, z as u32);
+                let grid_cords = XyzCords::new(x, y, z);
                 let layer_number = z;
                 let tile_texture = get_tile_texture(&tiled_map, x, y, z);
                 let tile_type = get_tile_type(&tiled_map, x, y, z);
@@ -431,7 +480,15 @@ fn get_render_tile_bundles(
         // Our:RenderTileBundle -> Bevy's:SpriteSheetBundle
         let render_tile_spritesheet =
             get_spritesheet_for_tile(tile, tilemap, asset_server, texture_atlas_assets);
-        let render_tile = RenderTile::new(render_tile_spritesheet);
+        let render_tile_coordinate = tile.get_grid_coordinates();
+        let render_tile_dimensions = tile.get_tile_dimensions();
+        let render_tile_type = tile.get_tile_type();
+        let render_tile = RenderTile::new(
+            *render_tile_coordinate,
+            *render_tile_type,
+            *render_tile_dimensions,
+            render_tile_spritesheet,
+        );
         render_tile_bundles.push(render_tile);
     }
     render_tile_bundles
