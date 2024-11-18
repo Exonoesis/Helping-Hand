@@ -93,12 +93,19 @@ Feature: Load Tilemap from Tiled.
         And Tiled tile 1,1,0 is equivalent to Bevy tile 1,0,0.
 
     Scenario: A player is found on the Tiled map.
-        Given a Tiled map called player.tmx,
+        Given a Tiled map called player_2x3.tmx,
         When the Tiled map is loaded,
         Then there is 1 player in the Tiled map.
         And that player is at tile 0,1,1.
 
-    Scenario: Translate 3D cords to 1D cords.
-        Given a Tiled map called player.tmx,
+    Scenario: A player is found on the Rendered map.
+        Given a Tiled map called player_2x3.tmx,
         When the Tiled map is loaded,
-        Then 3D cords 0,1,1 point to tile index 6.
+        And the Tiled map has been converted to a rendered map,
+        Then there is 1 player in the Rendered map.
+        And that player on the Rendered map is at tile 0,1,1.
+
+    Scenario: Translate 3D cords to 1D cords.
+        Given a Tiled map called player_2x3.tmx,
+        When the Tiled map is loaded,
+        Then 3D cords 0,1,1 point to tile index 8.

@@ -16,7 +16,14 @@ impl Plugin for LevelsPlugin {
         app.init_resource::<LevelDimensions>()
             // Loading the map
             .add_event::<ChangeLevel>()
-            .add_systems(Update, load_map.run_if(in_state(AppState::InGame)));
+            .add_systems(
+                OnEnter(AppState::InGame),
+                load_starting_map.run_if(in_state(AppState::InGame)),
+            )
+            .add_systems(
+                Update,
+                (load_map, move_player_on_key_press).run_if(in_state(AppState::InGame)),
+            );
         // Interacting with the map
         //.add_systems(
         //    Update,
@@ -30,5 +37,19 @@ impl Plugin for LevelsPlugin {
         //        .run_if(in_state(AppState::InGame)),
         //);
         //.add_audio_channel::<MusicChannel>();
+    }
+}
+
+pub struct MockLevelsPlugin;
+
+impl Plugin for MockLevelsPlugin {
+    fn build(&self, app: &mut App) {
+        app.init_resource::<LevelDimensions>()
+            // Loading the map
+            .add_event::<ChangeLevel>()
+            .add_systems(
+                Update,
+                (load_map, move_player_on_key_press).run_if(in_state(AppState::InGame)),
+            );
     }
 }

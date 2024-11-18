@@ -12,7 +12,10 @@ use cucumber::{given, then, when, World};
 use helping_hand::{
     entities::player::Player,
     mechanics::input::{ArrivalTime, MovementDirection, Target},
-    plugins::{levels::LevelsPlugin, playable_character::PlayableCharacterPlugin},
+    plugins::{
+        levels::{LevelsPlugin, MockLevelsPlugin},
+        playable_character::PlayableCharacterPlugin,
+    },
     visuals::map::{ChangeLevel, TileType, XyzCords},
     AppState,
 };
@@ -150,9 +153,25 @@ impl Game {
     }
 }
 
+/// Converts a string into a MovementDirection
+fn convert_string_to_movement_direction(movement_string: String) -> MovementDirection {
+    let movement_direction_event = match movement_string.as_str() {
+        "left" => MovementDirection::Left,
+        "right" => MovementDirection::Right,
+        "up" => MovementDirection::Up,
+        "down" => MovementDirection::Down,
+        _ => panic!(
+            "convert_string_to_movement_direction: Invalid direction given: {}",
+            movement_string
+        ),
+    };
+
+    movement_direction_event
+}
+
 #[given(regex = r"a Tiled map called (.+),")]
 fn given_some_tiled_map(game: &mut Game, tiled_map_name: String) {
-    game.app.add_plugins(LevelsPlugin);
+    game.app.add_plugins(MockLevelsPlugin);
 
     let map_path = format!("tests/test-assets/maps/{}", tiled_map_name);
     game.broadcast_event(ChangeLevel::new(&map_path));
@@ -168,15 +187,16 @@ fn verify_player_spawned_at_tile_pos(game: &mut Game, tile_x: u32, tile_y: u32, 
     );
 }
 
-#[when("the Player is requested to move to the right,")]
-fn request_player_to_move_right(game: &mut Game) {
-    game.broadcast_event(MovementDirection::Right);
+#[when(regex = r"the Player is requested to move ([a-zA-Z]+),")]
+fn request_player_to_move(game: &mut Game, movement_direction: String) {
+    let movement_direction_event = convert_string_to_movement_direction(movement_direction);
+    game.broadcast_event(movement_direction_event);
 }
 
 // TODO: Turn "right" into regex ([a-zA-Z]+)
-#[when("the Player moves to the right,")]
-fn move_player_right(game: &mut Game) {
-    request_player_to_move_right(game);
+#[when(regex = r"the Player moves ([a-zA-Z]+),")]
+fn move_player_right(game: &mut Game, movement_direction: String) {
+    request_player_to_move(game, movement_direction);
 
     for _i in 0..255 {
         game.app.update();

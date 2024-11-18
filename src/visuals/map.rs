@@ -45,33 +45,62 @@ fn create_centered_camera(map: &Tilemap) -> Camera2dBundle {
     the_camera
 }
 
+/// Loads some predetermined map when clicking the "Play" button.
+pub fn load_starting_map(mut change_level_requester: EventWriter<ChangeLevel>) {
+    let tiled_map_name = "test_map_with_collision.tmx";
+    let map_path = format!("tests/test-assets/maps/{}", tiled_map_name);
+    change_level_requester.send(ChangeLevel::new(&map_path));
+}
+
+/// Unloads the current Tiled map.
+fn despawn_level(
+    loaded_level_tiles: Query<(Entity, &XyzCords, &TileType, &PxDimensions)>,
+    commands: &mut Commands,
+) {
+    for loaded_tile in &loaded_level_tiles {
+        let loaded_tile_entity = loaded_tile.0;
+        commands.entity(loaded_tile_entity).despawn_recursive();
+    }
+}
+
 /// Loads the Tiled test map with a Camera into the game at the center of the map.
 pub fn load_map(
     mut change_level_requests: EventReader<ChangeLevel>,
     mut commands: Commands,
     asset_spawner: Res<AssetServer>,
     mut texture_atlas_assets: ResMut<Assets<TextureAtlasLayout>>,
+    loaded_level_tiles: Query<(Entity, &XyzCords, &TileType, &PxDimensions)>,
 ) {
-    // TODO: We need to clear the old tiles if a map is already loaded.
-    for change_level_request in change_level_requests.read() {
-        let map = Tilemap::new(PathBuf::from(change_level_request.get_level_name()));
-        let bevy_map = RenderedMap::new(&map, &asset_spawner, &mut texture_atlas_assets);
+    if change_level_requests.is_empty() {
+        return;
+    }
 
-        let rendered_tiles = bevy_map.get_bevy_tiles();
+    let map_already_loaded = loaded_level_tiles.iter().len() > 0;
+    if map_already_loaded {
+        despawn_level(loaded_level_tiles, &mut commands);
+    }
 
-        for render_tile in rendered_tiles {
-            let render_tile = render_tile.clone();
-            if render_tile.get_tile_type() == &TileType::Player {
-                commands.spawn((render_tile, Player));
-                continue;
-            }
+    let change_level_request = change_level_requests
+        .read()
+        .next()
+        .expect("load_map: No change level events found.");
+    let map = Tilemap::new(PathBuf::from(change_level_request.get_level_name()));
+    let bevy_map = RenderedMap::new(&map, &asset_spawner, &mut texture_atlas_assets);
 
-            commands.spawn(render_tile);
+    let rendered_tiles = bevy_map.get_bevy_tiles();
+
+    for render_tile in rendered_tiles {
+        let render_tile = render_tile.clone();
+        if render_tile.get_tile_type() == &TileType::Player {
+            commands.spawn((render_tile, Player));
+            continue;
         }
 
-        let camera_centered_to_map = create_centered_camera(&map);
-        commands.spawn(camera_centered_to_map);
+        commands.spawn(render_tile);
     }
+
+    let camera_centered_to_map = create_centered_camera(&map);
+    commands.spawn(camera_centered_to_map);
 }
 
 #[derive(Debug)]
@@ -617,10 +646,10 @@ pub fn three_d_to_one_d_cords(
     map_grid_dimensions: &GridDimensions,
 ) -> u32 {
     let map_area = map_grid_dimensions.columns * map_grid_dimensions.rows;
-    let map_height = map_grid_dimensions.rows;
+    let map_length = map_grid_dimensions.columns;
     let tile_x = tile_grid_cords.columns;
     let tile_y = tile_grid_cords.rows;
     let tile_z = tile_grid_cords.layers;
 
-    (map_area * tile_z) + (map_height * tile_y) + tile_x
+    (map_area * tile_z) + (map_length * tile_y) + tile_x
 }

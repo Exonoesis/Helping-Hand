@@ -17,7 +17,10 @@ pub struct InteractionEvent(String, String);
 
 #[derive(Event)]
 pub enum MovementDirection {
+    Left,
     Right,
+    Up,
+    Down,
 }
 
 #[derive(Component)]
@@ -83,9 +86,24 @@ pub fn set_destination(
 ) -> Transform {
     let current_px_position = current_position.translation;
     match direction {
+        MovementDirection::Left => Transform::from_xyz(
+            current_px_position.x - tile_dimensions.get_width() as f32,
+            current_px_position.y,
+            current_px_position.z,
+        ),
         MovementDirection::Right => Transform::from_xyz(
             current_px_position.x + tile_dimensions.get_width() as f32,
             current_px_position.y,
+            current_px_position.z,
+        ),
+        MovementDirection::Up => Transform::from_xyz(
+            current_px_position.x,
+            current_px_position.y + tile_dimensions.get_height() as f32,
+            current_px_position.z,
+        ),
+        MovementDirection::Down => Transform::from_xyz(
+            current_px_position.x,
+            current_px_position.y - tile_dimensions.get_height() as f32,
             current_px_position.z,
         ),
     }
@@ -135,43 +153,73 @@ fn get_direction(position: &Transform, target: &Target) -> MovementDirection {
     if x_difference != 0.0 {
         return match x_difference.is_sign_positive() {
             true => MovementDirection::Right,
-            false => todo!("Need to implement x negative as Left"),
+            false => MovementDirection::Left,
         };
     }
 
     if y_difference != 0.0 {
         return match y_difference.is_sign_positive() {
-            true => todo!("Need to implement y positive as Down"),
-            false => todo!("Need to implement y negative as Up"),
+            true => MovementDirection::Up,
+            false => MovementDirection::Down,
         };
     }
 
     panic!("get_direction: There's no difference in the starting and ending position.");
 }
 
+/// Returns the current distance relative to the current time elapsed.
+///
+/// This calculates the following ratio:
+///
+/// (total_distance * elapsed_time) / total_time = current_distance
+fn calculate_current_distance(
+    total_distance: usize,
+    time_to_reach_destination: &ArrivalTimer,
+) -> f32 {
+    let elapsed_time = time_to_reach_destination.elapsed();
+    let total_time = time_to_reach_destination.total();
+
+    let current_distance =
+        if total_time.is_zero() || time_to_reach_destination.timer.finished() {
+            total_distance as f32
+        } else {
+            (total_distance as f32 * elapsed_time.as_secs_f32()) / total_time.as_secs_f32()
+        };
+
+    current_distance
+}
+
 /// Moves some entities's position towards a target in a given amount of time.
 fn move_towards(
-    position: &Transform,
+    starting_position: &StartingPosition,
     target: &Target,
     distance: &PxDimensions,
     time_to_reach_destination: &ArrivalTimer,
 ) -> Transform {
-    let mut new_position = Transform::from(*position);
+    let mut new_position = starting_position.get_position();
 
-    let time_elapsed = time_to_reach_destination.elapsed();
-    let total_time = time_to_reach_destination.total();
-
-    let direction_facing = get_direction(position, target);
+    let direction_facing = get_direction(starting_position, target);
 
     match direction_facing {
+        MovementDirection::Left => {
+            let new_position_x =
+                -calculate_current_distance(distance.get_width(), time_to_reach_destination);
+            new_position.translation.x += new_position_x;
+        }
         MovementDirection::Right => {
-            let new_position_x = if total_time.is_zero() {
-                distance.get_width() as f32
-            } else {
-                (distance.get_width() as f32 * time_elapsed.as_secs_f32())
-                    / total_time.as_secs_f32()
-            };
-            new_position.translation.x = new_position_x;
+            let new_position_x =
+                calculate_current_distance(distance.get_width(), time_to_reach_destination);
+            new_position.translation.x += new_position_x;
+        }
+        MovementDirection::Up => {
+            let new_position_y =
+                calculate_current_distance(distance.get_height(), time_to_reach_destination);
+            new_position.translation.y += new_position_y;
+        }
+        MovementDirection::Down => {
+            let new_position_y =
+                -calculate_current_distance(distance.get_height(), time_to_reach_destination);
+            new_position.translation.y += new_position_y;
         }
     }
 
@@ -183,6 +231,7 @@ pub fn move_entity_to_target(
     mut movable_entities: Query<(
         Entity,
         &mut Transform,
+        &StartingPosition,
         &PxDimensions,
         &Target,
         &mut ArrivalTimer,
@@ -193,6 +242,7 @@ pub fn move_entity_to_target(
     for (
         entity,
         mut entity_position,
+        entity_starting_position,
         entity_dimensions,
         entity_target,
         mut time_to_reach_destination,
@@ -207,36 +257,30 @@ pub fn move_entity_to_target(
         time_to_reach_destination.advance(time.delta());
 
         *entity_position = move_towards(
-            entity_position.as_ref(),
+            entity_starting_position,
             entity_target,
             entity_dimensions,
             time_to_reach_destination.as_ref(),
         );
+        
+        if time_to_reach_destination.timer.finished() {
+            *entity_position = *entity_target.get_position();
+        }
     }
 }
 
-pub fn player_input(
+pub fn move_player_on_key_press(
     input: Res<ButtonInput<KeyCode>>,
-    mut player_query: Query<(&mut DirectionFacing, &mut MovementIntent), With<Player>>,
+    mut move_player_requester: EventWriter<MovementDirection>,
 ) {
-    if player_query.is_empty() {
-        return;
-    }
-
-    let (mut facing, mut moving) = player_query.single_mut();
-
     if input.pressed(KeyCode::KeyW) {
-        *facing = DirectionFacing::Up;
-        *moving = MovementIntent::Moving;
+        move_player_requester.send(MovementDirection::Up);
     } else if input.pressed(KeyCode::KeyS) {
-        *facing = DirectionFacing::Down;
-        *moving = MovementIntent::Moving;
+        move_player_requester.send(MovementDirection::Down);
     } else if input.pressed(KeyCode::KeyA) {
-        *facing = DirectionFacing::Left;
-        *moving = MovementIntent::Moving;
+        move_player_requester.send(MovementDirection::Left);
     } else if input.pressed(KeyCode::KeyD) {
-        *facing = DirectionFacing::Right;
-        *moving = MovementIntent::Moving;
+        move_player_requester.send(MovementDirection::Right);
     }
 }
 

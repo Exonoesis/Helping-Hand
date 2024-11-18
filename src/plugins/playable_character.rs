@@ -11,7 +11,7 @@ pub struct PlayableCharacterPlugin;
 impl Plugin for PlayableCharacterPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<MovementDirection>();
-        app.insert_resource(ArrivalTime::new(Duration::from_secs_f32(0.5)));
+        app.insert_resource(ArrivalTime::new(Duration::from_secs_f32(10.0)));
 
         app.add_systems(
             Update,
