@@ -24,8 +24,37 @@ pub enum MovementDirection {
 }
 
 #[derive(Component)]
+pub struct StartingPosition {
+    position: Transform,
+}
+
+impl StartingPosition {
+    pub fn new(px_position: Transform) -> Self {
+        Self {
+            position: px_position,
+        }
+    }
+
+    pub fn get_position(&self) -> &Transform {
+        &self.position
+    }
+}
+
+#[derive(Component)]
 pub struct Target {
     position: Transform,
+}
+
+impl Target {
+    pub fn new(px_position: Transform) -> Self {
+        Self {
+            position: px_position,
+        }
+    }
+
+    pub fn get_position(&self) -> &Transform {
+        &self.position
+    }
 }
 
 #[derive(Resource)]
@@ -63,18 +92,6 @@ impl ArrivalTimer {
 
     pub fn advance(&mut self, time_passed: Duration) {
         self.timer.tick(time_passed);
-    }
-}
-
-impl Target {
-    pub fn new(px_position: Transform) -> Self {
-        Self {
-            position: px_position,
-        }
-    }
-
-    pub fn get_position(&self) -> &Transform {
-        &self.position
     }
 }
 
@@ -135,6 +152,7 @@ pub fn set_player_target(
 
     let new_target_position =
         set_destination(current_player_position, player_tile_dimensions, direction);
+    let starting_position = StartingPosition::new(*current_player_position);
     let new_target = Target::new(new_target_position);
 
     let timer = Timer::new(*arrival_time.get_duration(), TimerMode::Once);
@@ -142,7 +160,7 @@ pub fn set_player_target(
 
     commands
         .entity(player_entity)
-        .insert((new_target, arrival_timer));
+        .insert((starting_position, new_target, arrival_timer));
 }
 
 /// Returns a direction for some starting and target position.
@@ -179,24 +197,23 @@ fn calculate_current_distance(
     let elapsed_time = time_to_reach_destination.elapsed();
     let total_time = time_to_reach_destination.total();
 
-    let current_distance =
-        if total_time.is_zero() || time_to_reach_destination.timer.finished() {
-            total_distance as f32
-        } else {
-            (total_distance as f32 * elapsed_time.as_secs_f32()) / total_time.as_secs_f32()
-        };
+    let current_distance = if total_time.is_zero() || time_to_reach_destination.timer.finished() {
+        total_distance as f32
+    } else {
+        (total_distance as f32 * elapsed_time.as_secs_f32()) / total_time.as_secs_f32()
+    };
 
     current_distance
 }
 
 /// Moves some entities's position towards a target in a given amount of time.
 fn move_towards(
-    starting_position: &StartingPosition,
+    starting_position: &Transform,
     target: &Target,
     distance: &PxDimensions,
     time_to_reach_destination: &ArrivalTimer,
 ) -> Transform {
-    let mut new_position = starting_position.get_position();
+    let mut new_position = *starting_position;
 
     let direction_facing = get_direction(starting_position, target);
 
@@ -251,18 +268,19 @@ pub fn move_entity_to_target(
         if entity_position.as_ref() == entity_target.get_position() {
             commands.entity(entity).remove::<Target>();
             commands.entity(entity).remove::<ArrivalTimer>();
+            commands.entity(entity).remove::<StartingPosition>();
             continue;
         }
 
         time_to_reach_destination.advance(time.delta());
 
         *entity_position = move_towards(
-            entity_starting_position,
+            entity_starting_position.get_position(),
             entity_target,
             entity_dimensions,
             time_to_reach_destination.as_ref(),
         );
-        
+
         if time_to_reach_destination.timer.finished() {
             *entity_position = *entity_target.get_position();
         }
