@@ -185,6 +185,7 @@ pub enum TileType {
     Empty,
     Normal,
     Player,
+    Collision,
 }
 
 #[derive(Component, Clone, Copy, Debug, PartialEq)]
@@ -343,6 +344,12 @@ impl RenderTile {
     pub fn get_tile_type(&self) -> &TileType {
         &self.tile_type
     }
+
+    pub fn is_invisible(&self) -> bool {
+        let is_invisible = self.spritesheet_bundle.visibility == Visibility::Hidden;
+
+        is_invisible
+    }
 }
 
 #[derive(Default)]
@@ -491,6 +498,12 @@ fn get_spritesheet_for_tile(
         index: tile.tile_texture.as_ref().unwrap().sprite_index,
     };
 
+    let tile_type = tile.get_tile_type();
+
+    if tile_type == &TileType::Collision {
+        tile_spritesheet.visibility = Visibility::Hidden;
+    }
+
     tile_spritesheet
 }
 
@@ -584,6 +597,7 @@ fn get_tile_type(
 
     match layer_name.as_str() {
         "Player" => TileType::Player,
+        "Collision" => TileType::Collision,
         _ => TileType::Normal,
     }
 }
