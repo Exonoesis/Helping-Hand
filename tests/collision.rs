@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::{collections::HashSet, fmt::Debug};
 
 use bevy::prelude::*;
 use bevy::render::settings::WgpuSettings;
@@ -19,6 +19,7 @@ struct GameWorld {
 
     pub loaded_map: Tilemap,
     pub bevy_map: RenderedMap,
+    pub collision_collection: CollisionCollection,
 }
 
 impl GameWorld {
@@ -26,6 +27,7 @@ impl GameWorld {
         let map_location = PathBuf::new();
         let loaded_map = Tilemap::default();
         let bevy_map = RenderedMap::default();
+        let collision_collection = CollisionCollection::default();
 
         // Testable "game"
         let mut app = App::new();
@@ -47,6 +49,7 @@ impl GameWorld {
             map_location,
             loaded_map,
             bevy_map,
+            collision_collection,
         }
     }
 }
@@ -66,6 +69,47 @@ fn get_tiled_map_location(map_name: String) -> PathBuf {
     tiled_map_path.push(map_name);
 
     tiled_map_path
+}
+
+#[derive(Debug, Default)]
+pub struct CollisionCollection {
+    collision_tiles: HashSet<XyzCords>,
+}
+
+impl CollisionCollection {
+    pub fn new() -> Self {
+        let collision_tiles = HashSet::new();
+
+        Self { collision_tiles }
+    }
+
+    pub fn has(&self, xyz_coord: &XyzCords) -> bool {
+        // NOTE: Collision should apply to all layers, thus the z value does
+        // not make sense, hence it being zeroed out.
+        let xy_coord = XyzCords::new(xyz_coord.get_x(), xyz_coord.get_y(), 0);
+        self.collision_tiles.contains(&xy_coord)
+    }
+
+    pub fn add(&mut self, xyz_coord: &XyzCords) {
+        let xy_coord = XyzCords::new(xyz_coord.get_x(), xyz_coord.get_y(), 0);
+        self.collision_tiles.insert(xy_coord);
+    }
+}
+
+pub fn create_collision_collection_from(bevy_map: &RenderedMap) -> CollisionCollection {
+    let mut collision_collection = CollisionCollection::new();
+
+    let rendered_tiles = bevy_map.get_bevy_tiles();
+    for rendered_tile in rendered_tiles {
+        if rendered_tile.get_tile_type() != &TileType::Collision {
+            continue;
+        }
+
+        let rendered_tile_coord = rendered_tile.get_grid_coordinates();
+        collision_collection.add(rendered_tile_coord);
+    }
+
+    collision_collection
 }
 
 //////////////TEST FUNCTIONS//////////////
@@ -100,7 +144,8 @@ fn tiled_map_to_bevy_tiles(world: &mut GameWorld) {
 
 #[when("the collision tiles are collected,")]
 fn collision_tiles_are_collected(world: &mut GameWorld) {
-    //TO-DO
+    let collision_collection = create_collision_collection_from(&world.bevy_map);
+    world.collision_collection = collision_collection;
 }
 
 #[then(regex = r"there are ([0-9]+) collision tiles in the rendered map.")]
@@ -115,7 +160,7 @@ fn verify_number_of_collision_tiles_on_rendered_map(
         .filter(|tile| tile.get_tile_type() == &TileType::Collision)
         .count();
 
-    assert_eq!(expected_collision_tile_amount, actual_collision_tile_amount)
+    assert_eq!(expected_collision_tile_amount, actual_collision_tile_amount);
 }
 
 #[then(regex = r"rendered tile ([0-9]+),([0-9]+),([0-9]+) is invisible.")]
@@ -129,7 +174,34 @@ fn verify_tile_is_invisible(
     let tile_index = three_d_to_one_d_cords(&tile, world.loaded_map.get_grid_dimensions()) as usize;
 
     let tile_is_invisible = world.bevy_map.get_bevy_tiles()[tile_index].is_invisible();
-    assert!(tile_is_invisible)
+    assert!(tile_is_invisible);
+}
+
+#[then(regex = r"rendered tile ([0-9]+),([0-9]+),([0-9]+) is labeled as a collision tile.")]
+fn verify_tile_is_labeled_collision_tile(
+    world: &mut GameWorld,
+    tile_x_cord: u32,
+    tile_y_cord: u32,
+    tile_z_cord: u32,
+) {
+    let tile = GridDimensions::new(tile_x_cord, tile_y_cord, tile_z_cord);
+    let tile_index = three_d_to_one_d_cords(&tile, world.loaded_map.get_grid_dimensions()) as usize;
+
+    let tile_is_collision =
+        world.bevy_map.get_bevy_tiles()[tile_index].get_tile_type() == &TileType::Collision;
+    assert!(tile_is_collision);
+}
+
+#[then(regex = r"tile ([0-9]+),([0-9]+),([0-9]+) is a collision tile in the collection.")]
+fn verify_tile_is_in_collision_collection(
+    world: &mut GameWorld,
+    tile_x_cord: u32,
+    tile_y_cord: u32,
+    tile_z_cord: usize,
+) {
+    let tile_xyz_coords = XyzCords::new_u32(tile_x_cord, tile_y_cord, tile_z_cord);
+    let tile_is_in_collision_collection = world.collision_collection.has(&tile_xyz_coords);
+    assert!(tile_is_in_collision_collection);
 }
 
 fn main() {

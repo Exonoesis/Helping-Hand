@@ -188,7 +188,7 @@ pub enum TileType {
     Collision,
 }
 
-#[derive(Component, Clone, Copy, Debug, PartialEq)]
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct XyzCords {
     px_x: usize,
     px_y: usize,
@@ -196,12 +196,24 @@ pub struct XyzCords {
 }
 
 impl XyzCords {
-    pub fn new(px_x: u32, px_y: u32, px_z: usize) -> Self {
-        XyzCords {
-            px_x: px_x as usize,
-            px_y: px_y as usize,
-            px_z,
-        }
+    pub fn new(px_x: usize, px_y: usize, px_z: usize) -> Self {
+        XyzCords { px_x, px_y, px_z }
+    }
+
+    pub fn new_u32(px_x: u32, px_y: u32, px_z: usize) -> Self {
+        Self::new(px_x as usize, px_y as usize, px_z)
+    }
+
+    pub fn get_x(&self) -> usize {
+        self.px_x
+    }
+
+    pub fn get_y(&self) -> usize {
+        self.px_y
+    }
+
+    pub fn get_z(&self) -> usize {
+        self.px_z
     }
 }
 
@@ -350,6 +362,10 @@ impl RenderTile {
 
         is_invisible
     }
+
+    pub fn get_grid_coordinates(&self) -> &XyzCords {
+        &self.grid_coordinate
+    }
 }
 
 #[derive(Default)]
@@ -410,8 +426,8 @@ fn get_map_tiles(tiled_map: Map) -> Vec<Tile> {
         for y in 0..map_height {
             for x in 0..map_width {
                 let tile_dimensions = PxDimensions::new(tile_width, tile_height);
-                let px_cords = XyzCords::new(x * tile_width, y * tile_height, z);
-                let grid_cords = XyzCords::new(x, y, z);
+                let px_cords = XyzCords::new_u32(x * tile_width, y * tile_height, z);
+                let grid_cords = XyzCords::new_u32(x, y, z);
                 let layer_number = z;
                 let tile_texture = get_tile_texture(&tiled_map, x, y, z);
                 let tile_type = get_tile_type(&tiled_map, x, y, z);

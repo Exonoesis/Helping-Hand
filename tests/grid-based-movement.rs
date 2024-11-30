@@ -179,7 +179,7 @@ fn given_some_tiled_map(game: &mut Game, tiled_map_name: String) {
 
 #[given(regex = r"the player is at ([0-9]+),([0-9]+),([0-9]+),")]
 fn verify_player_spawned_at_tile_pos(game: &mut Game, tile_x: u32, tile_y: u32, tile_z: usize) {
-    let expected_player_tile_coordinate = XyzCords::new(tile_x, tile_y, tile_z);
+    let expected_player_tile_coordinate = XyzCords::new_u32(tile_x, tile_y, tile_z);
     let actual_player_tile_coordinate = game.find_coordinates_of_player();
     assert_eq!(
         expected_player_tile_coordinate,
@@ -218,7 +218,7 @@ fn move_player_right(game: &mut Game, movement_direction: String) {
     regex = r"the Player's pixel coordinates are equivalent to tile ([0-9]+),([0-9]+),([0-9]+)."
 )]
 fn verify_player_at_tile_pos(game: &mut Game, tile_x: u32, tile_y: u32, tile_z: usize) {
-    let tile_grid_coordinates = XyzCords::new(tile_x, tile_y, tile_z);
+    let tile_grid_coordinates = XyzCords::new_u32(tile_x, tile_y, tile_z);
 
     let expected_player_position = game.get_position_from_tile(&tile_grid_coordinates);
     let actual_player_position = game.get_player_position();
