@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fmt::Debug};
+use std::fmt::Debug;
 
 use bevy::prelude::*;
 use bevy::render::settings::WgpuSettings;
@@ -69,47 +69,6 @@ fn get_tiled_map_location(map_name: String) -> PathBuf {
     tiled_map_path.push(map_name);
 
     tiled_map_path
-}
-
-#[derive(Debug, Default)]
-pub struct CollisionCollection {
-    collision_tiles: HashSet<XyzCords>,
-}
-
-impl CollisionCollection {
-    pub fn new() -> Self {
-        let collision_tiles = HashSet::new();
-
-        Self { collision_tiles }
-    }
-
-    pub fn has(&self, xyz_coord: &XyzCords) -> bool {
-        // NOTE: Collision should apply to all layers, thus the z value does
-        // not make sense, hence it being zeroed out.
-        let xy_coord = XyzCords::new(xyz_coord.get_x(), xyz_coord.get_y(), 0);
-        self.collision_tiles.contains(&xy_coord)
-    }
-
-    pub fn add(&mut self, xyz_coord: &XyzCords) {
-        let xy_coord = XyzCords::new(xyz_coord.get_x(), xyz_coord.get_y(), 0);
-        self.collision_tiles.insert(xy_coord);
-    }
-}
-
-pub fn create_collision_collection_from(bevy_map: &RenderedMap) -> CollisionCollection {
-    let mut collision_collection = CollisionCollection::new();
-
-    let rendered_tiles = bevy_map.get_bevy_tiles();
-    for rendered_tile in rendered_tiles {
-        if rendered_tile.get_tile_type() != &TileType::Collision {
-            continue;
-        }
-
-        let rendered_tile_coord = rendered_tile.get_grid_coordinates();
-        collision_collection.add(rendered_tile_coord);
-    }
-
-    collision_collection
 }
 
 //////////////TEST FUNCTIONS//////////////
