@@ -217,12 +217,33 @@ fn move_player_right(game: &mut Game, movement_direction: String) {
 #[then(
     regex = r"the Player's pixel coordinates are equivalent to tile ([0-9]+),([0-9]+),([0-9]+)."
 )]
-fn verify_player_at_tile_pos(game: &mut Game, tile_x: u32, tile_y: u32, tile_z: usize) {
+fn verify_player_at_tile_pixel_coordinates(
+    game: &mut Game,
+    tile_x: u32,
+    tile_y: u32,
+    tile_z: usize,
+) {
     let tile_grid_coordinates = XyzCords::new_u32(tile_x, tile_y, tile_z);
 
     let expected_player_position = game.get_position_from_tile(&tile_grid_coordinates);
     let actual_player_position = game.get_player_position();
     assert_eq!(expected_player_position, actual_player_position);
+}
+
+#[then(regex = r"the Player's grid coordinates has changed to tile ([0-9]+),([0-9]+),([0-9]+).")]
+fn verify_player_at_tile_grid_coordinates(
+    game: &mut Game,
+    tile_x: u32,
+    tile_y: u32,
+    tile_z: usize,
+) {
+    let expected_player_tile_grid_coordinate = XyzCords::new_u32(tile_x, tile_y, tile_z);
+    let actual_player_tile_grid_coordinate = game.find_coordinates_of_player();
+
+    assert_eq!(
+        expected_player_tile_grid_coordinate,
+        actual_player_tile_grid_coordinate
+    );
 }
 
 #[then("the Player should have a Target.")]

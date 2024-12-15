@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::entities::player::MovementIntent;
-use crate::visuals::map::PxDimensions;
+use crate::visuals::map::{PxDimensions, XyzCords};
 use crate::{
     entities::player::{DirectionFacing, Player, PlayerMovementActions},
     visuals::map::LevelDimensions,
@@ -43,17 +43,23 @@ impl StartingPosition {
 #[derive(Component)]
 pub struct Target {
     position: Transform,
+    grid_coordinate: XyzCords,
 }
 
 impl Target {
-    pub fn new(px_position: Transform) -> Self {
+    pub fn new(px_position: Transform, grid_coordinate: XyzCords) -> Self {
         Self {
             position: px_position,
+            grid_coordinate,
         }
     }
 
     pub fn get_position(&self) -> &Transform {
         &self.position
+    }
+
+    pub fn get_grid_coordinate(&self) -> &XyzCords {
+        &self.grid_coordinate
     }
 }
 
@@ -95,8 +101,8 @@ impl ArrivalTimer {
     }
 }
 
-/// Returns a new position shifted away from a starting position in a given direction
-pub fn set_destination(
+/// Returns a new pixel position shifted away from a starting position in a given direction
+pub fn set_physical_destination(
     current_position: &Transform,
     tile_dimensions: &PxDimensions,
     direction: &MovementDirection,
@@ -126,12 +132,41 @@ pub fn set_destination(
     }
 }
 
+/// Returns a new grid coordinate shifted away from a starting coordinate in a given direction
+pub fn set_logical_destination(
+    current_grid_coordinate: &XyzCords,
+    direction: &MovementDirection,
+) -> XyzCords {
+    match direction {
+        MovementDirection::Left => XyzCords::new(
+            current_grid_coordinate.get_x() - 1,
+            current_grid_coordinate.get_y(),
+            current_grid_coordinate.get_z(),
+        ),
+        MovementDirection::Right => XyzCords::new(
+            current_grid_coordinate.get_x() + 1,
+            current_grid_coordinate.get_y(),
+            current_grid_coordinate.get_z(),
+        ),
+        MovementDirection::Up => XyzCords::new(
+            current_grid_coordinate.get_x(),
+            current_grid_coordinate.get_y() - 1,
+            current_grid_coordinate.get_z(),
+        ),
+        MovementDirection::Down => XyzCords::new(
+            current_grid_coordinate.get_x(),
+            current_grid_coordinate.get_y() + 1,
+            current_grid_coordinate.get_z(),
+        ),
+    }
+}
+
 /// Sets the target location of the player on the map.
 pub fn set_player_target(
     mut requests_to_move: EventReader<MovementDirection>,
     mut commands: Commands,
     player: Query<
-        (Entity, &PxDimensions, &Transform),
+        (Entity, &PxDimensions, &Transform, &XyzCords),
         (With<Player>, Without<Target>, Without<ArrivalTimer>),
     >,
     arrival_time: Res<ArrivalTime>,
@@ -144,16 +179,26 @@ pub fn set_player_target(
         return;
     }
 
-    let (player_entity, player_tile_dimensions, current_player_position) = player.single();
+    let (
+        player_entity,
+        player_tile_dimensions,
+        current_player_position,
+        current_player_grid_coordinate,
+    ) = player.single();
     let direction = requests_to_move
         .read()
         .next()
         .expect("set_player_target: There are no requests to move.");
 
-    let new_target_position =
-        set_destination(current_player_position, player_tile_dimensions, direction);
+    let new_physical_position =
+        set_physical_destination(current_player_position, player_tile_dimensions, direction);
+    let new_logical_position = set_logical_destination(current_player_grid_coordinate, direction);
+    // TODO:
+    // if collision_tiles.has(&new_logical_position) {
+    //     return;
+    // }
     let starting_position = StartingPosition::new(*current_player_position);
-    let new_target = Target::new(new_target_position);
+    let new_target = Target::new(new_physical_position, new_logical_position);
 
     let timer = Timer::new(*arrival_time.get_duration(), TimerMode::Once);
     let arrival_timer = ArrivalTimer::new(timer);
@@ -248,6 +293,7 @@ pub fn move_entity_to_target(
     mut movable_entities: Query<(
         Entity,
         &mut Transform,
+        &mut XyzCords,
         &StartingPosition,
         &PxDimensions,
         &Target,
@@ -258,14 +304,15 @@ pub fn move_entity_to_target(
 ) {
     for (
         entity,
-        mut entity_position,
+        mut entity_physical_position,
+        mut entity_logical_position,
         entity_starting_position,
         entity_dimensions,
         entity_target,
         mut time_to_reach_destination,
     ) in &mut movable_entities
     {
-        if entity_position.as_ref() == entity_target.get_position() {
+        if entity_physical_position.as_ref() == entity_target.get_position() {
             commands.entity(entity).remove::<Target>();
             commands.entity(entity).remove::<ArrivalTimer>();
             commands.entity(entity).remove::<StartingPosition>();
@@ -274,7 +321,7 @@ pub fn move_entity_to_target(
 
         time_to_reach_destination.advance(time.delta());
 
-        *entity_position = move_towards(
+        *entity_physical_position = move_towards(
             entity_starting_position.get_position(),
             entity_target,
             entity_dimensions,
@@ -282,7 +329,8 @@ pub fn move_entity_to_target(
         );
 
         if time_to_reach_destination.timer.finished() {
-            *entity_position = *entity_target.get_position();
+            *entity_physical_position = *entity_target.get_position();
+            *entity_logical_position = *entity_target.get_grid_coordinate();
         }
     }
 }
