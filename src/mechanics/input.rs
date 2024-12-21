@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::entities::player::MovementIntent;
-use crate::visuals::map::{PxDimensions, XyzCords};
+use crate::visuals::map::{CollisionCollection, PxDimensions, XyzCords};
 use crate::{
     entities::player::{DirectionFacing, Player, PlayerMovementActions},
     visuals::map::LevelDimensions,
@@ -169,6 +169,7 @@ pub fn set_player_target(
         (Entity, &PxDimensions, &Transform, &XyzCords),
         (With<Player>, Without<Target>, Without<ArrivalTimer>),
     >,
+    world: Query<&CollisionCollection>,
     arrival_time: Res<ArrivalTime>,
 ) {
     if player.is_empty() {
@@ -178,6 +179,12 @@ pub fn set_player_target(
     if requests_to_move.is_empty() {
         return;
     }
+
+    if world.is_empty() {
+        return;
+    }
+
+    let collision_tiles = world.single();
 
     let (
         player_entity,
@@ -193,10 +200,9 @@ pub fn set_player_target(
     let new_physical_position =
         set_physical_destination(current_player_position, player_tile_dimensions, direction);
     let new_logical_position = set_logical_destination(current_player_grid_coordinate, direction);
-    // TODO:
-    // if collision_tiles.has(&new_logical_position) {
-    //     return;
-    // }
+    if collision_tiles.has(&new_logical_position) {
+        return;
+    }
     let starting_position = StartingPosition::new(*current_player_position);
     let new_target = Target::new(new_physical_position, new_logical_position);
 

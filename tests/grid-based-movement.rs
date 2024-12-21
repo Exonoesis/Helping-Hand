@@ -177,7 +177,7 @@ fn given_some_tiled_map(game: &mut Game, tiled_map_name: String) {
     game.broadcast_event(ChangeLevel::new(&map_path));
 }
 
-#[given(regex = r"the player is at ([0-9]+),([0-9]+),([0-9]+),")]
+#[given(regex = r"the Player is at ([0-9]+),([0-9]+),([0-9]+),")]
 fn verify_player_spawned_at_tile_pos(game: &mut Game, tile_x: u32, tile_y: u32, tile_z: usize) {
     let expected_player_tile_coordinate = XyzCords::new_u32(tile_x, tile_y, tile_z);
     let actual_player_tile_coordinate = game.find_coordinates_of_player();
@@ -193,9 +193,8 @@ fn request_player_to_move(game: &mut Game, movement_direction: String) {
     game.broadcast_event(movement_direction_event);
 }
 
-// TODO: Turn "right" into regex ([a-zA-Z]+)
 #[when(regex = r"the Player moves ([a-zA-Z]+),")]
-fn move_player_right(game: &mut Game, movement_direction: String) {
+fn move_player_in_direction(game: &mut Game, movement_direction: String) {
     request_player_to_move(game, movement_direction);
 
     for _i in 0..255 {
@@ -230,7 +229,7 @@ fn verify_player_at_tile_pixel_coordinates(
     assert_eq!(expected_player_position, actual_player_position);
 }
 
-#[then(regex = r"the Player's grid coordinates has changed to tile ([0-9]+),([0-9]+),([0-9]+).")]
+#[then(regex = r"the Player's grid coordinates are set to tile ([0-9]+),([0-9]+),([0-9]+).")]
 fn verify_player_at_tile_grid_coordinates(
     game: &mut Game,
     tile_x: u32,

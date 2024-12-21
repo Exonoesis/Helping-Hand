@@ -102,6 +102,9 @@ pub fn load_map(
 
     let camera_centered_to_map = create_centered_camera(&map);
     commands.spawn(camera_centered_to_map);
+
+    let collision_collection = create_collision_collection_from(&bevy_map);
+    commands.spawn(collision_collection);
 }
 
 #[derive(Debug)]
@@ -685,7 +688,7 @@ pub fn three_d_to_one_d_cords(
     (map_area * tile_z) + (map_length * tile_y) + tile_x
 }
 
-#[derive(Debug, Default)]
+#[derive(Component, Debug, Default)]
 pub struct CollisionCollection {
     collision_tiles: HashSet<XyzCords>,
 }
