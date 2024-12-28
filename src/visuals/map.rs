@@ -10,12 +10,6 @@ use bevy::prelude::*;
 
 use crate::entities::player::Player;
 
-#[derive(Default, Resource)]
-pub struct LevelDimensions {
-    pub width: usize,
-    pub height: usize,
-}
-
 #[derive(Event)]
 pub struct ChangeLevel {
     level_name: String,
@@ -103,6 +97,12 @@ pub fn load_map(
     let camera_centered_to_map = create_centered_camera(&map);
     commands.spawn(camera_centered_to_map);
 
+    // This section represents the Physical properties of the map.
+    let map_size_in_px = *bevy_map.get_px_dimensions();
+    let map_size_in_tiles = *bevy_map.get_grid_dimensions();
+    commands.spawn((map_size_in_px, map_size_in_tiles));
+
+    // This section represents all of the Logical properties of the map.
     let collision_collection = create_collision_collection_from(&bevy_map);
     commands.spawn(collision_collection);
 }
@@ -221,7 +221,7 @@ impl XyzCords {
     }
 }
 
-#[derive(Component, Debug, Clone, Copy, PartialEq)]
+#[derive(Component, Debug, Default, Clone, Copy, PartialEq)]
 pub struct PxDimensions {
     px_width: usize,
     px_height: usize,
@@ -244,7 +244,7 @@ impl PxDimensions {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Component, Copy, Clone, Debug, Default, PartialEq)]
 pub struct GridDimensions {
     columns: u32,
     rows: u32,
@@ -374,6 +374,8 @@ impl RenderTile {
 
 #[derive(Default)]
 pub struct RenderedMap {
+    map_dimensions_in_px: PxDimensions,
+    grid_dimensions: GridDimensions,
     bevy_tiles: Vec<RenderTile>,
 }
 
@@ -391,7 +393,11 @@ impl RenderedMap {
         asset_server: &AssetServer,
         texture_atlas_assets: &mut Assets<TextureAtlasLayout>,
     ) -> Self {
+        let map_dimensions_in_px = *tilemap.get_px_dimensions();
+        let grid_dimensions = *tilemap.get_grid_dimensions();
         RenderedMap {
+            map_dimensions_in_px,
+            grid_dimensions,
             bevy_tiles: get_render_tile_bundles(tilemap, asset_server, texture_atlas_assets),
         }
     }
@@ -414,6 +420,14 @@ impl RenderedMap {
 
     pub fn get_bevy_tiles(&self) -> &Vec<RenderTile> {
         &self.bevy_tiles
+    }
+
+    pub fn get_px_dimensions(&self) -> &PxDimensions {
+        &self.map_dimensions_in_px
+    }
+
+    pub fn get_grid_dimensions(&self) -> &GridDimensions {
+        &self.grid_dimensions
     }
 }
 

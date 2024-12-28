@@ -12,10 +12,7 @@ use cucumber::{given, then, when, World};
 use helping_hand::{
     entities::player::Player,
     mechanics::input::{ArrivalTime, MovementDirection, Target},
-    plugins::{
-        levels::{LevelsPlugin, MockLevelsPlugin},
-        playable_character::PlayableCharacterPlugin,
-    },
+    plugins::{levels::MockLevelsPlugin, playable_character::PlayableCharacterPlugin},
     visuals::map::{ChangeLevel, TileType, XyzCords},
     AppState,
 };
