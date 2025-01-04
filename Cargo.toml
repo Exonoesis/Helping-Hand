@@ -37,6 +37,10 @@ harness = false
 name = "collision"
 harness = false
 
+[[test]]
+name = "camera"
+harness = false
+
 # When measuring the performance of some feature, add a new Criterion benchmark below
 # following the format:
 [[bench]]

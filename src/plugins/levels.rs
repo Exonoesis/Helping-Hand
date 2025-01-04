@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::prelude::*;
 use bevy_kira_audio::AudioApp;
 
 use crate::{
@@ -21,7 +20,12 @@ impl Plugin for LevelsPlugin {
             )
             .add_systems(
                 Update,
-                (load_map, move_camera, move_player_on_key_press)
+                (
+                    load_map,
+                    follow_player,
+                    bound_camera,
+                    move_player_on_key_press,
+                )
                     .run_if(in_state(AppState::InGame)),
             );
         // Interacting with the map
@@ -47,7 +51,13 @@ impl Plugin for MockLevelsPlugin {
         // Loading the map
         app.add_event::<ChangeLevel>().add_systems(
             Update,
-            (load_map, move_camera, move_player_on_key_press).run_if(in_state(AppState::InGame)),
+            (
+                load_map,
+                follow_player,
+                bound_camera,
+                move_player_on_key_press,
+            )
+                .run_if(in_state(AppState::InGame)),
         );
     }
 }
