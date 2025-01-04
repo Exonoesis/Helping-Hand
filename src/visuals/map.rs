@@ -486,6 +486,7 @@ fn get_spritesheet_for_tile(
             ),
             tile.px_cords.px_z as f32,
         );
+        tile_spritesheet.visibility = Visibility::Hidden;
 
         return tile_spritesheet;
     }
