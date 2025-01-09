@@ -263,6 +263,14 @@ impl GridDimensions {
     pub fn get_layers(&self) -> u32 {
         self.layers
     }
+
+    pub fn get_columns(&self) -> u32 {
+        self.columns
+    }
+
+    pub fn get_rows(&self) -> u32 {
+        self.rows
+    }
 }
 
 #[derive(Debug)]

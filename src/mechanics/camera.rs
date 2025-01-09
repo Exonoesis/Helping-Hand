@@ -4,67 +4,94 @@ use crate::{
 };
 use bevy::prelude::*;
 
+/// Returns the pixel coordinates for the player's center in the game.
+pub fn get_centered_player_position(
+    player_position: &Transform,
+    player_tile_dimensions: &PxDimensions,
+) -> Transform {
+    let half_tile_width = player_tile_dimensions.get_width() as f32 / 2.0;
+    let half_tile_height = player_tile_dimensions.get_height() as f32 / 2.0;
+
+    let centered_player_position = Transform::from_xyz(
+        player_position.translation.x + half_tile_width,
+        player_position.translation.y + half_tile_height,
+        player_position.translation.z,
+    );
+
+    centered_player_position
+}
+
 pub fn follow_player(
-    level_dimension: Query<&PxDimensions, With<GridDimensions>>,
-    player_query: Query<&Transform, (With<Player>, Changed<Transform>)>,
+    level_query: Query<(&PxDimensions, &GridDimensions), With<GridDimensions>>,
+    player_query: Query<(&Transform, &PxDimensions), (With<Player>, Changed<Transform>)>,
     mut camera_query: Query<
         (&mut Transform, &OrthographicProjection),
         (With<Camera2d>, Without<Player>),
     >,
 ) {
-    // if camera_query.is_empty() {
-    //     return;
-    // }
+    //Check for empties
+    if camera_query.is_empty() {
+        return;
+    }
+    if player_query.is_empty() {
+        return;
+    }
+    if level_query.is_empty() {
+        return;
+    }
 
-    // if player_query.is_empty() {
-    //     return;
-    // }
+    //Start unpacking
+    let (mut camera_transform, camera_bounds) = camera_query
+        .get_single_mut()
+        .expect("follow_player: could not find camera");
+    let player_information = player_query
+        .get_single()
+        .expect("follow_player: could not find player");
+    let level_information = level_query.single();
 
-    // if level_dimension.is_empty() {
-    //     return;
-    // }
+    //Further unpacking
+    let camera_width = camera_bounds.area.width();
+    let camera_height = camera_bounds.area.height();
 
-    // let level_dimensions = level_dimension.single();
-    // let level_height = level_dimensions.get_height();
-    // let level_width = level_dimensions.get_width();
-    // if level_height == 0 || level_width == 0 {
-    //     return;
-    // }
+    let player_transform = player_information.0;
+    let player_tile_dimensions = player_information.1;
 
-    // let (mut camera_transform, camera_bounds) = camera_query
-    //     .get_single_mut()
-    //     .expect("move_camera: could not find camera");
-    // let player_transform = player_query
-    //     .get_single()
-    //     .expect("move_camera: could not find player");
+    let level_dimensions = level_information.0;
+    let level_grid = level_information.1;
 
-    // let camera_width = camera_bounds.area.width();
-    // let camera_height = camera_bounds.area.height();
+    //Helper variables
+    let player_center_position =
+        get_centered_player_position(player_transform, player_tile_dimensions);
+    let player_center_x = player_center_position.translation.x;
+    let player_center_y = player_center_position.translation.y;
 
-    // // Since a tile's physical px position is the bottom left corner,
-    // // to center the camera on a tile we need to offset by half a tile
-    // // along the x and y axis'
-    // //
-    // // TO-DO: Get this value from query
-    // let tile_offset = 32.0;
+    let level_height = level_dimensions.get_height() as f32;
+    let level_width = level_dimensions.get_width() as f32;
+    if level_height == 0.0 || level_width == 0.0 {
+        return;
+    }
+    let level_center_x = level_width / 2.0;
+    let level_center_y = level_height / 2.0;
 
-    // if camera_width > level_width as f32 {
-    //     camera_transform.translation.x = level_width as f32 / 2.0;
-    // } else {
-    //     camera_transform.translation.x = player_transform.translation.x.clamp(
-    //         (camera_width / 2.0) - tile_offset,
-    //         level_width as f32 - (camera_width / 2.0) - tile_offset,
-    //     );
-    // }
+    let tile_x_offset = (level_width / level_grid.get_columns() as f32) / 2.0;
+    let tile_y_offset = (level_height / level_grid.get_rows() as f32) / 2.0;
 
-    // if camera_height > level_height as f32 {
-    //     camera_transform.translation.y = level_height as f32 / 2.0;
-    // } else {
-    //     camera_transform.translation.y = player_transform.translation.y.clamp(
-    //         (camera_height / 2.0) - tile_offset,
-    //         level_height as f32 - (camera_height / 2.0) - tile_offset,
-    //     );
-    // }
+    //Bounding limits
+    let camera_min_x = (camera_width / 2.0) - tile_x_offset;
+    let camera_max_x = (level_width - (camera_width / 2.0)) - tile_x_offset;
+    let camera_min_y = (camera_height / 2.0) - tile_y_offset;
+    let camera_max_y = (level_height - (camera_height / 2.0)) - tile_y_offset;
+
+    //Logic
+    if camera_width > level_width {
+        camera_transform.translation.x = level_center_x
+    } else {
+        camera_transform.translation.x = player_center_x.clamp(camera_min_x, camera_max_x);
+    }
+
+    if camera_height > level_height {
+        camera_transform.translation.y = level_center_y
+    } else {
+        camera_transform.translation.y = player_center_y.clamp(camera_min_y, camera_max_y);
+    }
 }
-
-pub fn bound_camera() {}

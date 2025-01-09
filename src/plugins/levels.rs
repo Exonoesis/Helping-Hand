@@ -20,12 +20,7 @@ impl Plugin for LevelsPlugin {
             )
             .add_systems(
                 Update,
-                (
-                    load_map,
-                    follow_player,
-                    bound_camera,
-                    move_player_on_key_press,
-                )
+                (load_map, follow_player, move_player_on_key_press)
                     .run_if(in_state(AppState::InGame)),
             );
         // Interacting with the map
@@ -53,8 +48,7 @@ impl Plugin for MockLevelsPlugin {
             Update,
             (
                 load_map,
-                follow_player,
-                bound_camera,
+                follow_player.after(move_player_on_key_press),
                 move_player_on_key_press,
             )
                 .run_if(in_state(AppState::InGame)),
