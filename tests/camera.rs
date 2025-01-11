@@ -5,7 +5,7 @@ use cucumber::{given, then, when, World};
 use helping_hand::{
     mechanics::input::{MovementDirection, Target},
     plugins::levels::MockLevelsPlugin,
-    visuals::map::{ChangeLevel, TileType},
+    visuals::map::{ChangeLevel, GridDimensions, PxDimensions, TileType},
 };
 use mock_game::Game;
 
@@ -35,11 +35,29 @@ fn given_some_tiled_map(game: &mut Game, tiled_map_name: String) {
     game.broadcast_event(ChangeLevel::new(&map_path));
 }
 
+#[given(regex = r"a custom game resolution of ([0-9]+) x ([0-9]+),")]
+fn given_some_window_resolution(game: &mut Game, window_width: usize, window_height: usize) {
+    game.set_window_resolution(window_width, window_height);
+}
+
 #[when("the map is spawned,")]
 fn when_map_spawned(game: &mut Game) {
-    let expected_num_tiles_loaded = 21 * 21 * 2;
     for _i in 0..MAX_NUM_ATTEMPTS {
         game.tick();
+
+        let found_level_dimensions = game.find_with::<GridDimensions, PxDimensions>();
+
+        if found_level_dimensions.is_none() {
+            continue;
+        }
+
+        let level_dimensions = found_level_dimensions.unwrap();
+
+        let level_width = level_dimensions.get_columns();
+        let level_height = level_dimensions.get_rows();
+        let level_depth = level_dimensions.get_layers();
+
+        let expected_num_tiles_loaded = (level_width * level_height * level_depth) as usize;
 
         let has_map_loaded = game.get_number_of::<TileType>() == expected_num_tiles_loaded;
         if has_map_loaded {
@@ -58,7 +76,7 @@ fn request_player_to_move(game: &mut Game, movement_direction: String) {
 fn move_player_in_direction(game: &mut Game, movement_direction: String) {
     request_player_to_move(game, movement_direction);
 
-    for _i in 0..255 {
+    for _i in 0..MAX_NUM_ATTEMPTS {
         game.tick();
 
         let has_traveled = game.get_number_of::<Target>() == 0;

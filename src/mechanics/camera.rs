@@ -22,7 +22,7 @@ pub fn get_centered_player_position(
 }
 
 pub fn follow_player(
-    level_query: Query<(&PxDimensions, &GridDimensions), With<GridDimensions>>,
+    level_query: Query<(&PxDimensions, &GridDimensions)>,
     player_query: Query<(&Transform, &PxDimensions), (With<Player>, Changed<Transform>)>,
     mut camera_query: Query<
         (&mut Transform, &OrthographicProjection),

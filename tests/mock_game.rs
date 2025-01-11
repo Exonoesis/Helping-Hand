@@ -119,6 +119,19 @@ impl Game {
         has_component
     }
 
+    /// Returns a specified Component
+    pub fn get_mut<C>(&mut self) -> Mut<'_, C>
+    where
+        C: Component,
+    {
+        self.app
+            .world
+            .query::<&mut C>()
+            .iter_mut(&mut self.app.world)
+            .next()
+            .unwrap()
+    }
+
     /// Returns a Component C that has some other Component D associated with it, or panics otherwise.
     pub fn get_of<C, D>(&mut self) -> C
     where
@@ -193,5 +206,12 @@ impl Game {
     {
         self.app.world.send_event(event_to_send);
         self.app.update();
+    }
+
+    /// Sets the window dimensions of the game to the specified width and height.
+    pub fn set_window_resolution(&mut self, window_width: usize, window_height: usize) {
+        let mut window = self.get_mut::<Window>();
+
+        window.resolution = WindowResolution::new(window_width as f32, window_height as f32);
     }
 }
