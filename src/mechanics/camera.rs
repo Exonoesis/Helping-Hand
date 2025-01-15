@@ -84,13 +84,13 @@ pub fn follow_player(
 
     //Logic
     if camera_width > level_width {
-        camera_transform.translation.x = level_center_x
+        camera_transform.translation.x = level_center_x - tile_x_offset;
     } else {
         camera_transform.translation.x = player_center_x.clamp(camera_min_x, camera_max_x);
     }
 
     if camera_height > level_height {
-        camera_transform.translation.y = level_center_y
+        camera_transform.translation.y = level_center_y - tile_y_offset;
     } else {
         camera_transform.translation.y = player_center_y.clamp(camera_min_y, camera_max_y);
     }

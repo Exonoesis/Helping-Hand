@@ -75,3 +75,39 @@ Feature: Camera
         And the player moves down,
         Then the player's center x and y positions should be 736px, 288px.
         And the camera's x and y positions should be 736px, 328px.
+
+    ##################################################################################
+    #              Tests for map taller but not wider than the camera                #
+    ##################################################################################
+
+    Scenario: On a map taller but not wider than the camera; if the player moves left, the camera stays centered.
+        Given a custom game resolution of 2560 x 720,
+        And a Tiled map called follow_player_test.tmx,
+        When the player moves left,
+        Then the player's center x and y positions should be 672px, 480px.
+        And the camera's x and y positions should be 704px, 480px.
+
+    Scenario: On a map taller but not wider than the camera; if the player moves right, the camera stays centered.
+        Given a custom game resolution of 2560 x 720,
+        And a Tiled map called follow_player_test.tmx,
+        When the player moves right,
+        Then the player's center x and y positions should be 800px, 480px.
+        And the camera's x and y positions should be 704px, 480px.
+
+    ##################################################################################
+    #              Tests for map wider but not taller than the camera                #
+    ##################################################################################
+
+    Scenario: On a map wider but not taller than the camera; if the player moves up, the cemera stays centered.
+        Given a custom game resolution of 1280 x 1440,
+        And a Tiled map called follow_player_test.tmx,
+        When the player moves up,
+        Then the player's center x and y positions should be 736px, 544px.
+        And the camera's x and y positions should be 736px, 448px.
+
+    Scenario: on a map wider but not taller than the cemera; if the player moves down, the cemera stays centered.
+        Given a custom game resolution of 1280 x 1440,
+        And a Tiled map called follow_player_test.tmx,
+        When the player moves down,
+        Then the player's center x and y positions should be 736px, 416px.
+        And the camera's x and y positions should be 736px, 448px.
