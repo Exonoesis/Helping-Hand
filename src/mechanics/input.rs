@@ -1,13 +1,8 @@
 use std::time::Duration;
 
-use crate::entities::player::MovementIntent;
-use crate::entities::player::{DirectionFacing, Player, PlayerMovementActions};
+use crate::entities::player::{Player, PlayerMovementActions};
 use crate::visuals::map::{CollisionCollection, GridDimensions, PxDimensions, XyzCords};
-use bevy::math::bounding::{Aabb2d, IntersectsVolume};
 use bevy::prelude::*;
-use bevy_ecs_ldtk::ldtk::FieldValue::String as StringType;
-use bevy_ecs_ldtk::LevelSelection;
-use bevy_ecs_ldtk::{prelude::*, EntityInstance, LevelIid};
 
 #[derive(Event)]
 pub struct InteractionEvent(String, String);
@@ -129,44 +124,60 @@ pub fn set_physical_destination(
     }
 }
 
-/// Returns a new grid coordinate shifted away from a starting coordinate in a given direction
+/// Returns a new grid coordinate shifted away from a starting coordinate in a given direction,
+/// or None if the grid coordinate would be out of bounds
 pub fn set_logical_destination(
     current_grid_coordinate: &XyzCords,
+    map_grid_dimensions: &GridDimensions,
     direction: &MovementDirection,
-) -> XyzCords {
+) -> Option<XyzCords> {
+    let mut current_x = current_grid_coordinate.get_x();
+    let mut current_y = current_grid_coordinate.get_y();
+    let current_z = current_grid_coordinate.get_z();
+
+    let level_width = map_grid_dimensions.get_columns() as usize;
+    let level_height = map_grid_dimensions.get_rows() as usize;
+
     match direction {
-        MovementDirection::Left => XyzCords::new(
-            current_grid_coordinate.get_x() - 1,
-            current_grid_coordinate.get_y(),
-            current_grid_coordinate.get_z(),
-        ),
-        MovementDirection::Right => XyzCords::new(
-            current_grid_coordinate.get_x() + 1,
-            current_grid_coordinate.get_y(),
-            current_grid_coordinate.get_z(),
-        ),
-        MovementDirection::Up => XyzCords::new(
-            current_grid_coordinate.get_x(),
-            current_grid_coordinate.get_y() - 1,
-            current_grid_coordinate.get_z(),
-        ),
-        MovementDirection::Down => XyzCords::new(
-            current_grid_coordinate.get_x(),
-            current_grid_coordinate.get_y() + 1,
-            current_grid_coordinate.get_z(),
-        ),
+        MovementDirection::Left => {
+            if current_x == 0 {
+                return None;
+            }
+            current_x -= 1
+        }
+        MovementDirection::Right => {
+            if current_x == level_width - 1 {
+                return None;
+            }
+            current_x += 1
+        }
+        MovementDirection::Up => {
+            if current_y == 0 {
+                return None;
+            }
+            current_y -= 1
+        }
+        MovementDirection::Down => {
+            if current_y == level_height - 1 {
+                return None;
+            }
+            current_y += 1
+        }
     }
+
+    Some(XyzCords::new(current_x, current_y, current_z))
 }
 
 /// Sets the target location of the player on the map.
 pub fn set_player_target(
     mut requests_to_move: EventReader<MovementDirection>,
+    mut movement_notifications: EventWriter<PlayerMovementActions>,
     mut commands: Commands,
     player: Query<
         (Entity, &PxDimensions, &Transform, &XyzCords),
         (With<Player>, Without<Target>, Without<ArrivalTimer>),
     >,
-    world: Query<&CollisionCollection>,
+    world: Query<(&CollisionCollection, &GridDimensions)>,
     arrival_time: Res<ArrivalTime>,
 ) {
     if player.is_empty() {
@@ -181,7 +192,7 @@ pub fn set_player_target(
         return;
     }
 
-    let collision_tiles = world.single();
+    let (collision_tiles, map_grid_dimensions) = world.single();
 
     let (
         player_entity,
@@ -196,13 +207,26 @@ pub fn set_player_target(
 
     let new_physical_position =
         set_physical_destination(current_player_position, player_tile_dimensions, direction);
-    let new_logical_position = set_logical_destination(current_player_grid_coordinate, direction);
+
+    let found_new_logical_position = set_logical_destination(
+        current_player_grid_coordinate,
+        map_grid_dimensions,
+        direction,
+    );
+    if found_new_logical_position.is_none() {
+        movement_notifications.send(PlayerMovementActions::Bumping);
+        return;
+    }
+    let new_logical_position = found_new_logical_position.unwrap();
+
     if collision_tiles.has(&new_logical_position) {
+        movement_notifications.send(PlayerMovementActions::Bumping);
         return;
     }
     let starting_position = StartingPosition::new(*current_player_position);
     let new_target = Target::new(new_physical_position, new_logical_position);
 
+    movement_notifications.send(PlayerMovementActions::Walking);
     let timer = Timer::new(*arrival_time.get_duration(), TimerMode::Once);
     let arrival_timer = ArrivalTimer::new(timer);
 

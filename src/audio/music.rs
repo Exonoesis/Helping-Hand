@@ -1,27 +1,27 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::LevelSelection;
 use bevy_kira_audio::{AudioChannel, AudioControl};
+
+use crate::visuals::map::ChangeLevel;
 
 #[derive(Default, Component, Resource)]
 pub struct MusicChannel;
 
 pub fn play_level_music(
     asset_server: Res<AssetServer>,
-    current_level_name: Res<LevelSelection>,
+    mut level_change_requests: EventReader<ChangeLevel>,
     background_music: Res<AudioChannel<MusicChannel>>,
 ) {
-    let level_has_changed = current_level_name.is_changed() || current_level_name.is_added();
-
+    let level_has_changed = !level_change_requests.is_empty();
     if !level_has_changed {
         return;
     }
 
-    let level_identifier = match &*current_level_name {
-        LevelSelection::Identifier(name) => name.clone(),
-        _ => panic!("Expected Level Identifier."),
-    };
-
-    let audio_file_path = format!("audio/music/{}_overworld.wav", level_identifier);
+    let level_identifier = level_change_requests
+        .read()
+        .next()
+        .unwrap()
+        .get_level_name();
+    let audio_file_path = format!("audio/music/{}.wav", level_identifier);
 
     background_music.stop();
     background_music

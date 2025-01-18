@@ -20,22 +20,15 @@ impl Plugin for LevelsPlugin {
             )
             .add_systems(
                 Update,
-                (load_map, follow_player, move_player_on_key_press)
+                (
+                    load_map,
+                    follow_player,
+                    move_player_on_key_press,
+                    play_level_music,
+                )
                     .run_if(in_state(AppState::InGame)),
-            );
-        // Interacting with the map
-        //.add_systems(
-        //    Update,
-        //    (
-        //        //move_camera,
-        //        //player_input,
-        //        //play_level_music,
-        //        //update_level_dimensions,
-        //        //update_camera_on_resolution_change,
-        //    )
-        //        .run_if(in_state(AppState::InGame)),
-        //);
-        //.add_audio_channel::<MusicChannel>();
+            )
+            .add_audio_channel::<MusicChannel>();
     }
 }
 

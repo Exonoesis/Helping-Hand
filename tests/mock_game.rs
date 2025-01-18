@@ -12,7 +12,7 @@ use cucumber::World;
 use helping_hand::{
     entities::player::Player,
     mechanics::input::ArrivalTime,
-    plugins::playable_character::PlayableCharacterPlugin,
+    plugins::playable_character::PlayableCharacterTestingPlugin,
     visuals::map::{PxDimensions, TileType, XyzCords},
     AppState,
 };
@@ -48,7 +48,7 @@ impl Game {
         });
         app.add_plugins(InputPlugin::default());
 
-        app.add_plugins(PlayableCharacterPlugin);
+        app.add_plugins(PlayableCharacterTestingPlugin);
         app.insert_resource(ArrivalTime::new(Duration::from_secs_f32(0.0)));
 
         app.insert_state(AppState::InGame);

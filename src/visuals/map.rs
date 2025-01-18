@@ -22,8 +22,20 @@ impl ChangeLevel {
         }
     }
 
-    pub fn get_level_name(&self) -> &str {
+    pub fn get_level_path(&self) -> &str {
         &self.level_name
+    }
+
+    pub fn get_level_name(&self) -> String {
+        let level_path = PathBuf::from(self.get_level_path());
+
+        let level_name = level_path
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
+        level_name
     }
 }
 
@@ -79,7 +91,7 @@ pub fn load_map(
         .read()
         .next()
         .expect("load_map: No change level events found.");
-    let map = Tilemap::new(PathBuf::from(change_level_request.get_level_name()));
+    let map = Tilemap::new(PathBuf::from(change_level_request.get_level_path()));
     let bevy_map = RenderedMap::new(&map, &asset_spawner, &mut texture_atlas_assets);
 
     let rendered_tiles = bevy_map.get_bevy_tiles();
@@ -99,12 +111,14 @@ pub fn load_map(
 
     // This section represents the Physical properties of the map.
     let map_size_in_px = *bevy_map.get_px_dimensions();
-    let map_size_in_tiles = *bevy_map.get_grid_dimensions();
-    commands.spawn((map_size_in_px, map_size_in_tiles));
+    let physical_properties = map_size_in_px;
 
     // This section represents all of the Logical properties of the map.
     let collision_collection = create_collision_collection_from(&bevy_map);
-    commands.spawn(collision_collection);
+    let map_size_in_tiles = *bevy_map.get_grid_dimensions();
+    let logical_properties = (collision_collection, map_size_in_tiles);
+
+    commands.spawn((physical_properties, logical_properties));
 }
 
 #[derive(Debug)]

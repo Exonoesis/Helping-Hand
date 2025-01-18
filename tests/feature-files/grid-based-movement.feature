@@ -60,3 +60,31 @@ Feature: Grid-based Movement
         When the Player moves down,
         Then the Player's pixel coordinates are equivalent to tile 1,1,1.
         And the Player's grid coordinates are set to tile 1,1,1.
+
+    Scenario: A Player cannot move past the left edge of the map.
+        Given a Tiled map called player_bounds_test.tmx,
+        And the Player is at 0,0,1,
+        When the Player moves left,
+        Then the Player's grid coordinates are set to tile 0,0,1.
+        And the Player's pixel coordinates are equivalent to tile 0,0,1.
+
+    Scenario: A Player cannot move past the right edge of the map.
+        Given a Tiled map called player_bounds_test.tmx,
+        And the Player is at 0,0,1,
+        When the Player moves right,
+        Then the Player's grid coordinates are set to tile 0,0,1.
+        And the Player's pixel coordinates are equivalent to tile 0,0,1.
+
+    Scenario: A Player cannot move past the top edge of the map.
+        Given a Tiled map called player_bounds_test.tmx,
+        And the Player is at 0,0,1,
+        When the Player moves up,
+        Then the Player's grid coordinates are set to tile 0,0,1.
+        And the Player's pixel coordinates are equivalent to tile 0,0,1.
+
+    Scenario: A Player cannot move past the bottom edge of the map.
+        Given a Tiled map called player_bounds_test.tmx,
+        And the Player is at 0,0,1,
+        When the Player moves down,
+        Then the Player's grid coordinates are set to tile 0,0,1.
+        And the Player's pixel coordinates are equivalent to tile 0,0,1.

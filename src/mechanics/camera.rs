@@ -44,20 +44,14 @@ pub fn follow_player(
     let (mut camera_transform, camera_bounds) = camera_query
         .get_single_mut()
         .expect("follow_player: could not find camera");
-    let player_information = player_query
+    let (player_transform, player_tile_dimensions) = player_query
         .get_single()
         .expect("follow_player: could not find player");
-    let level_information = level_query.single();
+    let (level_dimensions, level_grid) = level_query.single();
 
     //Further unpacking
     let camera_width = camera_bounds.area.width();
     let camera_height = camera_bounds.area.height();
-
-    let player_transform = player_information.0;
-    let player_tile_dimensions = player_information.1;
-
-    let level_dimensions = level_information.0;
-    let level_grid = level_information.1;
 
     //Helper variables
     let player_center_position =
