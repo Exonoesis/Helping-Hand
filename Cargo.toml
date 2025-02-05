@@ -41,6 +41,10 @@ harness = false
 name = "camera"
 harness = false
 
+[[test]]
+name = "interactives"
+harness = false
+
 # When measuring the performance of some feature, add a new Criterion benchmark below
 # following the format:
 [[bench]]

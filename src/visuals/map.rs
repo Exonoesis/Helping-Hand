@@ -4,7 +4,7 @@ use std::{fmt::Debug, path::Path};
 use std::ffi::OsString;
 use std::path::PathBuf;
 
-use tiled::{Loader, Map};
+use tiled::{Loader, Map, ObjectShape};
 
 use bevy::prelude::*;
 
@@ -286,6 +286,32 @@ impl GridDimensions {
         self.rows
     }
 }
+#[derive(Debug, Copy, Clone)]
+pub struct InteractiveMarker {
+    position: XyzCords,
+    dimensions: PxDimensions,
+    //interaction_type: Interaction, <- Custom Enum
+    //interaction_value: String, <- Or str, not sure yet
+}
+
+impl InteractiveMarker {
+    pub fn new(position: XyzCords, dimensions: PxDimensions) -> Self {
+        InteractiveMarker {
+            position,
+            dimensions,
+        }
+    }
+
+    //pub fn containing(&self, some_position: &XyzCords) -> Proximity {}
+
+    pub fn get_position(&self) -> XyzCords {
+        self.position
+    }
+
+    pub fn get_dimensions(&self) -> PxDimensions {
+        self.dimensions
+    }
+}
 
 #[derive(Debug)]
 pub struct Tile {
@@ -392,6 +418,10 @@ impl RenderTile {
     pub fn get_grid_coordinates(&self) -> &XyzCords {
         &self.grid_coordinate
     }
+
+    pub fn get_tile_dimensions(&self) -> &PxDimensions {
+        &self.tile_dimensions
+    }
 }
 
 #[derive(Default)]
@@ -453,6 +483,12 @@ impl RenderedMap {
     }
 }
 
+fn is_tile_layer(tiled_map: &Map, idx: usize) -> bool {
+    let found_tile_layer = tiled_map.get_layer(idx).unwrap().as_tile_layer();
+
+    found_tile_layer.is_some()
+}
+
 fn get_map_tiles(tiled_map: Map) -> Vec<Tile> {
     let tile_width = tiled_map.tile_width;
     let tile_height = tiled_map.tile_height;
@@ -463,6 +499,11 @@ fn get_map_tiles(tiled_map: Map) -> Vec<Tile> {
     let mut tiles = Vec::new();
 
     for z in 0..tiled_map.layers().len() {
+        let is_tile_layer = is_tile_layer(&tiled_map, z);
+        if !is_tile_layer {
+            continue;
+        }
+
         for y in 0..map_height {
             for x in 0..map_width {
                 let tile_dimensions = PxDimensions::new(tile_width, tile_height);
@@ -764,4 +805,61 @@ pub fn create_collision_collection_from(bevy_map: &RenderedMap) -> CollisionColl
     }
 
     collision_collection
+}
+
+#[derive(Component, Debug, Default)]
+pub struct InteractiveCollection {
+    interactable_tiles: Vec<InteractiveMarker>,
+}
+
+impl InteractiveCollection {
+    pub fn new() -> Self {
+        let interactable_tiles = Vec::new();
+
+        Self { interactable_tiles }
+    }
+
+    pub fn add(&mut self, position: XyzCords, dimensions: PxDimensions) {
+        let interactable_object = InteractiveMarker::new(position, dimensions);
+        self.interactable_tiles.push(interactable_object);
+    }
+
+    pub fn len(&self) -> usize {
+        self.interactable_tiles.len()
+    }
+
+    pub fn get_marker_at_index(&self, index: usize) -> InteractiveMarker {
+        self.interactable_tiles[index]
+    }
+}
+
+pub fn create_interactive_collection_from(tiled_map: &Map) -> InteractiveCollection {
+    let mut interactive_collection = InteractiveCollection::new();
+
+    for z in 0..tiled_map.layers().len() {
+        let found_object_layer = tiled_map.get_layer(z).unwrap().as_object_layer();
+
+        if found_object_layer.is_none() {
+            continue;
+        }
+
+        let object_layer = found_object_layer.unwrap();
+        let objects = object_layer.objects();
+
+        for object in objects {
+            let position = XyzCords::new(object.x as usize, object.y as usize, z);
+
+            //Get shape, check it's a Rect, get width and height
+            if let ObjectShape::Rect { width, height } = object.shape {
+                let object_width = width as u32;
+                let object_height = height as u32;
+
+                let dimensions = PxDimensions::new(object_width, object_height);
+
+                interactive_collection.add(position, dimensions);
+            }
+        }
+    }
+
+    interactive_collection
 }
