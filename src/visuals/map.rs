@@ -206,7 +206,7 @@ pub enum TileType {
     Collision,
 }
 
-#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, Hash, Default)]
 pub struct XyzCords {
     px_x: usize,
     px_y: usize,
@@ -286,6 +286,14 @@ impl GridDimensions {
         self.rows
     }
 }
+
+#[derive(Component, Clone, Copy, Debug, PartialEq)]
+pub enum Proximity {
+    Lower,
+    Higher,
+    Match,
+}
+
 #[derive(Debug, Copy, Clone)]
 pub struct InteractiveMarker {
     position: XyzCords,
@@ -302,7 +310,33 @@ impl InteractiveMarker {
         }
     }
 
-    //pub fn containing(&self, some_position: &XyzCords) -> Proximity {}
+    pub fn containing(&self, position: &XyzCords, marker: &InteractiveMarker) -> Proximity {
+        let marker_min_x = marker.position.get_x();
+        let marker_max_x = marker_min_x + marker.dimensions.get_width();
+        let marker_x_range = marker_min_x..marker_max_x;
+        let position_x = position.get_x();
+
+        let marker_min_y = marker.position.get_y();
+        let marker_max_y = marker_min_y + marker.dimensions.get_height();
+        let marker_y_range = marker_min_y..marker_max_y;
+        let position_y = position.get_y();
+
+        if !marker_x_range.contains(&position_x) {
+            if position_x < marker_min_x {
+                Proximity::Lower
+            } else {
+                Proximity::Higher
+            }
+        } else if !marker_y_range.contains(&position_y) {
+            if position_y < marker_min_y {
+                Proximity::Lower
+            } else {
+                Proximity::Higher
+            }
+        } else {
+            Proximity::Match
+        }
+    }
 
     pub fn get_position(&self) -> XyzCords {
         self.position

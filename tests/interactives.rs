@@ -11,9 +11,9 @@ use std::path::PathBuf;
 #[world(init = Self::new)]
 struct GameWorld {
     pub map_location: PathBuf,
-
     pub loaded_map: Option<Map>,
     pub interactive_collection: InteractiveCollection,
+    pub point_of_interest: XyzCords,
 }
 
 impl GameWorld {
@@ -21,11 +21,13 @@ impl GameWorld {
         let map_location = PathBuf::new();
         let loaded_map = None;
         let interactive_collection = InteractiveCollection::default();
+        let point_of_interest = XyzCords::new(0, 0, 0);
 
         Self {
             map_location,
             loaded_map,
             interactive_collection,
+            point_of_interest,
         }
     }
 }
@@ -47,6 +49,21 @@ fn get_tiled_map_location(map_name: String) -> PathBuf {
     tiled_map_path
 }
 
+/// Converts a string into a Proximity
+fn convert_string_to_proximity(proximity_string: String) -> Proximity {
+    let proximity = match proximity_string.as_str() {
+        "lower" => Proximity::Lower,
+        "higher" => Proximity::Higher,
+        "match" => Proximity::Match,
+        _ => panic!(
+            "convert_string_to_proximity: Invalid proximity given: {}",
+            proximity_string
+        ),
+    };
+
+    proximity
+}
+
 //////////////TEST FUNCTIONS//////////////
 
 #[given(regex = r"a Tiled map called (.+\.tmx),")]
@@ -60,6 +77,11 @@ fn verify_test_map_exists(world: &mut GameWorld, map_name: String) {
     );
 
     world.map_location = unloaded_tiled_map;
+}
+
+#[given(regex = r"a position of ([0-9]+),([0-9]+),")]
+fn set_point_of_interest(world: &mut GameWorld, x_cord: usize, y_cord: usize) {
+    world.point_of_interest = XyzCords::new(x_cord, y_cord, 0);
 }
 
 #[when("the Tiled map is loaded,")]
@@ -76,7 +98,7 @@ fn interactive_tiles_are_collected(world: &mut GameWorld) {
     world.interactive_collection = interactive_collection;
 }
 
-#[then(regex = r"there are ([0-9]+) interactive markers in the collection.")]
+#[then(regex = r"there (?:is|are) ([0-9]+) interactive marker(?:s)? in the collection.")]
 fn verify_number_of_interactive_markers_in_collection(
     world: &mut GameWorld,
     expected_interactive_marker_amount: usize,
@@ -109,6 +131,16 @@ fn verify_marker_size(world: &mut GameWorld, index: usize, width: u32, height: u
     let actual_size = marker.get_dimensions();
     let expected_size = PxDimensions::new(width, height);
     assert_eq!(expected_size, actual_size);
+}
+
+#[then(regex = r"the position reports ([a-zA-Z]+) on the marker.")]
+fn verify_marker_contains_position(world: &mut GameWorld, proximity: String) {
+    let position_of_interest = world.point_of_interest;
+    let marker = world.interactive_collection.get_marker_at_index(0);
+
+    let actual_proximity = marker.containing(&position_of_interest, &marker);
+    let expected_proximity = convert_string_to_proximity(proximity);
+    assert_eq!(expected_proximity, actual_proximity);
 }
 
 fn main() {
