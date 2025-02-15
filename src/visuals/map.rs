@@ -206,7 +206,7 @@ pub enum TileType {
     Collision,
 }
 
-#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, Hash, Default)]
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct XyzCords {
     px_x: usize,
     px_y: usize,
@@ -235,7 +235,7 @@ impl XyzCords {
     }
 }
 
-#[derive(Component, Debug, Default, Clone, Copy, PartialEq)]
+#[derive(Component, Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct PxDimensions {
     px_width: usize,
     px_height: usize,
@@ -294,7 +294,7 @@ pub enum Proximity {
     Match,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Ord, Eq)]
 pub struct InteractiveMarker {
     position: XyzCords,
     dimensions: PxDimensions,
@@ -310,31 +310,29 @@ impl InteractiveMarker {
         }
     }
 
-    pub fn containing(&self, position: &XyzCords, marker: &InteractiveMarker) -> Proximity {
-        let marker_min_x = marker.position.get_x();
-        let marker_max_x = marker_min_x + marker.dimensions.get_width();
+    pub fn containing(&self, position: &XyzCords) -> Proximity {
+        let marker_min_x = self.position.get_x();
+        let marker_max_x = marker_min_x + self.dimensions.get_width();
         let marker_x_range = marker_min_x..marker_max_x;
         let position_x = position.get_x();
 
-        let marker_min_y = marker.position.get_y();
-        let marker_max_y = marker_min_y + marker.dimensions.get_height();
+        let marker_min_y = self.position.get_y();
+        let marker_max_y = marker_min_y + self.dimensions.get_height();
         let marker_y_range = marker_min_y..marker_max_y;
         let position_y = position.get_y();
 
-        if !marker_x_range.contains(&position_x) {
-            if position_x < marker_min_x {
-                Proximity::Lower
-            } else {
-                Proximity::Higher
-            }
-        } else if !marker_y_range.contains(&position_y) {
-            if position_y < marker_min_y {
-                Proximity::Lower
-            } else {
-                Proximity::Higher
-            }
+        if marker_x_range.contains(&position_x) && marker_y_range.contains(&position_y) {
+            return Proximity::Match;
+        }
+
+        if position_x < marker_min_x {
+            Proximity::Lower
+        } else if position_x > marker_max_x {
+            Proximity::Higher
+        } else if position_y < marker_min_y {
+            Proximity::Lower
         } else {
-            Proximity::Match
+            Proximity::Higher
         }
     }
 
@@ -843,32 +841,43 @@ pub fn create_collision_collection_from(bevy_map: &RenderedMap) -> CollisionColl
 
 #[derive(Component, Debug, Default)]
 pub struct InteractiveCollection {
-    interactable_tiles: Vec<InteractiveMarker>,
+    interactive_markers: Vec<InteractiveMarker>,
 }
 
 impl InteractiveCollection {
     pub fn new() -> Self {
-        let interactable_tiles = Vec::new();
+        let interactive_markers = Vec::new();
 
-        Self { interactable_tiles }
+        Self {
+            interactive_markers,
+        }
     }
 
-    pub fn add(&mut self, position: XyzCords, dimensions: PxDimensions) {
-        let interactable_object = InteractiveMarker::new(position, dimensions);
-        self.interactable_tiles.push(interactable_object);
+    pub fn from_markers(mut interactive_markers: Vec<InteractiveMarker>) -> Self {
+        interactive_markers.sort();
+
+        Self {
+            interactive_markers,
+        }
     }
 
     pub fn len(&self) -> usize {
-        self.interactable_tiles.len()
+        self.interactive_markers.len()
     }
 
     pub fn get_marker_at_index(&self, index: usize) -> InteractiveMarker {
-        self.interactable_tiles[index]
+        self.interactive_markers[index]
+    }
+
+    pub fn get_marker_from_position(&self, position: &XyzCords) -> Option<InteractiveMarker> {
+        //TO-DO
+
+        None //TEMP VALUE
     }
 }
 
 pub fn create_interactive_collection_from(tiled_map: &Map) -> InteractiveCollection {
-    let mut interactive_collection = InteractiveCollection::new();
+    let mut interactive_markers = Vec::new();
 
     for z in 0..tiled_map.layers().len() {
         let found_object_layer = tiled_map.get_layer(z).unwrap().as_object_layer();
@@ -890,10 +899,11 @@ pub fn create_interactive_collection_from(tiled_map: &Map) -> InteractiveCollect
 
                 let dimensions = PxDimensions::new(object_width, object_height);
 
-                interactive_collection.add(position, dimensions);
+                let interactive_marker = InteractiveMarker::new(position, dimensions);
+                interactive_markers.push(interactive_marker);
             }
         }
     }
 
-    interactive_collection
+    InteractiveCollection::from_markers(interactive_markers)
 }

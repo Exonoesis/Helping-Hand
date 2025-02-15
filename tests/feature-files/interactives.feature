@@ -48,3 +48,12 @@ Feature: Interactives
         And an Interactive Collection is extracted from the Tiled map,
         Then there is 1 interactive marker in the collection.
         And the position reports match on the marker.
+
+    Scenario: A marker for a certain position is found.
+        Given a Tiled map called multiple_marker_test.tmx,
+        And a position of 64,0,
+        When the Tiled map is loaded,
+        And an Interactive Collection is extracted from the Tiled map,
+        And a marker is requested for the position,
+        Then the marker has a position of 64,0,2.
+        And the marker has a size of 64x64.
