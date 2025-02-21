@@ -11,7 +11,7 @@ Feature: Interactives
 
     Scenario: A position left of the marker reports as lower.
         Given a Tiled map called marker_test.tmx,
-        And a position of 0,64,
+        And a position of 0,63,
         When the Tiled map is loaded,
         And an Interactive Collection is extracted from the Tiled map,
         Then there is 1 interactive marker in the collection.
@@ -27,7 +27,7 @@ Feature: Interactives
 
     Scenario: A position above the marker reports as lower.
         Given a Tiled map called marker_test.tmx,
-        And a position of 64,0,
+        And a position of 63,0,
         When the Tiled map is loaded,
         And an Interactive Collection is extracted from the Tiled map,
         Then there is 1 interactive marker in the collection.
@@ -57,3 +57,11 @@ Feature: Interactives
         And a marker is requested for the position,
         Then the marker has a position of 64,0,2.
         And the marker has a size of 64x64.
+
+    Scenario: A marker is not found for a certain position.
+        Given a Tiled map called multiple_marker_test.tmx,
+        And a position of 0,0,
+        When the Tiled map is loaded,
+        And an Interactive Collection is extracted from the Tiled map,
+        And a marker is requested for the position,
+        Then it reported there is no marker.

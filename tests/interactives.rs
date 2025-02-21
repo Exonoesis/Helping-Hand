@@ -167,6 +167,12 @@ fn verify_found_marker_dimensions(world: &mut GameWorld) {
     assert_eq!(expected_dimensions, actual_dimensions);
 }
 
+#[then("it reported there is no marker.")]
+fn verify_no_marker_at_position(world: &mut GameWorld) {
+    let found_marker = world.found_marker;
+    assert!(found_marker.is_none())
+}
+
 fn main() {
     futures::executor::block_on(GameWorld::run("tests/feature-files/interactives.feature"));
 }

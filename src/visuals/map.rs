@@ -312,12 +312,12 @@ impl InteractiveMarker {
 
     pub fn containing(&self, position: &XyzCords) -> Proximity {
         let marker_min_x = self.position.get_x();
-        let marker_max_x = marker_min_x + self.dimensions.get_width();
+        let marker_max_x = marker_min_x + (self.dimensions.get_width() - 1);
         let marker_x_range = marker_min_x..marker_max_x;
         let position_x = position.get_x();
 
         let marker_min_y = self.position.get_y();
-        let marker_max_y = marker_min_y + self.dimensions.get_height();
+        let marker_max_y = marker_min_y + (self.dimensions.get_height() - 1);
         let marker_y_range = marker_min_y..marker_max_y;
         let position_y = position.get_y();
 
@@ -870,9 +870,23 @@ impl InteractiveCollection {
     }
 
     pub fn get_marker_from_position(&self, position: &XyzCords) -> Option<InteractiveMarker> {
-        //TO-DO
+        let mut left = 0 as f32;
+        let mut right = (self.len() - 1) as f32;
 
-        None //TEMP VALUE
+        while left <= right {
+            let mid = ((left + right) / 2.0).floor();
+            let comparison = self.get_marker_at_index(mid as usize).containing(position);
+
+            if comparison == Proximity::Higher {
+                left = mid + 1.0;
+            } else if comparison == Proximity::Lower {
+                right = mid - 1.0;
+            } else {
+                return Some(self.get_marker_at_index(mid as usize));
+            }
+        }
+
+        None
     }
 }
 
