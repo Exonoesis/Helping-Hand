@@ -105,7 +105,9 @@ fn interactive_tiles_are_collected(world: &mut GameWorld) {
 fn request_marker_from_position(world: &mut GameWorld) {
     let interactive_collection = &world.interactive_collection;
     let position = world.point_of_interest;
-    world.found_marker = interactive_collection.get_marker_from_position(&position);
+    world.found_marker = interactive_collection
+        .get_marker_from_position(&position)
+        .cloned();
 }
 
 #[then(regex = r"there (?:is|are) ([0-9]+) interactive marker(?:s)? in the collection.")]

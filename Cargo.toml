@@ -51,5 +51,9 @@ harness = false
 name = "collision_benchmark"
 harness = false
 
+[[bench]]
+name = "interactives_benchmark"
+harness = false
+
 [patch.crates-io]
 bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap/", branch = "main" }

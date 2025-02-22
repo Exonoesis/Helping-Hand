@@ -312,12 +312,12 @@ impl InteractiveMarker {
 
     pub fn containing(&self, position: &XyzCords) -> Proximity {
         let marker_min_x = self.position.get_x();
-        let marker_max_x = marker_min_x + (self.dimensions.get_width() - 1);
+        let marker_max_x = marker_min_x + (self.dimensions.get_width());
         let marker_x_range = marker_min_x..marker_max_x;
         let position_x = position.get_x();
 
         let marker_min_y = self.position.get_y();
-        let marker_max_y = marker_min_y + (self.dimensions.get_height() - 1);
+        let marker_max_y = marker_min_y + (self.dimensions.get_height());
         let marker_y_range = marker_min_y..marker_max_y;
         let position_y = position.get_y();
 
@@ -327,7 +327,7 @@ impl InteractiveMarker {
 
         if position_x < marker_min_x {
             Proximity::Lower
-        } else if position_x > marker_max_x {
+        } else if position_x >= marker_max_x {
             Proximity::Higher
         } else if position_y < marker_min_y {
             Proximity::Lower
@@ -865,27 +865,30 @@ impl InteractiveCollection {
         self.interactive_markers.len()
     }
 
-    pub fn get_marker_at_index(&self, index: usize) -> InteractiveMarker {
-        self.interactive_markers[index]
+    pub fn get_marker_at_index(&self, index: usize) -> &InteractiveMarker {
+        &self.interactive_markers[index]
     }
 
-    pub fn get_marker_from_position(&self, position: &XyzCords) -> Option<InteractiveMarker> {
-        let mut left = 0 as f32;
-        let mut right = (self.len() - 1) as f32;
+    pub fn get_marker_from_position(&self, position: &XyzCords) -> Option<&InteractiveMarker> {
+        let mut left = 0;
+        let mut right = self.len() - 1;
 
         while left <= right {
-            let mid = ((left + right) / 2.0).floor();
-            let comparison = self.get_marker_at_index(mid as usize).containing(position);
+            let mid = (left + right) / 2;
+            let marker = self.get_marker_at_index(mid);
+            let comparison = marker.containing(position);
 
             if comparison == Proximity::Higher {
-                left = mid + 1.0;
+                left = mid + 1;
             } else if comparison == Proximity::Lower {
-                right = mid - 1.0;
+                if mid == 0 {
+                    break;
+                }
+                right = mid - 1;
             } else {
-                return Some(self.get_marker_at_index(mid as usize));
+                return Some(marker);
             }
         }
-
         None
     }
 }
