@@ -65,3 +65,30 @@ Feature: Interactives
         And an Interactive Collection is extracted from the Tiled map,
         And a marker is requested for the position,
         Then it reported there is no marker.
+
+    Scenario: A marker at the beginning of the list is found.
+        Given a Tiled map called multiple_marker_test.tmx,
+        And a position of 32,96,
+        When the Tiled map is loaded,
+        And an Interactive Collection is extracted from the Tiled map,
+        And a marker is requested for the position,
+        Then the marker has a position of 0,64,2.
+        And the marker has a size of 64x64.
+
+    Scenario: A marker at the middle of the list is found.
+        Given a Tiled map called multiple_marker_test.tmx,
+        And a position of 96,96,
+        When the Tiled map is loaded,
+        And an Interactive Collection is extracted from the Tiled map,
+        And a marker is requested for the position,
+        Then the marker has a position of 64,64,2.
+        And the marker has a size of 64x64.
+
+    Scenario: A marker at the end of the list is found.
+        Given a Tiled map called multiple_marker_test.tmx,
+        And a position of 160,160,
+        When the Tiled map is loaded,
+        And an Interactive Collection is extracted from the Tiled map,
+        And a marker is requested for the position,
+        Then the marker has a position of 128,128,2.
+        And the marker has a size of 64x64.
