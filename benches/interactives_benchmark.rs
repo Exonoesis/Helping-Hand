@@ -12,7 +12,9 @@ fn create_interactive_collection_from_dimensions(
         for y in 1..=height {
             let dimensions = PxDimensions::new(64, 64);
             let grid_coordinate = XyzCords::new(x, y, 0);
-            let interactive_marker = InteractiveMarker::new(grid_coordinate, dimensions);
+            let interactive_type = InteractiveType::Transition(String::from(""));
+            let interactive_marker =
+                InteractiveMarker::new(grid_coordinate, dimensions, interactive_type);
 
             interactive_markers.push(interactive_marker);
         }

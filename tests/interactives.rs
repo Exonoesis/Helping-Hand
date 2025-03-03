@@ -157,23 +157,29 @@ fn verify_marker_contains_position(world: &mut GameWorld, proximity: String) {
 
 #[then(regex = r"the marker has a position of ([0-9]+),([0-9]+),([0-9]+).")]
 fn verify_found_marker_positon(world: &mut GameWorld, x_cord: usize, y_cord: usize, z_cord: usize) {
-    let actual_position = world.found_marker.unwrap().get_position();
+    let actual_position = world.found_marker.as_ref().unwrap().get_position();
     let expected_position = XyzCords::new(x_cord, y_cord, z_cord);
     assert_eq!(expected_position, actual_position);
 }
 
 #[then(regex = r"the marker has a size of ([0-9]+)x([0-9]+).")]
 fn verify_found_marker_dimensions(world: &mut GameWorld, width: u32, height: u32) {
-    let actual_dimensions = world.found_marker.unwrap().get_dimensions();
+    let actual_dimensions = world.found_marker.as_ref().unwrap().get_dimensions();
     let expected_dimensions = PxDimensions::new(width, height);
     assert_eq!(expected_dimensions, actual_dimensions);
 }
 
 #[then("it reported there is no marker.")]
 fn verify_no_marker_at_position(world: &mut GameWorld) {
-    let found_marker = world.found_marker;
+    let found_marker = world.found_marker.as_ref();
     assert!(found_marker.is_none())
 }
+
+#[then("the marker has the type Transition")]
+fn verify_marker_interactive_type(world: &mut GameWorld) {}
+
+#[then("the Transition marker has a path of Below Player.")]
+fn verify_interactive_type_path_value(world: &mut GameWorld) {}
 
 fn main() {
     futures::executor::block_on(GameWorld::run("tests/feature-files/interactives.feature"));

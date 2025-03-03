@@ -11,7 +11,7 @@ use cucumber::World;
 
 use helping_hand::{
     entities::player::Player,
-    mechanics::input::ArrivalTime,
+    mechanics::input::{ArrivalTime, MovementDirection},
     plugins::playable_character::PlayableCharacterTestingPlugin,
     visuals::map::{PxDimensions, TileType, XyzCords},
     AppState,
@@ -197,6 +197,15 @@ impl Game {
             .expect("find_coordinates_of_player: Could not find XyzCords from player.");
 
         player_tile_coordinate
+    }
+
+    /// Returns the direction the player is currently facing.
+    pub fn get_player_facing_direction(&mut self) -> MovementDirection {
+        let facing_direction = self
+            .find_containing(&TileType::Player)
+            .expect("get_player_facing_direction: Could not find direction facing from player.");
+
+        facing_direction
     }
 
     /// Send an event to all systems listening in the Bevy game engine.

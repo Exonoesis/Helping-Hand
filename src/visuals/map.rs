@@ -1,14 +1,15 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::{fmt::Debug, path::Path};
 
 use std::ffi::OsString;
 use std::path::PathBuf;
 
-use tiled::{Loader, Map, ObjectShape};
+use tiled::{Loader, Map, ObjectShape, PropertyValue};
 
 use bevy::prelude::*;
 
 use crate::entities::player::Player;
+use crate::mechanics::input::MovementDirection;
 
 #[derive(Event)]
 pub struct ChangeLevel {
@@ -99,7 +100,7 @@ pub fn load_map(
     for render_tile in rendered_tiles {
         let render_tile = render_tile.clone();
         if render_tile.get_tile_type() == &TileType::Player {
-            commands.spawn((render_tile, Player));
+            commands.spawn((render_tile, Player, MovementDirection::Left));
             continue;
         }
 
@@ -235,6 +236,14 @@ impl XyzCords {
     }
 }
 
+pub fn transform_to_XyzCord(transform: Transform) -> XyzCords {
+    XyzCords::new(
+        transform.translation.x as usize,
+        transform.translation.y as usize,
+        transform.translation.z as usize,
+    )
+}
+
 #[derive(Component, Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct PxDimensions {
     px_width: usize,
@@ -294,19 +303,29 @@ pub enum Proximity {
     Match,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Ord, Eq)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Ord, Eq)]
+pub enum InteractiveType {
+    Transition(String),
+    Text(String),
+}
+
+#[derive(Debug, Clone, PartialEq, PartialOrd, Ord, Eq)]
 pub struct InteractiveMarker {
     position: XyzCords,
     dimensions: PxDimensions,
-    //interaction_type: Interaction, <- Custom Enum
-    //interaction_value: String, <- Or str, not sure yet
+    interaction_type: InteractiveType,
 }
 
 impl InteractiveMarker {
-    pub fn new(position: XyzCords, dimensions: PxDimensions) -> Self {
+    pub fn new(
+        position: XyzCords,
+        dimensions: PxDimensions,
+        interaction_type: InteractiveType,
+    ) -> Self {
         InteractiveMarker {
             position,
             dimensions,
+            interaction_type,
         }
     }
 
@@ -909,6 +928,10 @@ pub fn create_interactive_collection_from(tiled_map: &Map) -> InteractiveCollect
         for object in objects {
             let position = XyzCords::new(object.x as usize, object.y as usize, z);
 
+            //Get properties and create interactive type from it
+            let properties = &object.properties;
+            let interactive_type = create_interactive_type(properties);
+
             //Get shape, check it's a Rect, get width and height
             if let ObjectShape::Rect { width, height } = object.shape {
                 let object_width = width as u32;
@@ -916,11 +939,20 @@ pub fn create_interactive_collection_from(tiled_map: &Map) -> InteractiveCollect
 
                 let dimensions = PxDimensions::new(object_width, object_height);
 
-                let interactive_marker = InteractiveMarker::new(position, dimensions);
+                let interactive_marker =
+                    InteractiveMarker::new(position, dimensions, interactive_type);
                 interactive_markers.push(interactive_marker);
             }
         }
     }
 
     InteractiveCollection::from_markers(interactive_markers)
+}
+
+// TO-DO
+pub fn create_interactive_type(properties: &HashMap<String, PropertyValue>) -> InteractiveType {
+    // TEMP VALUE
+    let value = String::from("");
+
+    InteractiveType::Transition(value)
 }

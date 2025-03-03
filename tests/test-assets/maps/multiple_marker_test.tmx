@@ -20,7 +20,11 @@
  <objectgroup id="3" name="Object Layer 1">
   <object id="1" x="64" y="0" width="64" height="64"/>
   <object id="3" x="128" y="0" width="64" height="64"/>
-  <object id="4" x="0" y="64" width="64" height="64"/>
+  <object id="4" x="0" y="64" width="64" height="64">
+   <properties>
+    <property name="Transition" value="Below Player"/>
+   </properties>
+  </object>
   <object id="5" x="64" y="64" width="64" height="64"/>
   <object id="6" x="128" y="64" width="64" height="64"/>
   <object id="7" x="0" y="128" width="64" height="64"/>

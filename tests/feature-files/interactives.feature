@@ -92,3 +92,12 @@ Feature: Interactives
         And a marker is requested for the position,
         Then the marker has a position of 128,128,2.
         And the marker has a size of 64x64.
+
+    Scenario: A marker has a given interactive type
+        Given a Tiled map called multiple_marker_test.tmx,
+        And a position of 32,96,
+        When the Tiled map is loaded,
+        And an Interactive Collection is extracted from the Tiled map,
+        And a marker is requested for the position,
+        Then the marker has the type Transition.
+        And the Transition marker has a path of Below Player.

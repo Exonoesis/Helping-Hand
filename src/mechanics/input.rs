@@ -7,7 +7,7 @@ use bevy::prelude::*;
 #[derive(Event)]
 pub struct InteractionEvent(String, String);
 
-#[derive(Event)]
+#[derive(Event, Component, Copy, Clone, Debug, PartialEq)]
 pub enum MovementDirection {
     Left,
     Right,
@@ -173,8 +173,14 @@ pub fn set_player_target(
     mut requests_to_move: EventReader<MovementDirection>,
     mut movement_notifications: EventWriter<PlayerMovementActions>,
     mut commands: Commands,
-    player: Query<
-        (Entity, &PxDimensions, &Transform, &XyzCords),
+    mut player: Query<
+        (
+            Entity,
+            &PxDimensions,
+            &Transform,
+            &XyzCords,
+            &mut MovementDirection,
+        ),
         (With<Player>, Without<Target>, Without<ArrivalTimer>),
     >,
     world: Query<(&CollisionCollection, &GridDimensions)>,
@@ -199,11 +205,15 @@ pub fn set_player_target(
         player_tile_dimensions,
         current_player_position,
         current_player_grid_coordinate,
-    ) = player.single();
+        mut player_direction,
+    ) = player.single_mut();
+
     let direction = requests_to_move
         .read()
         .next()
         .expect("set_player_target: There are no requests to move.");
+
+    *player_direction = *direction;
 
     let new_physical_position =
         set_physical_destination(current_player_position, player_tile_dimensions, direction);

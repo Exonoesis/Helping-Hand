@@ -102,6 +102,13 @@ fn verify_player_has_target(game: &mut Game) {
     assert!(player_has_target);
 }
 
+#[then(regex = r"the Player is facing ([a-zA-Z]+).")]
+fn verify_player_facing_direction(game: &mut Game, facing_direction: String) {
+    let expected_facing_direction = convert_string_to_movement_direction(facing_direction);
+    let actual_facing_direction = game.get_player_facing_direction();
+    assert_eq!(expected_facing_direction, actual_facing_direction);
+}
+
 // This runs before everything else, so you can setup things here.
 fn main() {
     futures::executor::block_on(Game::run("tests/feature-files/grid-based-movement.feature"));
