@@ -306,7 +306,20 @@ pub enum Proximity {
 #[derive(Debug, Clone, PartialEq, PartialOrd, Ord, Eq)]
 pub enum InteractiveType {
     Transition(String),
-    Text(String),
+}
+
+impl InteractiveType {
+    fn type_name(&self) -> String {
+        match self {
+            InteractiveType::Transition(_) => "Transition".to_string(),
+        }
+    }
+
+    fn type_value(&self) -> String {
+        match self {
+            InteractiveType::Transition(value) => value.clone(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Ord, Eq)]
@@ -361,6 +374,14 @@ impl InteractiveMarker {
 
     pub fn get_dimensions(&self) -> PxDimensions {
         self.dimensions
+    }
+
+    pub fn get_type_name(&self) -> String {
+        self.interaction_type.type_name()
+    }
+
+    pub fn get_path_name(&self) -> String {
+        self.interaction_type.type_value()
     }
 }
 
@@ -949,10 +970,20 @@ pub fn create_interactive_collection_from(tiled_map: &Map) -> InteractiveCollect
     InteractiveCollection::from_markers(interactive_markers)
 }
 
-// TO-DO
 pub fn create_interactive_type(properties: &HashMap<String, PropertyValue>) -> InteractiveType {
-    // TEMP VALUE
-    let value = String::from("");
+    let interactive_types: Vec<&String> = properties.keys().collect();
+    let interactive_values: Vec<&PropertyValue> = properties.values().collect();
 
-    InteractiveType::Transition(value)
+    let interactive_type = interactive_types[0].clone();
+    let property_value = interactive_values[0].clone();
+    let mut property_string = "".to_string();
+
+    if let PropertyValue::StringValue(s) = property_value {
+        property_string = s;
+    }
+
+    match interactive_type.as_str() {
+        "Transition" => InteractiveType::Transition(property_string),
+        _ => panic!("create_interactive_type: Marker Type is invalid"),
+    }
 }

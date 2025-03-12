@@ -175,11 +175,19 @@ fn verify_no_marker_at_position(world: &mut GameWorld) {
     assert!(found_marker.is_none())
 }
 
-#[then("the marker has the type Transition")]
-fn verify_marker_interactive_type(world: &mut GameWorld) {}
+#[then(regex = r"the marker has the type ([a-zA-Z]+)")]
+fn verify_marker_interactive_type(world: &mut GameWorld, type_name: String) {
+    let actual_type = world.found_marker.as_ref().unwrap().get_type_name();
+    let expected_type = type_name;
+    assert_eq!(expected_type, actual_type);
+}
 
-#[then("the Transition marker has a path of Below Player.")]
-fn verify_interactive_type_path_value(world: &mut GameWorld) {}
+#[then(regex = r"the Transition marker has a path of ([a-zA-Z_.]+).")]
+fn verify_interactive_type_path_value(world: &mut GameWorld, path_name: String) {
+    let actual_path = world.found_marker.as_ref().unwrap().get_path_name();
+    let expected_path = path_name;
+    assert_eq!(expected_path, actual_path);
+}
 
 fn main() {
     futures::executor::block_on(GameWorld::run("tests/feature-files/interactives.feature"));

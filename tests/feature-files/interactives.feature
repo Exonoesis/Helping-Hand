@@ -100,4 +100,4 @@ Feature: Interactives
         And an Interactive Collection is extracted from the Tiled map,
         And a marker is requested for the position,
         Then the marker has the type Transition.
-        And the Transition marker has a path of Below Player.
+        And the Transition marker has a path of cabin_interior.tmx.

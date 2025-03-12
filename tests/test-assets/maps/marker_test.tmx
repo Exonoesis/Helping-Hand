@@ -25,6 +25,10 @@
 </data>
  </layer>
  <objectgroup id="3" name="Object Layer 1">
-  <object id="1" x="64" y="64" width="64" height="64"/>
+  <object id="1" x="64" y="64" width="64" height="64">
+   <properties>
+    <property name="Transition" value=""/>
+   </properties>
+  </object>
  </objectgroup>
 </map>
