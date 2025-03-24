@@ -95,7 +95,8 @@ fn set_absolute_path(world: &mut GameWorld, absolute_asset_path: String) {
 
 #[when("the Tiled map is loaded,")]
 fn load_test_map(world: &mut GameWorld) {
-    world.loaded_map = Tilemap::new(world.map_location.clone());
+    let tiled_map = load_tiled_map(world.map_location.clone());
+    world.loaded_map = Tilemap::from_tiled(&tiled_map);
 }
 
 #[when("the absolute path is trimmed,")]

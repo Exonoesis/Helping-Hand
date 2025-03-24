@@ -13,7 +13,7 @@ use helping_hand::{
     entities::player::Player,
     mechanics::input::{ArrivalTime, MovementDirection},
     plugins::playable_character::PlayableCharacterTestingPlugin,
-    visuals::map::{PxDimensions, TileType, XyzCords},
+    visuals::map::{GridDimensions, PxDimensions, TileType, XyzCords},
     AppState,
 };
 
@@ -197,6 +197,13 @@ impl Game {
             .expect("find_coordinates_of_player: Could not find XyzCords from player.");
 
         player_tile_coordinate
+    }
+
+    /// Returns the grid dimensions of the currently loaded level.
+    pub fn get_map_size(&mut self) -> GridDimensions {
+        let map_size = *self.get_mut::<GridDimensions>();
+
+        map_size
     }
 
     /// Returns the direction the player is currently facing.

@@ -1,11 +1,11 @@
 use std::time::Duration;
 
-use crate::entities::player::{Player, PlayerMovementActions};
-use crate::visuals::map::{CollisionCollection, GridDimensions, PxDimensions, XyzCords};
+use crate::entities::player::{Player, PlayerInteraction, PlayerMovementActions};
+use crate::visuals::map::{
+    transform_to_xyzcord, ChangeLevel, CollisionCollection, GridDimensions, InteractiveCollection,
+    PxDimensions, XyzCords,
+};
 use bevy::prelude::*;
-
-#[derive(Event)]
-pub struct InteractionEvent(String, String);
 
 #[derive(Event, Component, Copy, Clone, Debug, PartialEq)]
 pub enum MovementDirection {
@@ -97,31 +97,49 @@ impl ArrivalTimer {
 pub fn set_physical_destination(
     current_position: &Transform,
     tile_dimensions: &PxDimensions,
+    map_px_dimensions: &PxDimensions,
     direction: &MovementDirection,
-) -> Transform {
+) -> Option<Transform> {
     let current_px_position = current_position.translation;
+    let mut current_x = current_px_position.x;
+    let mut current_y = current_px_position.y;
+    let current_z = current_px_position.z;
+
+    let level_width = map_px_dimensions.get_width() as f32;
+    let level_height = map_px_dimensions.get_height() as f32;
+
     match direction {
-        MovementDirection::Left => Transform::from_xyz(
-            current_px_position.x - tile_dimensions.get_width() as f32,
-            current_px_position.y,
-            current_px_position.z,
-        ),
-        MovementDirection::Right => Transform::from_xyz(
-            current_px_position.x + tile_dimensions.get_width() as f32,
-            current_px_position.y,
-            current_px_position.z,
-        ),
-        MovementDirection::Up => Transform::from_xyz(
-            current_px_position.x,
-            current_px_position.y + tile_dimensions.get_height() as f32,
-            current_px_position.z,
-        ),
-        MovementDirection::Down => Transform::from_xyz(
-            current_px_position.x,
-            current_px_position.y - tile_dimensions.get_height() as f32,
-            current_px_position.z,
-        ),
+        MovementDirection::Left => {
+            if current_x == 0.0 {
+                return None;
+            }
+
+            current_x -= tile_dimensions.get_width() as f32;
+        }
+        MovementDirection::Right => {
+            if current_x == level_width - 1.0 {
+                return None;
+            }
+
+            current_x += tile_dimensions.get_width() as f32;
+        }
+        MovementDirection::Up => {
+            if current_y == level_height - 1.0 {
+                return None;
+            }
+
+            current_y += tile_dimensions.get_height() as f32;
+        }
+        MovementDirection::Down => {
+            if current_y == 0.0 {
+                return None;
+            }
+
+            current_y -= tile_dimensions.get_height() as f32;
+        }
     }
+
+    Some(Transform::from_xyz(current_x, current_y, current_z))
 }
 
 /// Returns a new grid coordinate shifted away from a starting coordinate in a given direction,
@@ -168,6 +186,61 @@ pub fn set_logical_destination(
     Some(XyzCords::new(current_x, current_y, current_z))
 }
 
+/// Changes the level if there's a marker present in front of the player and it is transitional.
+pub fn change_level_from_marker(
+    mut requests_to_interact: EventReader<PlayerInteraction>,
+    player: Query<(&Transform, &PxDimensions, &MovementDirection), With<Player>>,
+    map_markers: Query<(&InteractiveCollection, &PxDimensions)>,
+    mut change_level_requests: EventWriter<ChangeLevel>,
+) {
+    if player.is_empty() {
+        return;
+    }
+
+    if requests_to_interact.is_empty() {
+        return;
+    }
+
+    if map_markers.is_empty() {
+        return;
+    }
+
+    let (current_player_position, player_dimensions, player_direction) = player.single();
+
+    // We use _ as a placeholder since there is currently only one type
+    // of PlayerInteraction, therefore we don't need to read the type
+    for _ in requests_to_interact.read() {
+        let (marker_collection, map_dimensions_in_px) = map_markers.single();
+
+        let found_inspected_point = set_physical_destination(
+            current_player_position,
+            player_dimensions,
+            map_dimensions_in_px,
+            player_direction,
+        );
+
+        if found_inspected_point.is_none() {
+            continue;
+        }
+
+        let inspected_point = found_inspected_point.unwrap();
+        let inspected_cords = transform_to_xyzcord(inspected_point);
+        let found_marker = marker_collection.get_marker_from_position(&inspected_cords);
+
+        if found_marker.is_none() {
+            return;
+        }
+
+        let marker = found_marker.unwrap();
+        if marker.get_type_name() != "Transition".to_string() {
+            return;
+        }
+
+        let level_name = ChangeLevel::new(&marker.get_path().to_str().unwrap());
+        change_level_requests.send(level_name);
+    }
+}
+
 /// Sets the target location of the player on the map.
 pub fn set_player_target(
     mut requests_to_move: EventReader<MovementDirection>,
@@ -183,7 +256,7 @@ pub fn set_player_target(
         ),
         (With<Player>, Without<Target>, Without<ArrivalTimer>),
     >,
-    world: Query<(&CollisionCollection, &GridDimensions)>,
+    world: Query<(&CollisionCollection, &GridDimensions, &PxDimensions)>,
     arrival_time: Res<ArrivalTime>,
 ) {
     if player.is_empty() {
@@ -198,7 +271,7 @@ pub fn set_player_target(
         return;
     }
 
-    let (collision_tiles, map_grid_dimensions) = world.single();
+    let (collision_tiles, map_grid_dimensions, map_px_dimensions) = world.single();
 
     let (
         player_entity,
@@ -215,8 +288,17 @@ pub fn set_player_target(
 
     *player_direction = *direction;
 
-    let new_physical_position =
-        set_physical_destination(current_player_position, player_tile_dimensions, direction);
+    let found_new_physical_position = set_physical_destination(
+        current_player_position,
+        player_tile_dimensions,
+        map_px_dimensions,
+        direction,
+    );
+    if found_new_physical_position.is_none() {
+        movement_notifications.send(PlayerMovementActions::Bumping);
+        return;
+    }
+    let new_physical_position = found_new_physical_position.unwrap();
 
     let found_new_logical_position = set_logical_destination(
         current_player_grid_coordinate,
@@ -488,103 +570,25 @@ pub fn move_player_on_key_press(
 //    }
 //}
 
-//pub fn interact_entity(
-//    input: Res<ButtonInput<KeyCode>>,
-//    tile_query: Query<&EntityInstance>,
-//    player_query: Query<(&Transform, &DirectionFacing), With<Player>>,
-//    level_dimension: Res<LevelDimensions>,
-//    mut interactible_event_writer: EventWriter<InteractionEvent>,
-//) {
-//    if player_query.is_empty() {
-//        return;
-//    }
-//
-//    if !input.just_pressed(KeyCode::KeyE) {
-//        return;
-//    }
-//
-//    let interactive_tiles = tile_query
-//        .iter()
-//        .filter(|&tile| !tile.field_instances.is_empty())
-//        .filter(|&tile| {
-//            tile.field_instances
-//                .iter()
-//                .any(|field_instance| field_instance.identifier == "Interactable")
-//        })
-//        .collect::<Vec<&EntityInstance>>();
-//
-//    let (player_transform, facing) = player_query
-//        .get_single()
-//        .expect("interact_entity: The player does not exist, but they should");
-//
-//    let pixel_distance = 3.0;
-//    let mut direction = Vec3::ZERO;
-//
-//    match facing {
-//        DirectionFacing::Up => {
-//            direction += Vec3::new(0.0, pixel_distance, 0.0);
-//        }
-//        DirectionFacing::Down => {
-//            direction -= Vec3::new(0.0, pixel_distance, 0.0);
-//        }
-//        DirectionFacing::Left => {
-//            direction -= Vec3::new(pixel_distance, 0.0, 0.0);
-//        }
-//        DirectionFacing::Right => {
-//            direction += Vec3::new(pixel_distance, 0.0, 0.0);
-//        }
-//    }
-//
-//    let tile_side_length = 64.0;
-//    let projected_position = player_transform.translation + direction;
-//
-//    for &interactive_tile in interactive_tiles.iter() {
-//        let tile_position = Vec3::new(
-//            interactive_tile.px.x as f32,
-//            (level_dimension.height as i32 - (interactive_tile.px.y)) as f32,
-//            0.0,
-//        );
-//
-//        let projected_dimensions = Vec2::new(tile_side_length, tile_side_length);
-//        let tile_dimensions = Vec2::new(
-//            interactive_tile.width as f32,
-//            interactive_tile.height as f32,
-//        );
-//
-//        let has_collided =
-//            Aabb2d::new(projected_position.truncate(), projected_dimensions / 2.0).intersects(
-//                &Aabb2d::new(tile_position.truncate(), tile_dimensions / 2.0),
-//            );
-//
-//        if has_collided {
-//            let text = interactive_tile.field_instances().get(1).expect(
-//                "interact_entity: Could not find Interactive command text in Interactive Tile",
-//            );
-//
-//            if let StringType(message) = &text.value {
-//                let raw_string = message
-//                    .as_ref()
-//                    .expect("interact_entity: Could not display message");
-//                let split_string: Vec<&str> = raw_string.split(':').collect();
-//
-//                let command = split_string[0];
-//                let arg = split_string[1];
-//
-//                interactible_event_writer
-//                    .send(InteractionEvent(command.to_string(), arg.to_string()));
-//            }
-//        }
-//    }
-//}
-
-pub fn display_interactive_message(mut interactible_event_reader: EventReader<InteractionEvent>) {
-    for interaction_command in interactible_event_reader.read() {
-        let command = &interaction_command.0;
-        if command != "message" {
-            continue;
-        }
-
-        let arg = &interaction_command.1;
-        println!("{}", arg);
+pub fn interact_entity(
+    input: Res<ButtonInput<KeyCode>>,
+    mut interactive_event_wrier: EventWriter<PlayerInteraction>,
+) {
+    if !input.just_pressed(KeyCode::KeyE) {
+        return;
     }
+
+    interactive_event_wrier.send(PlayerInteraction);
 }
+
+// pub fn display_interactive_message(mut interactible_event_reader: EventReader<InteractionEvent>) {
+//     for interaction_command in interactible_event_reader.read() {
+//         let command = &interaction_command.0;
+//         if command != "message" {
+//             continue;
+//         }
+
+//         let arg = &interaction_command.1;
+//         println!("{}", arg);
+//     }
+// }

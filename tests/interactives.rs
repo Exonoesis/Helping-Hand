@@ -96,8 +96,8 @@ fn load_test_map(world: &mut GameWorld) {
 
 #[when("an Interactive Collection is extracted from the Tiled map,")]
 fn interactive_tiles_are_collected(world: &mut GameWorld) {
-    let interactive_collection =
-        create_interactive_collection_from(&world.loaded_map.as_ref().unwrap());
+    let interactives = get_interactives_from(&world.loaded_map.as_ref().unwrap());
+    let interactive_collection = InteractiveCollection::from_markers(interactives);
     world.interactive_collection = interactive_collection;
 }
 
@@ -182,9 +182,10 @@ fn verify_marker_interactive_type(world: &mut GameWorld, type_name: String) {
     assert_eq!(expected_type, actual_type);
 }
 
-#[then(regex = r"the Transition marker has a path of ([a-zA-Z_.]+).")]
+#[then(regex = r"the Transition marker has a path of (.+).")]
 fn verify_interactive_type_path_value(world: &mut GameWorld, path_name: String) {
-    let actual_path = world.found_marker.as_ref().unwrap().get_path_name();
+    let marker_path = world.found_marker.as_ref().unwrap().get_path();
+    let actual_path = marker_path.to_str().unwrap();
     let expected_path = path_name;
     assert_eq!(expected_path, actual_path);
 }

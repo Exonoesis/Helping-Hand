@@ -63,12 +63,34 @@ pub fn load_starting_map(mut change_level_requester: EventWriter<ChangeLevel>) {
 /// Unloads the current Tiled map.
 fn despawn_level(
     loaded_level_tiles: Query<(Entity, &XyzCords, &TileType, &PxDimensions)>,
+    map_properties: Query<
+        Entity,
+        (
+            With<PxDimensions>,
+            With<InteractiveCollection>,
+            With<CollisionCollection>,
+            With<GridDimensions>,
+        ),
+    >,
+    camera: Query<Entity, With<Camera2d>>,
     commands: &mut Commands,
 ) {
     for loaded_tile in &loaded_level_tiles {
         let loaded_tile_entity = loaded_tile.0;
         commands.entity(loaded_tile_entity).despawn_recursive();
     }
+
+    let camera_entity = camera.single();
+    commands.entity(camera_entity).despawn_recursive();
+
+    let map_properties_entity = map_properties.single();
+    commands.entity(map_properties_entity).despawn_recursive();
+}
+
+/// Returns a loaded Tiled map.
+pub fn load_tiled_map(map_location: PathBuf) -> Map {
+    let mut loader = Loader::new();
+    loader.load_tmx_map(map_location).unwrap()
 }
 
 /// Loads the Tiled test map with a Camera into the game at the center of the map.
@@ -78,6 +100,16 @@ pub fn load_map(
     asset_spawner: Res<AssetServer>,
     mut texture_atlas_assets: ResMut<Assets<TextureAtlasLayout>>,
     loaded_level_tiles: Query<(Entity, &XyzCords, &TileType, &PxDimensions)>,
+    camera: Query<Entity, With<Camera2d>>,
+    map_properties: Query<
+        Entity,
+        (
+            With<PxDimensions>,
+            With<InteractiveCollection>,
+            With<CollisionCollection>,
+            With<GridDimensions>,
+        ),
+    >,
 ) {
     if change_level_requests.is_empty() {
         return;
@@ -85,14 +117,15 @@ pub fn load_map(
 
     let map_already_loaded = loaded_level_tiles.iter().len() > 0;
     if map_already_loaded {
-        despawn_level(loaded_level_tiles, &mut commands);
+        despawn_level(loaded_level_tiles, map_properties, camera, &mut commands);
     }
 
     let change_level_request = change_level_requests
         .read()
         .next()
         .expect("load_map: No change level events found.");
-    let map = Tilemap::new(PathBuf::from(change_level_request.get_level_path()));
+    let tiled_map = load_tiled_map(PathBuf::from(change_level_request.get_level_path()));
+    let map = Tilemap::from_tiled(&tiled_map);
     let bevy_map = RenderedMap::new(&map, &asset_spawner, &mut texture_atlas_assets);
 
     let rendered_tiles = bevy_map.get_bevy_tiles();
@@ -112,7 +145,12 @@ pub fn load_map(
 
     // This section represents the Physical properties of the map.
     let map_size_in_px = *bevy_map.get_px_dimensions();
-    let physical_properties = map_size_in_px;
+    let map_grid_dimenions = *bevy_map.get_grid_dimensions();
+    let mut interactives = get_interactives_from(&tiled_map);
+    // We have to flip the y-axis of all tiles, since they're physical coordinates.
+    interactives = flip_interactives_on_y_axis(interactives, map_size_in_px, map_grid_dimenions);
+    let interactive_collection = InteractiveCollection::from_markers(interactives);
+    let physical_properties = (map_size_in_px, interactive_collection);
 
     // This section represents all of the Logical properties of the map.
     let collision_collection = create_collision_collection_from(&bevy_map);
@@ -130,13 +168,11 @@ pub struct Tilemap {
 }
 
 impl Tilemap {
-    pub fn new(map_location: PathBuf) -> Self {
-        let mut loader = Loader::new();
-        let tiled_map = loader.load_tmx_map(map_location).unwrap();
+    pub fn from_tiled(tiled_map: &Map) -> Self {
         let num_layers = tiled_map.layers().len() as u32;
 
         let px_dimensions = Self::get_map_in_px(&tiled_map);
-        let tiled_tiles = get_map_tiles(tiled_map);
+        let tiled_tiles = get_map_tiles(&tiled_map);
 
         let num_rows = get_num_rows_from_map(&tiled_tiles);
         let num_columns = get_num_columns_from_map(&tiled_tiles);
@@ -236,7 +272,8 @@ impl XyzCords {
     }
 }
 
-pub fn transform_to_XyzCord(transform: Transform) -> XyzCords {
+// This function loses floating point accuracy
+pub fn transform_to_xyzcord(transform: Transform) -> XyzCords {
     XyzCords::new(
         transform.translation.x as usize,
         transform.translation.y as usize,
@@ -305,7 +342,7 @@ pub enum Proximity {
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Ord, Eq)]
 pub enum InteractiveType {
-    Transition(String),
+    Transition(PathBuf),
 }
 
 impl InteractiveType {
@@ -315,7 +352,7 @@ impl InteractiveType {
         }
     }
 
-    fn type_value(&self) -> String {
+    fn type_value(&self) -> PathBuf {
         match self {
             InteractiveType::Transition(value) => value.clone(),
         }
@@ -376,11 +413,15 @@ impl InteractiveMarker {
         self.dimensions
     }
 
+    pub fn get_interactive_type(&self) -> InteractiveType {
+        self.interaction_type.clone()
+    }
+
     pub fn get_type_name(&self) -> String {
         self.interaction_type.type_name()
     }
 
-    pub fn get_path_name(&self) -> String {
+    pub fn get_path(&self) -> PathBuf {
         self.interaction_type.type_value()
     }
 }
@@ -561,7 +602,7 @@ fn is_tile_layer(tiled_map: &Map, idx: usize) -> bool {
     found_tile_layer.is_some()
 }
 
-fn get_map_tiles(tiled_map: Map) -> Vec<Tile> {
+fn get_map_tiles(tiled_map: &Map) -> Vec<Tile> {
     let tile_width = tiled_map.tile_width;
     let tile_height = tiled_map.tile_height;
 
@@ -613,7 +654,7 @@ fn get_spritesheet_for_tile(
     if tile.get_tile_texture().is_none() {
         tile_spritesheet.transform = Transform::from_xyz(
             tile.px_cords.px_x as f32,
-            //y-axis flip because Bevy is Y-Up while Tiled is Y-Down
+            // Y-axis flip, because Bevy is Y-Up while Tiled is Y-Down
             flip_y_axis(
                 tilemap.get_px_dimensions().px_height,
                 tile.px_cords.px_y as f32,
@@ -626,17 +667,17 @@ fn get_spritesheet_for_tile(
         return tile_spritesheet;
     }
 
-    //We have to trim our path from being absolute to having root at assets
+    // We have to trim our path from being absolute to having root at assets
     let bevy_path = to_bevy_path(&tile.tile_texture.as_ref().unwrap().spritesheet);
     let texture = asset_server.load(bevy_path);
 
-    //Getting Spritesheet Dimensions
+    // Getting Spritesheet Dimensions
     let sprite_sheet_column_count =
         tile.get_spritesheet_dimensions().get_width() / tile.tile_dimensions.px_width;
     let sprite_sheet_row_count =
         tile.get_spritesheet_dimensions().get_height() / tile.tile_dimensions.px_height;
 
-    //This is how the sprite sheet should be cut when creating sprites to render
+    // This is how the sprite sheet should be cut when creating sprites to render
     let sheet_layout = TextureAtlasLayout::from_grid(
         Vec2::new(
             tile.tile_dimensions.px_width as f32,
@@ -879,7 +920,7 @@ pub fn create_collision_collection_from(bevy_map: &RenderedMap) -> CollisionColl
     collision_collection
 }
 
-#[derive(Component, Debug, Default)]
+#[derive(Component, Debug, Clone, Default)]
 pub struct InteractiveCollection {
     interactive_markers: Vec<InteractiveMarker>,
 }
@@ -910,6 +951,10 @@ impl InteractiveCollection {
     }
 
     pub fn get_marker_from_position(&self, position: &XyzCords) -> Option<&InteractiveMarker> {
+        if self.len() == 0 {
+            return None;
+        }
+
         let mut left = 0;
         let mut right = self.len() - 1;
 
@@ -933,7 +978,7 @@ impl InteractiveCollection {
     }
 }
 
-pub fn create_interactive_collection_from(tiled_map: &Map) -> InteractiveCollection {
+pub fn get_interactives_from(tiled_map: &Map) -> Vec<InteractiveMarker> {
     let mut interactive_markers = Vec::new();
 
     for z in 0..tiled_map.layers().len() {
@@ -949,11 +994,11 @@ pub fn create_interactive_collection_from(tiled_map: &Map) -> InteractiveCollect
         for object in objects {
             let position = XyzCords::new(object.x as usize, object.y as usize, z);
 
-            //Get properties and create interactive type from it
+            // Get properties and create interactive type from it
             let properties = &object.properties;
             let interactive_type = create_interactive_type(properties);
 
-            //Get shape, check it's a Rect, get width and height
+            // Get shape, check it's a Rect, get width and height
             if let ObjectShape::Rect { width, height } = object.shape {
                 let object_width = width as u32;
                 let object_height = height as u32;
@@ -967,13 +1012,14 @@ pub fn create_interactive_collection_from(tiled_map: &Map) -> InteractiveCollect
         }
     }
 
-    InteractiveCollection::from_markers(interactive_markers)
+    interactive_markers
 }
 
 pub fn create_interactive_type(properties: &HashMap<String, PropertyValue>) -> InteractiveType {
     let interactive_types: Vec<&String> = properties.keys().collect();
     let interactive_values: Vec<&PropertyValue> = properties.values().collect();
 
+    // We assume that there is only one property on a marker
     let interactive_type = interactive_types[0].clone();
     let property_value = interactive_values[0].clone();
     let mut property_string = "".to_string();
@@ -983,7 +1029,37 @@ pub fn create_interactive_type(properties: &HashMap<String, PropertyValue>) -> I
     }
 
     match interactive_type.as_str() {
-        "Transition" => InteractiveType::Transition(property_string),
+        "Transition" => InteractiveType::Transition(PathBuf::from(property_string)),
         _ => panic!("create_interactive_type: Marker Type is invalid"),
     }
+}
+
+pub fn flip_interactives_on_y_axis(
+    markers: Vec<InteractiveMarker>,
+    map_size_in_px: PxDimensions,
+    map_grid_dimensions: GridDimensions,
+) -> Vec<InteractiveMarker> {
+    let mut y_flipped_markers = Vec::new();
+    let map_height = map_size_in_px.get_height();
+    let tile_height = map_height / map_grid_dimensions.get_rows() as usize;
+
+    for marker in markers {
+        let marker_xyzcords = marker.get_position();
+
+        let flipped_ycord = XyzCords::new(
+            marker_xyzcords.get_x(),
+            flip_y_axis(map_height, marker_xyzcords.get_y() as f32, tile_height) as usize,
+            marker_xyzcords.get_z(),
+        );
+
+        let flipped_marker = InteractiveMarker::new(
+            flipped_ycord,
+            marker.get_dimensions(),
+            marker.get_interactive_type(),
+        );
+
+        y_flipped_markers.push(flipped_marker);
+    }
+
+    y_flipped_markers
 }

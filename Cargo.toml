@@ -7,7 +7,6 @@ edition = "2021"
 
 [dependencies]
 bevy = { version = "^0.13", features = ["wayland"] }
-bevy_ecs_ldtk = { git = "https://github.com/Trouv/bevy_ecs_ldtk.git", rev = "2ee602f" }
 tiled = "^0.12"
 bevy_kira_audio = { version = "^0.19", features = ["wav"] }
 unicode-segmentation = "^1.10"
@@ -45,6 +44,10 @@ harness = false
 name = "interactives"
 harness = false
 
+[[test]]
+name = "map_changing"
+harness = false
+
 # When measuring the performance of some feature, add a new Criterion benchmark below
 # following the format:
 [[bench]]
@@ -54,6 +57,3 @@ harness = false
 [[bench]]
 name = "interactives_benchmark"
 harness = false
-
-[patch.crates-io]
-bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap/", branch = "main" }

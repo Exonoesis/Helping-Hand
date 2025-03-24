@@ -1,5 +1,6 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use std::hint::black_box;
+use std::path::PathBuf;
 
 use helping_hand::visuals::map::*;
 
@@ -12,7 +13,7 @@ fn create_interactive_collection_from_dimensions(
         for y in 1..=height {
             let dimensions = PxDimensions::new(64, 64);
             let grid_coordinate = XyzCords::new(x, y, 0);
-            let interactive_type = InteractiveType::Transition(String::from(""));
+            let interactive_type = InteractiveType::Transition(PathBuf::from(""));
             let interactive_marker =
                 InteractiveMarker::new(grid_coordinate, dimensions, interactive_type);
 

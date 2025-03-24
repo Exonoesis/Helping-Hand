@@ -1,7 +1,6 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_ecs_ldtk::prelude::*;
 use bevy_kira_audio::AudioApp;
 
 use crate::{audio::sfx::*, entities::player::*, mechanics::input::*, AppState};

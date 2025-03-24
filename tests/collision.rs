@@ -88,7 +88,8 @@ fn verify_test_map_exists(world: &mut GameWorld, map_name: String) {
 
 #[when("the Tiled map is loaded,")]
 fn load_test_map(world: &mut GameWorld) {
-    world.loaded_map = Tilemap::new(world.map_location.clone());
+    let tiled_map = load_tiled_map(world.map_location.clone());
+    world.loaded_map = Tilemap::from_tiled(&tiled_map);
 }
 
 #[when("the Tiled map has been converted to a rendered map,")]
