@@ -492,103 +492,13 @@ pub fn move_player_on_key_press(
 //    }
 //}
 
-//pub fn move_entity(
-//    mut entity_query: Query<
-//        (&mut Transform, &DirectionFacing, &mut MovementIntent),
-//        Changed<MovementIntent>,
-//    >,
-//    tile_query: Query<&EntityInstance>,
-//    level_dimension: Res<LevelDimensions>,
-//    mut entity_movement_broadcast: EventWriter<PlayerMovementActions>,
-//) {
-//    if entity_query.is_empty() {
-//        return;
-//    }
-//
-//    let collision_tiles = tile_query
-//        .iter()
-//        .filter(|&tile| !tile.field_instances.is_empty())
-//        .filter(|&tile| {
-//            tile.field_instances
-//                .iter()
-//                .any(|field_instance| field_instance.identifier == "Traversable")
-//        })
-//        .collect::<Vec<&EntityInstance>>();
-//
-//    for (mut entity_transform, facing, mut moving) in entity_query.iter_mut() {
-//        let pixel_distance = 3.0;
-//        let mut direction = Vec3::ZERO;
-//
-//        if *moving != MovementIntent::Moving {
-//            return;
-//        }
-//
-//        match facing {
-//            DirectionFacing::Up => {
-//                direction += Vec3::new(0.0, pixel_distance, 0.0);
-//            }
-//            DirectionFacing::Down => {
-//                direction -= Vec3::new(0.0, pixel_distance, 0.0);
-//            }
-//            DirectionFacing::Left => {
-//                direction -= Vec3::new(pixel_distance, 0.0, 0.0);
-//            }
-//            DirectionFacing::Right => {
-//                direction += Vec3::new(pixel_distance, 0.0, 0.0);
-//            }
-//        }
-//
-//        let tile_side_length = 64.0;
-//        let projected_position = entity_transform.translation + direction;
-//
-//        for &collision_tile in collision_tiles.iter() {
-//            let tile_position = Vec3::new(
-//                collision_tile.px.x as f32,
-//                (level_dimension.height as i32 - (collision_tile.px.y)) as f32,
-//                0.0,
-//            );
-//
-//            let projected_dimensions = Vec2::new(tile_side_length, tile_side_length);
-//            let tile_dimensions =
-//                Vec2::new(collision_tile.width as f32, collision_tile.height as f32);
-//
-//            let has_collided =
-//                Aabb2d::new(projected_position.truncate(), projected_dimensions / 2.0).intersects(
-//                    &Aabb2d::new(tile_position.truncate(), tile_dimensions / 2.0),
-//                );
-//
-//            if has_collided {
-//                entity_movement_broadcast.send(PlayerMovementActions::Bumping);
-//                *moving = MovementIntent::Idle;
-//                return;
-//            }
-//        }
-//
-//        entity_transform.translation = projected_position;
-//        entity_movement_broadcast.send(PlayerMovementActions::Walking);
-//        *moving = MovementIntent::Idle;
-//    }
-//}
-
 pub fn interact_entity(
     input: Res<ButtonInput<KeyCode>>,
-    mut interactive_event_wrier: EventWriter<PlayerInteraction>,
+    mut interactive_event_writer: EventWriter<PlayerInteraction>,
 ) {
     if !input.just_pressed(KeyCode::KeyE) {
         return;
     }
 
-    interactive_event_wrier.send(PlayerInteraction);
+    interactive_event_writer.send(PlayerInteraction);
 }
-
-// pub fn display_interactive_message(mut interactible_event_reader: EventReader<InteractionEvent>) {
-//     for interaction_command in interactible_event_reader.read() {
-//         let command = &interaction_command.0;
-//         if command != "message" {
-//             continue;
-//         }
-
-//         let arg = &interaction_command.1;
-//         println!("{}", arg);
-//     }
-// }

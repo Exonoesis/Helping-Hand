@@ -1016,21 +1016,12 @@ pub fn get_interactives_from(tiled_map: &Map) -> Vec<InteractiveMarker> {
 }
 
 pub fn create_interactive_type(properties: &HashMap<String, PropertyValue>) -> InteractiveType {
-    let interactive_types: Vec<&String> = properties.keys().collect();
-    let interactive_values: Vec<&PropertyValue> = properties.values().collect();
-
+    let property_value = properties.get("Transition");
     // We assume that there is only one property on a marker
-    let interactive_type = interactive_types[0].clone();
-    let property_value = interactive_values[0].clone();
-    let mut property_string = "".to_string();
-
-    if let PropertyValue::StringValue(s) = property_value {
-        property_string = s;
-    }
-
-    match interactive_type.as_str() {
-        "Transition" => InteractiveType::Transition(PathBuf::from(property_string)),
-        _ => panic!("create_interactive_type: Marker Type is invalid"),
+    if let Some(PropertyValue::StringValue(property_string)) = property_value {
+        InteractiveType::Transition(PathBuf::from(property_string))
+    } else {
+        panic!("create_interactive_type: Marker Type is invalid")
     }
 }
 
