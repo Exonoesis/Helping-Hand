@@ -7,15 +7,15 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'helping-hand'",
+            "name": "Debug executable 'helping_hand'",
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=helping-hand",
+                    "--bin=helping_hand",
                     "--package=helping-hand"
                 ],
                 "filter": {
-                    "name": "helping-hand",
+                    "name": "helping_hand",
                     "kind": "bin"
                 }
             },
@@ -28,16 +28,16 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'helping-hand'",
+            "name": "Debug unit tests in executable 'helping_hand'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=helping-hand",
+                    "--bin=helping_hand",
                     "--package=helping-hand"
                 ],
                 "filter": {
-                    "name": "helping-hand",
+                    "name": "helping_hand",
                     "kind": "bin"
                 }
             },

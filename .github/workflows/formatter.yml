@@ -8,10 +8,10 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - name: Install Audio Driver via Alsa for Linux
-        run: sudo apt update && sudo apt-get install libasound2-dev libudev-dev mold
+        run: sudo apt update && sudo apt-get install libasound2-dev libudev-dev mold libwayland-dev libxkbcommon-dev
         shell: bash
       - uses: mbrobbel/rustfmt-check@master
         with:

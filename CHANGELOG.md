@@ -6,20 +6,25 @@
 
 ## [Unreleased]
 ### Added
-- Interaction Events.
-- Settings Menu (accessed via Main Menu.)
+- Interaction Events (trigger level transitions)
+- Settings Menu (accessed via Main Menu)
 - Cucumber version 0.21
+- Custom functions to create tile maps directly from .tmx files
 
 ### Changed
 - Updated Bevy to version 0.13
-- Updated Bevy ECS LDtk to latest version + patch
 - Updated Bevy Kira Audio to version 0.19
-- Updated LDtk app version to 1.5.3
+- Moved from a Main function to a lib and bin structure
+- Moved from a free-movement system to a grid-based movement system
+- Reworked Camera system
 
 ### Fixed
-- macOS Sonoma crashing the application by updating dependencies.
-- Missing File Finder thinking assets folder doesn't exist for release builds.
-- Movement no long stutters.
+- macOS Sonoma no longer crashes the application by updating dependencies
+- Missing File Finder no longer thinks the assets folder doesn't exist for release builds
+- Movement no longer stutters
+
+### Removed
+- LDtk third-party library
 
 ## [0.3.0] - 2023-09-22
 ### Added
