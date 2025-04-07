@@ -1,11 +1,10 @@
 use bevy::prelude::*;
 
 pub mod audio;
-pub mod diagnostics;
-pub mod entities;
-pub mod mechanics;
 pub mod plugins;
-pub mod visuals;
+
+pub mod map;
+pub mod ui;
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
 pub enum AppState {

@@ -1,8 +1,8 @@
 use criterion::{criterion_group, criterion_main, Criterion};
+use helping_hand::map::interactions::interactives::*;
+use helping_hand::map::*;
 use std::hint::black_box;
 use std::path::PathBuf;
-
-use helping_hand::visuals::map::*;
 
 fn create_interactive_collection_from_dimensions(
     width: usize,

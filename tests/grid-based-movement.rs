@@ -4,10 +4,11 @@ use crate::mock_game::Game;
 use cucumber::{given, then, when, World};
 
 use helping_hand::{
-    entities::player::Player,
-    mechanics::input::{MovementDirection, Target},
+    map::{
+        interactions::map_changing::ChangeLevel, movement::grid_based_movement::*, player::Player,
+        XyzCords,
+    },
     plugins::levels::MockLevelsPlugin,
-    visuals::map::{ChangeLevel, XyzCords},
 };
 
 /// Converts a string into a MovementDirection

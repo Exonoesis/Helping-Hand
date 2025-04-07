@@ -1,8 +1,7 @@
 use std::fmt::Debug;
 
-use helping_hand::visuals::map::*;
-
 use cucumber::{given, then, when, World};
+use helping_hand::map::{interactions::interactives::*, *};
 use tiled::{Loader, Map};
 
 use std::path::PathBuf;

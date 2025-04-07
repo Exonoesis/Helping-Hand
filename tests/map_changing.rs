@@ -4,9 +4,8 @@ use crate::mock_game::Game;
 use cucumber::{given, then, when, World};
 
 use helping_hand::{
-    entities::player::PlayerInteraction,
+    map::{interactions::map_changing::ChangeLevel, player::*, XyzCords},
     plugins::levels::MockLevelsPlugin,
-    visuals::map::{ChangeLevel, XyzCords},
 };
 
 #[given(regex = r"a Tiled map called (.+),")]

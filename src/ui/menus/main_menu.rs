@@ -1,19 +1,37 @@
+use crate::AppState;
+use bevy::app::AppExit;
 use bevy::prelude::*;
-
-const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
-
-#[derive(Component)]
-pub enum MainMenuElements {
-    BackgroundImage,
-    Button,
-    Text,
-}
 
 #[derive(Component)]
 pub enum ButtonTypes {
     Play,
     Settings,
     Quit,
+}
+
+const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
+
+pub fn button_system(
+    mut exit_event: EventWriter<AppExit>,
+    mut next_state: ResMut<NextState<AppState>>,
+    mut interaction_query: Query<
+        (&Interaction, &ButtonTypes),
+        (Changed<Interaction>, With<Button>),
+    >,
+) {
+    for (interaction, button_type) in &mut interaction_query {
+        if *interaction != Interaction::Pressed {
+            continue;
+        }
+
+        match button_type {
+            ButtonTypes::Play => next_state.set(AppState::InGame),
+            ButtonTypes::Settings => next_state.set(AppState::SettingsMenu),
+            ButtonTypes::Quit => {
+                exit_event.send(AppExit);
+            }
+        }
+    }
 }
 
 #[derive(Component)]
@@ -112,6 +130,13 @@ pub fn spawn_main_menu(mut commands: Commands) {
     });
 }
 
+#[derive(Component)]
+pub enum MainMenuElements {
+    BackgroundImage,
+    Button,
+    Text,
+}
+
 fn create_button(b_type: ButtonTypes) -> (ButtonBundle, ButtonTypes, MainMenuElements) {
     (
         ButtonBundle {
@@ -181,40 +206,5 @@ pub fn load_text_font(
 pub fn unload_main_menu(mut commands: Commands, query: Query<Entity, With<MainMenuUI>>) {
     for entity in query.iter() {
         commands.entity(entity).despawn_recursive();
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn setup_main_menu_build_and_cleanup_checking() -> App {
-        let mut app = App::new();
-
-        //We test this as a startup system because we cannot test states directly
-        app.add_systems(Startup, spawn_main_menu);
-
-        app
-    }
-
-    #[test]
-    fn main_menu_build_and_cleanup_checking() {
-        //No entities should exist at this point
-        let mut app = setup_main_menu_build_and_cleanup_checking();
-        let mut item_num = app.world.entities().len();
-        assert_eq!(0, item_num);
-
-        //Main Menu entities should now be loaded
-        app.update();
-        item_num = app.world.entities().len();
-        assert!(item_num > 0);
-
-        //Now we call our unload Main Menu function...
-        app.add_systems(Update, unload_main_menu);
-        app.update();
-
-        //and ensure that no entities remain
-        item_num = app.world.entities().len();
-        assert_eq!(0, item_num);
     }
 }

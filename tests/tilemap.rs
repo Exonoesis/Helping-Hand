@@ -5,9 +5,10 @@ use bevy::render::settings::WgpuSettings;
 use bevy::render::RenderPlugin;
 use bevy::sprite::SpritePlugin;
 
-use helping_hand::visuals::map::*;
-
 use cucumber::{given, then, when, World};
+use helping_hand::map::interactions::map_changing::load_tiled_map;
+use helping_hand::map::render::*;
+use helping_hand::map::*;
 
 use std::ffi::OsString;
 use std::path::PathBuf;
@@ -71,6 +72,19 @@ fn get_tiled_map_location(map_name: String) -> PathBuf {
     tiled_map_path.push(map_name);
 
     tiled_map_path
+}
+
+pub fn three_d_to_one_d_cords(
+    tile_grid_cords: &GridDimensions,
+    map_grid_dimensions: &GridDimensions,
+) -> u32 {
+    let map_area = map_grid_dimensions.get_columns() * map_grid_dimensions.get_rows();
+    let map_length = map_grid_dimensions.get_columns();
+    let tile_x = tile_grid_cords.get_columns();
+    let tile_y = tile_grid_cords.get_rows();
+    let tile_z = tile_grid_cords.get_layers();
+
+    (map_area * tile_z) + (map_length * tile_y) + tile_x
 }
 
 //////////////TEST FUNCTIONS//////////////

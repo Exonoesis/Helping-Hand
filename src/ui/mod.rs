@@ -1,25 +1,8 @@
-use crate::{
-    entities::player::Player,
-    visuals::map::{GridDimensions, PxDimensions},
-};
 use bevy::prelude::*;
 
-/// Returns the pixel coordinates for the player's center in the game.
-pub fn get_centered_player_position(
-    player_position: &Transform,
-    player_tile_dimensions: &PxDimensions,
-) -> Transform {
-    let half_tile_width = player_tile_dimensions.get_width() as f32 / 2.0;
-    let half_tile_height = player_tile_dimensions.get_height() as f32 / 2.0;
+pub mod menus;
 
-    let centered_player_position = Transform::from_xyz(
-        player_position.translation.x + half_tile_width,
-        player_position.translation.y + half_tile_height,
-        player_position.translation.z,
-    );
-
-    centered_player_position
-}
+use crate::map::{player::Player, GridDimensions, PxDimensions};
 
 pub fn follow_player(
     level_query: Query<(&PxDimensions, &GridDimensions)>,
@@ -88,4 +71,21 @@ pub fn follow_player(
     } else {
         camera_transform.translation.y = player_center_y.clamp(camera_min_y, camera_max_y);
     }
+}
+
+/// Returns the pixel coordinates for the player's center in the game.
+pub fn get_centered_player_position(
+    player_position: &Transform,
+    player_tile_dimensions: &PxDimensions,
+) -> Transform {
+    let half_tile_width = player_tile_dimensions.get_width() as f32 / 2.0;
+    let half_tile_height = player_tile_dimensions.get_height() as f32 / 2.0;
+
+    let centered_player_position = Transform::from_xyz(
+        player_position.translation.x + half_tile_width,
+        player_position.translation.y + half_tile_height,
+        player_position.translation.z,
+    );
+
+    centered_player_position
 }

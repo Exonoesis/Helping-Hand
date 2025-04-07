@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{mechanics::main_menu_buttons::*, visuals::main_menu::*, AppState};
+use crate::{ui::menus::main_menu::*, AppState};
 
 pub struct MainMenuPlugin;
 

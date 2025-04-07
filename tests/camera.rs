@@ -3,9 +3,8 @@ mod mock_game;
 use bevy::prelude::*;
 use cucumber::{given, then, when, World};
 use helping_hand::{
-    mechanics::input::{MovementDirection, Target},
+    map::{interactions::map_changing::ChangeLevel, movement::grid_based_movement::*, *},
     plugins::levels::MockLevelsPlugin,
-    visuals::map::{ChangeLevel, GridDimensions, PxDimensions, TileType},
 };
 use mock_game::Game;
 

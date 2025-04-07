@@ -3,9 +3,12 @@ use bevy_kira_audio::AudioApp;
 
 use crate::{
     audio::music::{play_level_music, MusicChannel},
-    entities::player::PlayerInteraction,
-    mechanics::{camera::*, input::*},
-    visuals::map::*,
+    map::{
+        interactions::{interactives::*, map_changing::*},
+        movement::grid_based_movement::*,
+        player::PlayerInteraction,
+    },
+    ui::*,
     AppState,
 };
 

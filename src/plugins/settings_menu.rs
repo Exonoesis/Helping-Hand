@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{mechanics::settings_menu_buttons::*, visuals::settings_menu::*, AppState};
+use crate::{ui::menus::settings_menu::*, AppState};
 
 pub struct SettingsMenuPlugin;
 

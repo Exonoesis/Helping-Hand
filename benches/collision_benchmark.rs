@@ -1,7 +1,6 @@
 use criterion::{criterion_group, criterion_main, Criterion};
+use helping_hand::map::{movement::collision::CollisionCollection, XyzCords};
 use std::hint::black_box;
-
-use helping_hand::visuals::map::*;
 
 fn create_collision_collection_from_dimensions(width: usize, height: usize) -> CollisionCollection {
     let mut collision_collection = CollisionCollection::new();

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_kira_audio::{AudioChannel, AudioControl};
 
-use crate::visuals::map::ChangeLevel;
+use crate::map::interactions::map_changing::ChangeLevel;
 
 #[derive(Default, Component, Resource)]
 pub struct MusicChannel;

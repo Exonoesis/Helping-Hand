@@ -3,7 +3,11 @@ use std::time::Duration;
 use bevy::prelude::*;
 use bevy_kira_audio::AudioApp;
 
-use crate::{audio::sfx::*, entities::player::*, mechanics::input::*, AppState};
+use crate::{
+    audio::sfx::*,
+    map::{movement::grid_based_movement::*, player::*},
+    AppState,
+};
 
 pub struct PlayableCharacterPlugin;
 

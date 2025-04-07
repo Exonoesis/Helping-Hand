@@ -1,6 +1,7 @@
-use crate::entities::player::{PlayerBumpChannel, PlayerMovementActions, PlayerWalkChannel};
 use bevy::prelude::*;
 use bevy_kira_audio::{AudioChannel, AudioControl};
+
+use crate::map::player::*;
 
 pub fn load_player_movement_sound(
     asset_server: Res<AssetServer>,
