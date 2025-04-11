@@ -4,8 +4,8 @@ use bevy_kira_audio::{AudioChannel, AudioControl};
 use crate::{audio::music::*, map::player::*, AppState};
 
 // Setup
-pub const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
-pub const DBROWN: Color = Color::rgb(0.49, 0.29, 0.14);
+pub const WHITE: Color = Color::srgb(1.0, 1.0, 1.0);
+pub const DBROWN: Color = Color::srgb(0.49, 0.29, 0.14);
 //pub const LBROWN: Color = Color::rgb(0.72, 0.53, 0.36);
 
 #[derive(Component, PartialEq)]

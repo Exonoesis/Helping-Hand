@@ -5,6 +5,7 @@ use bevy::{
     prelude::*,
     render::{settings::WgpuSettings, RenderPlugin},
     sprite::SpritePlugin,
+    state::app::StatesPlugin,
     window::WindowResolution,
 };
 use cucumber::World;
@@ -25,6 +26,7 @@ impl Game {
     pub fn new() -> Self {
         let mut app = App::new();
         app.add_plugins(MinimalPlugins);
+        app.add_plugins(StatesPlugin);
         app.add_plugins(AssetPlugin::default());
         app.add_plugins(RenderPlugin {
             render_creation: WgpuSettings {
@@ -108,9 +110,9 @@ impl Game {
     {
         let has_component = self
             .app
-            .world
+            .world_mut()
             .query_filtered::<&C, With<D>>()
-            .iter(&self.app.world)
+            .iter(&self.app.world())
             .len()
             == 1;
 
@@ -123,9 +125,9 @@ impl Game {
         C: Component,
     {
         self.app
-            .world
+            .world_mut()
             .query::<&mut C>()
-            .iter_mut(&mut self.app.world)
+            .iter_mut(self.app.world_mut())
             .next()
             .unwrap()
     }
@@ -145,7 +147,12 @@ impl Game {
     where
         C: Component,
     {
-        let num_components_found = self.app.world.query::<&C>().iter(&self.app.world).len();
+        let num_components_found = self
+            .app
+            .world_mut()
+            .query::<&C>()
+            .iter(&self.app.world())
+            .len();
 
         num_components_found
     }
@@ -158,9 +165,9 @@ impl Game {
     {
         let found_component = self
             .app
-            .world
+            .world_mut()
             .query_filtered::<&C, With<D>>()
-            .iter(&self.app.world)
+            .iter(&self.app.world())
             .next()
             .map(|entry| *entry);
 
@@ -175,9 +182,9 @@ impl Game {
     {
         let found_component = self
             .app
-            .world
+            .world_mut()
             .query::<(&C, &D)>()
-            .iter(&self.app.world)
+            .iter(&self.app.world())
             .find(|&entry| {
                 let current_component = entry.1;
 
@@ -218,7 +225,7 @@ impl Game {
     where
         C: Event,
     {
-        self.app.world.send_event(event_to_send);
+        self.app.world_mut().send_event(event_to_send);
         self.app.update();
     }
 

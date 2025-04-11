@@ -9,7 +9,7 @@ pub enum ButtonTypes {
     Quit,
 }
 
-const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
+const WHITE: Color = Color::srgb(1.0, 1.0, 1.0);
 
 pub fn button_system(
     mut exit_event: EventWriter<AppExit>,
@@ -28,7 +28,7 @@ pub fn button_system(
             ButtonTypes::Play => next_state.set(AppState::InGame),
             ButtonTypes::Settings => next_state.set(AppState::SettingsMenu),
             ButtonTypes::Quit => {
-                exit_event.send(AppExit);
+                exit_event.send(AppExit::Success);
             }
         }
     }

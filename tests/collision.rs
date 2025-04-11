@@ -109,8 +109,11 @@ fn load_test_map(world: &mut GameWorld) {
 #[when("the Tiled map has been converted to a rendered map,")]
 fn tiled_map_to_bevy_tiles(world: &mut GameWorld) {
     let tilemap = &world.loaded_map;
-    let asset_server = world.app.world.resource::<AssetServer>().clone();
-    let mut texture_atlas_layout = world.app.world.resource_mut::<Assets<TextureAtlasLayout>>();
+    let asset_server = world.app.world().resource::<AssetServer>().clone();
+    let mut texture_atlas_layout = world
+        .app
+        .world_mut()
+        .resource_mut::<Assets<TextureAtlasLayout>>();
 
     let rendered_bevy_map = RenderedMap::new(tilemap, &asset_server, &mut texture_atlas_layout);
     world.bevy_map = rendered_bevy_map;

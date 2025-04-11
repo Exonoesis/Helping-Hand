@@ -6,7 +6,7 @@ use crate::map::{player::*, GridDimensions, PxDimensions, XyzCords};
 
 use super::collision::CollisionCollection;
 
-#[derive(Event, Component, Copy, Clone, Debug, PartialEq)]
+#[derive(Event, Copy, Clone, Debug, PartialEq)]
 pub enum MovementDirection {
     Left,
     Right,

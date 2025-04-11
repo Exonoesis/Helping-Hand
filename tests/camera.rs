@@ -6,6 +6,7 @@ use helping_hand::{
     map::{interactions::map_changing::ChangeLevel, movement::grid_based_movement::*, *},
     plugins::levels::MockLevelsPlugin,
 };
+
 use mock_game::Game;
 
 const MAX_NUM_ATTEMPTS: usize = 255;

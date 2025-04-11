@@ -91,7 +91,7 @@ pub struct Tile {
     px_cords: XyzCords,
     grid_cords: XyzCords,
     tile_texture: Option<TileTexture>,
-    layer_number: usize,
+    //layer_number: usize,
     tile_type: TileType,
 }
 
@@ -101,7 +101,7 @@ impl Tile {
         px_cords: XyzCords,
         grid_cords: XyzCords,
         tile_texture: Option<TileTexture>,
-        layer_number: usize,
+        //layer_number: usize,
         tile_type: TileType,
     ) -> Tile {
         Tile {
@@ -109,7 +109,7 @@ impl Tile {
             px_cords,
             grid_cords,
             tile_texture,
-            layer_number,
+            //layer_number,
             tile_type,
         }
     }
@@ -219,7 +219,7 @@ fn get_map_tiles(tiled_map: &Map) -> Vec<Tile> {
                 let tile_dimensions = PxDimensions::new(tile_width, tile_height);
                 let px_cords = XyzCords::new_u32(x * tile_width, y * tile_height, z);
                 let grid_cords = XyzCords::new_u32(x, y, z);
-                let layer_number = z;
+                //let layer_number = z;
                 let tile_texture = get_tile_texture(&tiled_map, x, y, z);
                 let tile_type = get_tile_type(&tiled_map, x, y, z);
 
@@ -228,7 +228,7 @@ fn get_map_tiles(tiled_map: &Map) -> Vec<Tile> {
                     px_cords,
                     grid_cords,
                     tile_texture,
-                    layer_number,
+                    //layer_number,
                     tile_type,
                 );
                 tiles.push(tile);
