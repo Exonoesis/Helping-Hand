@@ -1,9 +1,8 @@
 use std::fmt::Debug;
 
-use bevy::{prelude::*, sprite::SpritePlugin};
 use bevy::render::settings::WgpuSettings;
 use bevy::render::RenderPlugin;
-
+use bevy::{prelude::*, sprite::SpritePlugin};
 
 use cucumber::{given, then, when, World};
 use helping_hand::map::{
