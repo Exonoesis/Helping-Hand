@@ -153,9 +153,24 @@ pub fn load_tiled_map(map_location: PathBuf) -> Map {
     loader.load_tmx_map(map_location).unwrap()
 }
 
+#[derive(Bundle)]
+pub struct CameraBundle {
+    camera: Camera2d,
+    transform: Transform,
+}
+
+impl Default for CameraBundle {
+    fn default() -> Self {
+        Self {
+            camera: Camera2d::default(),
+            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
+        }
+    }
+}
+
 /// Returns a camera centered to some map.
-fn create_centered_camera(map: &Tilemap) -> Camera2dBundle {
-    let mut the_camera = Camera2dBundle::default();
+fn create_centered_camera(map: &Tilemap) -> CameraBundle {
+    let mut the_camera = CameraBundle::default();
     let camera_position = &mut the_camera.transform;
 
     let horizontal_center = (map.get_px_dimensions().get_width() / 2) as f32;

@@ -8,12 +8,34 @@ use bevy::prelude::*;
 use super::{flip_y_axis, GridDimensions, PxDimensions, Tile, TileType, Tilemap, XyzCords};
 
 #[derive(Bundle, Clone)]
+pub struct SpriteBundle {
+    sprite: Sprite,
+    visibility: Visibility,
+    transform: Transform,
+}
+
+impl SpriteBundle {
+    pub fn set_texture_atlas(&mut self, texture_atlas: TextureAtlas) {
+        self.sprite.texture_atlas = Some(texture_atlas);
+    }
+}
+
+impl Default for SpriteBundle {
+    fn default() -> Self {
+        Self {
+            sprite: Sprite::default(),
+            visibility: Visibility::Visible,
+            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
+        }
+    }
+}
+
+#[derive(Bundle, Clone)]
 pub struct RenderTile {
     grid_coordinate: XyzCords,
     tile_type: TileType,
     tile_dimensions: PxDimensions,
     sprite_bundle: SpriteBundle,
-    texture_atlas: TextureAtlas,
 }
 
 impl RenderTile {
@@ -22,14 +44,12 @@ impl RenderTile {
         tile_type: TileType,
         tile_dimensions: PxDimensions,
         sprite_bundle: SpriteBundle,
-        texture_atlas: TextureAtlas,
     ) -> Self {
         Self {
             grid_coordinate,
             tile_type,
             tile_dimensions,
             sprite_bundle,
-            texture_atlas,
         }
     }
 
@@ -124,18 +144,20 @@ fn get_render_tile_bundles(
     for tile in tiles {
         // Conversion to Bevy specific formatting happens right here
         // Our:RenderTileBundle -> Bevy's:SpritBundle and Bevy's:TextureAtlas
-        let sprite_bundle = get_sprite_bundle(tile, asset_server, tilemap);
+        let mut sprite_bundle = get_sprite_bundle(tile, asset_server, tilemap);
+
         let texture_atlas = get_texture_atlas(tile, texture_atlas_assets);
+        sprite_bundle.set_texture_atlas(texture_atlas);
 
         let render_tile_coordinate = tile.get_grid_coordinates();
         let render_tile_dimensions = tile.get_tile_dimensions();
         let render_tile_type = tile.get_tile_type();
+
         let render_tile = RenderTile::new(
             *render_tile_coordinate,
             *render_tile_type,
             *render_tile_dimensions,
             sprite_bundle,
-            texture_atlas,
         );
         render_tile_bundles.push(render_tile);
     }
@@ -179,7 +201,7 @@ fn get_sprite_bundle(tile: &Tile, asset_server: &AssetServer, tilemap: &Tilemap)
     );
 
     // Then we point to the spritesheet file to use as reference.
-    sprite_bundle.texture = texture;
+    sprite_bundle.sprite.image = texture;
 
     let tile_type = tile.get_tile_type();
 

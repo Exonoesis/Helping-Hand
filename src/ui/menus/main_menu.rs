@@ -1,6 +1,9 @@
+use crate::map::interactions::map_changing::CameraBundle;
 use crate::AppState;
 use bevy::app::AppExit;
 use bevy::prelude::*;
+
+use super::{ButtonNodeBundle, ImageNodeBundle, TextNodeBundle};
 
 #[derive(Component)]
 pub enum ButtonTypes {
@@ -39,8 +42,8 @@ pub struct MainMenuUI;
 
 pub fn spawn_main_menu(mut commands: Commands) {
     let ui_container = (
-        ImageBundle {
-            style: Style {
+        ImageNodeBundle {
+            node: Node {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
                 align_items: AlignItems::Center,
@@ -54,45 +57,39 @@ pub fn spawn_main_menu(mut commands: Commands) {
         MainMenuElements::BackgroundImage,
     );
 
-    let top_half = NodeBundle {
-        style: Style {
-            width: Val::Percent(100.0),
-            height: Val::Percent(50.0),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::FlexEnd,
-            padding: UiRect {
-                left: Val::Percent(0.0),
-                right: Val::Percent(0.0),
-                top: Val::Percent(0.0),
-                bottom: Val::Percent(3.0),
-            },
-            ..default()
+    let top_half = Node {
+        width: Val::Percent(100.0),
+        height: Val::Percent(50.0),
+        justify_content: JustifyContent::Center,
+        align_items: AlignItems::FlexEnd,
+        padding: UiRect {
+            left: Val::Percent(0.0),
+            right: Val::Percent(0.0),
+            top: Val::Percent(0.0),
+            bottom: Val::Percent(3.0),
         },
         ..default()
     };
 
     let title_text = (
-        TextBundle::from_section(
-            "Helping Hand",
-            TextStyle {
+        TextNodeBundle {
+            text: Text::new("Helping Hand"),
+            font: TextFont {
                 font_size: 130.0,
-                color: WHITE,
                 ..default()
             },
-        ),
+            color: TextColor(WHITE),
+        },
         MainMenuElements::Text,
     );
 
-    let bottom_half = NodeBundle {
-        style: Style {
-            width: Val::Percent(100.0),
-            height: Val::Percent(50.0),
-            flex_direction: FlexDirection::Column,
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            row_gap: Val::Percent(4.2),
-            ..default()
-        },
+    let bottom_half = Node {
+        width: Val::Percent(100.0),
+        height: Val::Percent(50.0),
+        flex_direction: FlexDirection::Column,
+        align_items: AlignItems::Center,
+        justify_content: JustifyContent::Center,
+        row_gap: Val::Percent(4.2),
         ..default()
     };
 
@@ -105,7 +102,7 @@ pub fn spawn_main_menu(mut commands: Commands) {
     let quit_text = create_button_text(String::from("Quit"));
 
     //Spawn UI Camera
-    commands.spawn((Camera2dBundle::default(), MainMenuUI));
+    commands.spawn((CameraBundle::default(), MainMenuUI));
 
     //UI Construction
     commands.spawn(ui_container).with_children(|ui_container| {
@@ -137,10 +134,10 @@ pub enum MainMenuElements {
     Text,
 }
 
-fn create_button(b_type: ButtonTypes) -> (ButtonBundle, ButtonTypes, MainMenuElements) {
+fn create_button(b_type: ButtonTypes) -> (ButtonNodeBundle, ButtonTypes, MainMenuElements) {
     (
-        ButtonBundle {
-            style: Style {
+        ButtonNodeBundle {
+            node: Node {
                 width: Val::Percent(23.0),
                 height: Val::Percent(23.0),
                 justify_content: JustifyContent::Center,
@@ -154,27 +151,27 @@ fn create_button(b_type: ButtonTypes) -> (ButtonBundle, ButtonTypes, MainMenuEle
     )
 }
 
-fn create_button_text(text: String) -> (TextBundle, MainMenuElements) {
+fn create_button_text(text: String) -> (TextNodeBundle, MainMenuElements) {
     (
-        TextBundle::from_section(
-            text,
-            TextStyle {
+        TextNodeBundle {
+            text: Text::new(text),
+            font: TextFont {
                 font_size: 40.0,
-                color: WHITE,
                 ..default()
             },
-        ),
+            color: TextColor(WHITE),
+        },
         MainMenuElements::Text,
     )
 }
 
 pub fn load_background_image(
     asset_server: Res<AssetServer>,
-    mut element_query: Query<(&MainMenuElements, &mut UiImage), Added<MainMenuElements>>,
+    mut element_query: Query<(&MainMenuElements, &mut ImageNode), Added<MainMenuElements>>,
 ) {
-    for (element, mut image) in &mut element_query {
+    for (element, mut image_node) in &mut element_query {
         if let MainMenuElements::BackgroundImage = element {
-            *image = asset_server
+            image_node.image = asset_server
                 .load("textures/main_menu/HH-background.png")
                 .into()
         }
@@ -183,22 +180,22 @@ pub fn load_background_image(
 
 pub fn load_button_image(
     asset_server: Res<AssetServer>,
-    mut element_query: Query<(&MainMenuElements, &mut UiImage), Added<MainMenuElements>>,
+    mut element_query: Query<(&MainMenuElements, &mut ImageNode), Added<MainMenuElements>>,
 ) {
-    for (element, mut image) in &mut element_query {
+    for (element, mut image_node) in &mut element_query {
         if let MainMenuElements::Button = element {
-            *image = asset_server.load("textures/main_menu/button.png").into()
+            image_node.image = asset_server.load("textures/main_menu/button.png").into()
         }
     }
 }
 
 pub fn load_text_font(
     asset_server: Res<AssetServer>,
-    mut element_query: Query<(&MainMenuElements, &mut Text), Added<MainMenuElements>>,
+    mut element_query: Query<(&MainMenuElements, &mut TextFont), Added<MainMenuElements>>,
 ) {
     for (element, mut text) in &mut element_query {
         if let MainMenuElements::Text = element {
-            text.sections[0].style.font = asset_server.load("fonts/Untitled.ttf")
+            text.font = asset_server.load("fonts/Untitled.ttf")
         }
     }
 }

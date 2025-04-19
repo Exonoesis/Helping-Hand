@@ -44,7 +44,7 @@ impl GameWorld {
             .into(),
             ..default()
         });
-        app.add_plugins(SpritePlugin);
+        app.add_plugins(SpritePlugin::default());
         app.add_plugins(ImagePlugin::default());
 
         Self {

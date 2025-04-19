@@ -1,9 +1,9 @@
-use std::time::Duration;
+use std::{sync::{Arc, Mutex}, time::Duration};
 
 use bevy::{
     input::InputPlugin,
     prelude::*,
-    render::{settings::WgpuSettings, RenderPlugin},
+    render::{settings::WgpuSettings, view::screenshot::CapturedScreenshots, RenderPlugin},
     sprite::SpritePlugin,
     state::app::StatesPlugin,
     window::WindowResolution,
@@ -26,7 +26,14 @@ impl Game {
     pub fn new() -> Self {
         let mut app = App::new();
         app.add_plugins(MinimalPlugins);
-        app.add_plugins(StatesPlugin);
+        app.add_plugins(InputPlugin::default());
+        app.add_plugins(WindowPlugin {
+            primary_window: Some(Window {
+                resolution: WindowResolution::new(1280.0, 720.0),
+                ..default()
+            }),
+            ..default()
+        });
         app.add_plugins(AssetPlugin::default());
         app.add_plugins(RenderPlugin {
             render_creation: WgpuSettings {
@@ -36,20 +43,18 @@ impl Game {
             .into(),
             ..default()
         });
-        app.add_plugins(SpritePlugin);
         app.add_plugins(ImagePlugin::default());
-
-        app.add_plugins(WindowPlugin {
-            primary_window: Some(Window {
-                resolution: WindowResolution::new(1280.0, 720.0),
-                ..default()
-            }),
-            ..default()
-        });
-        app.add_plugins(InputPlugin::default());
+        app.add_plugins(SpritePlugin::default());
+        app.add_plugins(StatesPlugin);
+        app.add_plugins(DefaultPickingPlugins);
 
         app.add_plugins(PlayableCharacterTestingPlugin);
         app.insert_resource(ArrivalTime::new(Duration::from_secs_f32(0.0)));
+
+        // NOTE: How dare you Bevy! We need this to ensure tests do not crash
+        // starting in 0.15. Maybe we can remove these two lines in the future.
+        let (tx, rx) = std::sync::mpsc::channel();
+        app.insert_resource(CapturedScreenshots(Arc::new(Mutex::new(rx))));
 
         app.insert_state(AppState::InGame);
 

@@ -1,9 +1,9 @@
 use std::fmt::Debug;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, sprite::SpritePlugin};
 use bevy::render::settings::WgpuSettings;
 use bevy::render::RenderPlugin;
-use bevy::sprite::SpritePlugin;
+
 
 use cucumber::{given, then, when, World};
 use helping_hand::map::{
@@ -42,7 +42,7 @@ impl GameWorld {
             .into(),
             ..default()
         });
-        app.add_plugins(SpritePlugin);
+        app.add_plugins(SpritePlugin::default());
         app.add_plugins(ImagePlugin::default());
 
         Self {

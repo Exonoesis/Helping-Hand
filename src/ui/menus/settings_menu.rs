@@ -1,7 +1,13 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_kira_audio::{AudioChannel, AudioControl};
 
-use crate::{audio::music::*, map::player::*, AppState};
+use crate::{
+    audio::music::*,
+    map::{interactions::map_changing::CameraBundle, player::*},
+    AppState,
+};
+
+use super::{ButtonNodeBundle, ColoredNodeBundle, ImageNodeBundle, TextNodeBundle};
 
 // Setup
 pub const WHITE: Color = Color::srgb(1.0, 1.0, 1.0);
@@ -66,8 +72,8 @@ pub enum AudioType {
 
 pub fn spawn_settings_menu(mut commands: Commands) {
     let ui_container = (
-        ImageBundle {
-            style: Style {
+        ImageNodeBundle {
+            node: Node {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
                 align_items: AlignItems::Center,
@@ -81,49 +87,44 @@ pub fn spawn_settings_menu(mut commands: Commands) {
         SettingsMenuElements::BackgroundImage,
     );
 
-    let top_third = NodeBundle {
-        style: Style {
-            width: Val::Percent(100.0),
-            height: Val::Percent(9.375),
-            align_items: AlignItems::FlexStart,
-            padding: UiRect {
-                left: Val::Percent(2.0),
-                right: Val::Percent(0.0),
-                top: Val::Percent(1.0),
-                bottom: Val::Percent(0.0),
-            },
-            ..default()
+    let top_third = Node {
+        width: Val::Percent(100.0),
+        height: Val::Percent(9.375),
+        align_items: AlignItems::FlexStart,
+        padding: UiRect {
+            left: Val::Percent(2.0),
+            right: Val::Percent(0.0),
+            top: Val::Percent(1.0),
+            bottom: Val::Percent(0.0),
         },
         ..default()
     };
 
     let title_text = (
-        TextBundle::from_section(
-            "Settings",
-            TextStyle {
+        TextNodeBundle {
+            text: Text::new("Settings"),
+            font: TextFont {
                 font_size: 30.0,
-                color: WHITE,
+
                 ..default()
             },
-        ),
+            color: TextColor(WHITE),
+        },
         SettingsMenuElements::Text,
     );
 
-    let middle_third = NodeBundle {
-        style: Style {
-            width: Val::Percent(66.0),
-            height: Val::Percent(74.995),
-            flex_direction: FlexDirection::Column,
-            align_items: AlignItems::FlexStart,
-            justify_content: JustifyContent::FlexStart,
-            ..default()
-        },
+    let middle_third = Node {
+        width: Val::Percent(66.0),
+        height: Val::Percent(74.995),
+        flex_direction: FlexDirection::Column,
+        align_items: AlignItems::FlexStart,
+        justify_content: JustifyContent::FlexStart,
         ..default()
     };
 
     let tabs_container = (
-        ButtonBundle {
-            style: Style {
+        ButtonNodeBundle {
+            node: Node {
                 width: Val::Percent(18.82),
                 height: Val::Percent(9.434),
                 justify_content: JustifyContent::Center,
@@ -142,20 +143,21 @@ pub fn spawn_settings_menu(mut commands: Commands) {
     );
 
     let tab_text = (
-        TextBundle::from_section(
-            "Audio",
-            TextStyle {
+        TextNodeBundle {
+            text: Text::new("Audio"),
+            font: TextFont {
                 font_size: 25.0,
-                color: WHITE,
+
                 ..default()
             },
-        ),
+            color: TextColor(WHITE),
+        },
         SettingsMenuElements::Text,
     );
 
     let options_container = (
-        ImageBundle {
-            style: Style {
+        ImageNodeBundle {
+            node: Node {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
                 flex_direction: FlexDirection::Column,
@@ -175,21 +177,18 @@ pub fn spawn_settings_menu(mut commands: Commands) {
         SettingsMenuElements::OptionsBox,
     );
 
-    let bottom_third = NodeBundle {
-        style: Style {
-            width: Val::Percent(66.0),
-            height: Val::Percent(15.63),
-            flex_direction: FlexDirection::Row,
-            align_items: AlignItems::FlexStart,
-            justify_content: JustifyContent::FlexEnd,
-            column_gap: Val::Percent(2.0),
-            padding: UiRect {
-                left: Val::Percent(0.0),
-                right: Val::Percent(0.0),
-                top: Val::Percent(0.8),
-                bottom: Val::Percent(0.0),
-            },
-            ..default()
+    let bottom_third = Node {
+        width: Val::Percent(66.0),
+        height: Val::Percent(15.63),
+        flex_direction: FlexDirection::Row,
+        align_items: AlignItems::FlexStart,
+        justify_content: JustifyContent::FlexEnd,
+        column_gap: Val::Percent(2.0),
+        padding: UiRect {
+            left: Val::Percent(0.0),
+            right: Val::Percent(0.0),
+            top: Val::Percent(0.8),
+            bottom: Val::Percent(0.0),
         },
         ..default()
     };
@@ -201,7 +200,7 @@ pub fn spawn_settings_menu(mut commands: Commands) {
     let cancel_text = create_button_text(String::from("Cancel"));
 
     //Spawn UI Camera
-    commands.spawn((Camera2dBundle::default(), SettingsMenuUI));
+    commands.spawn((CameraBundle::default(), SettingsMenuUI));
 
     //UI Construction
     commands.spawn(ui_container).with_children(|ui_container| {
@@ -241,28 +240,28 @@ pub fn spawn_settings_menu(mut commands: Commands) {
 }
 
 pub struct Slider {
-    pub back: (NodeBundle, CountingSliderKeys),
+    pub back: (ColoredNodeBundle, CountingSliderKeys),
     pub handle: (
-        ButtonBundle,
+        ButtonNodeBundle,
         ButtonTypes,
         SettingsMenuElements,
         CountingSliderKeys,
     ),
-    pub fill: (NodeBundle, CountingSliderKeys),
+    pub fill: (ColoredNodeBundle, CountingSliderKeys),
 }
 
 pub struct Spinner {
-    pub value_container: NodeBundle,
-    pub buttons_container: NodeBundle,
-    pub value: (TextBundle, SettingsMenuElements, CountingSliderKeys),
+    pub value_container: Node,
+    pub buttons_container: Node,
+    pub value: (TextNodeBundle, SettingsMenuElements, CountingSliderKeys),
     pub increment: (
-        ButtonBundle,
+        ButtonNodeBundle,
         ButtonTypes,
         SettingsMenuElements,
         CountingSliderKeys,
     ),
     pub decrement: (
-        ButtonBundle,
+        ButtonNodeBundle,
         ButtonTypes,
         SettingsMenuElements,
         CountingSliderKeys,
@@ -272,21 +271,21 @@ pub struct Spinner {
 pub struct CountingSlider {
     barrier_keys: SliderKeyComponents,
 
-    label: (TextBundle, SettingsMenuElements),
+    label: (TextNodeBundle, SettingsMenuElements),
     slider: Slider,
     spinner: Spinner,
 }
 
-pub fn create_widget_label(text: String) -> (TextBundle, SettingsMenuElements) {
+pub fn create_widget_label(text: String) -> (TextNodeBundle, SettingsMenuElements) {
     (
-        TextBundle::from_section(
-            text,
-            TextStyle {
+        TextNodeBundle {
+            text: Text::new(text),
+            font: TextFont {
                 font_size: 20.0,
-                color: WHITE,
                 ..default()
             },
-        ),
+            color: TextColor(WHITE),
+        },
         SettingsMenuElements::Text,
     )
 }
@@ -294,21 +293,20 @@ pub fn create_widget_label(text: String) -> (TextBundle, SettingsMenuElements) {
 pub fn create_widget_slider() -> Slider {
     Slider {
         back: (
-            NodeBundle {
-                style: Style {
+            ColoredNodeBundle {
+                node: Node {
                     width: Val::Percent(100.0),
                     height: Val::Percent(20.0),
                     align_items: AlignItems::Center,
                     ..default()
                 },
                 background_color: BackgroundColor(DBROWN),
-                ..default()
             },
             CountingSliderKeys::Back,
         ),
         handle: (
-            ButtonBundle {
-                style: Style {
+            ButtonNodeBundle {
+                node: Node {
                     width: Val::Percent(5.00),
                     //Handle does not clip outside widget container because it is
                     //parented to fill and subsequently back which is 20% of the
@@ -323,14 +321,13 @@ pub fn create_widget_slider() -> Slider {
             CountingSliderKeys::Handle,
         ),
         fill: (
-            NodeBundle {
-                style: Style {
+            ColoredNodeBundle {
+                node: Node {
                     width: Val::Percent(0.0),
                     height: Val::Percent(100.0),
                     ..default()
                 },
                 background_color: BackgroundColor(WHITE),
-                ..default()
             },
             CountingSliderKeys::Fill,
         ),
@@ -339,41 +336,36 @@ pub fn create_widget_slider() -> Slider {
 
 pub fn create_widget_spinner() -> Spinner {
     Spinner {
-        value_container: (NodeBundle {
-            style: Style {
-                width: Val::Percent(50.0),
-                height: Val::Percent(100.0),
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
-                ..default()
-            },
+        value_container: (Node {
+            width: Val::Percent(50.0),
+            height: Val::Percent(100.0),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
             ..default()
         }),
-        buttons_container: (NodeBundle {
-            style: Style {
-                width: Val::Percent(30.0),
-                height: Val::Percent(80.0),
-                flex_direction: FlexDirection::Column,
-                justify_content: JustifyContent::SpaceBetween,
-                ..default()
-            },
+        buttons_container: (Node {
+            width: Val::Percent(30.0),
+            height: Val::Percent(80.0),
+            flex_direction: FlexDirection::Column,
+            justify_content: JustifyContent::SpaceBetween,
             ..default()
         }),
         value: (
-            TextBundle::from_section(
-                "0",
-                TextStyle {
+            TextNodeBundle {
+                text: Text::new("0"),
+                font: TextFont {
                     font_size: 25.0,
-                    color: WHITE,
+
                     ..default()
                 },
-            ),
+                color: TextColor(WHITE),
+            },
             SettingsMenuElements::Text,
             CountingSliderKeys::Value,
         ),
         increment: (
-            ButtonBundle {
-                style: Style {
+            ButtonNodeBundle {
+                node: Node {
                     width: Val::Percent(100.00),
                     height: Val::Percent(45.00),
                     ..default()
@@ -385,8 +377,8 @@ pub fn create_widget_spinner() -> Spinner {
             CountingSliderKeys::Increment,
         ),
         decrement: (
-            ButtonBundle {
-                style: Style {
+            ButtonNodeBundle {
+                node: Node {
                     width: Val::Percent(100.00),
                     height: Val::Percent(45.00),
                     ..default()
@@ -400,10 +392,10 @@ pub fn create_widget_spinner() -> Spinner {
     }
 }
 
-fn create_button(b_type: ButtonTypes) -> (ButtonBundle, ButtonTypes, SettingsMenuElements) {
+fn create_button(b_type: ButtonTypes) -> (ButtonNodeBundle, ButtonTypes, SettingsMenuElements) {
     (
-        ButtonBundle {
-            style: Style {
+        ButtonNodeBundle {
+            node: Node {
                 width: Val::Percent(11.33),
                 height: Val::Percent(40.0),
                 justify_content: JustifyContent::Center,
@@ -417,29 +409,26 @@ fn create_button(b_type: ButtonTypes) -> (ButtonBundle, ButtonTypes, SettingsMen
     )
 }
 
-fn create_button_text(text: String) -> (TextBundle, SettingsMenuElements) {
+fn create_button_text(text: String) -> (TextNodeBundle, SettingsMenuElements) {
     (
-        TextBundle::from_section(
-            text,
-            TextStyle {
+        TextNodeBundle {
+            text: Text::new(text),
+            font: TextFont {
                 font_size: 20.0,
-                color: WHITE,
                 ..default()
             },
-        ),
+            color: TextColor(WHITE),
+        },
         SettingsMenuElements::Text,
     )
 }
 
-fn create_widget_container(keys: SliderKeyComponents) -> (NodeBundle, SliderKeyComponents) {
+fn create_widget_container(keys: SliderKeyComponents) -> (Node, SliderKeyComponents) {
     (
-        NodeBundle {
-            style: Style {
-                width: Val::Percent(96.0),
-                height: Val::Percent(12.0),
-                justify_content: JustifyContent::SpaceBetween,
-                ..default()
-            },
+        Node {
+            width: Val::Percent(96.0),
+            height: Val::Percent(12.0),
+            justify_content: JustifyContent::SpaceBetween,
             ..default()
         },
         keys,
@@ -470,34 +459,25 @@ fn spawn_volume_slider(ui_container: &mut ChildBuilder, audio_type: AudioType) {
         AudioType::SFX => create_counting_slider(String::from("SFX")),
     };
 
-    let slider_widget_label = NodeBundle {
-        style: Style {
-            width: Val::Percent(25.0),
-            height: Val::Percent(100.0),
-            align_items: AlignItems::Center,
-            ..default()
-        },
+    let slider_widget_label = Node {
+        width: Val::Percent(25.0),
+        height: Val::Percent(100.0),
+        align_items: AlignItems::Center,
         ..default()
     };
 
-    let slider_container = NodeBundle {
-        style: Style {
-            width: Val::Percent(60.0),
-            height: Val::Percent(100.0),
-            align_items: AlignItems::Center,
-            ..default()
-        },
+    let slider_container = Node {
+        width: Val::Percent(60.0),
+        height: Val::Percent(100.0),
+        align_items: AlignItems::Center,
         ..default()
     };
 
-    let spinner_container = NodeBundle {
-        style: Style {
-            width: Val::Percent(15.0),
-            height: Val::Percent(100.0),
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            ..default()
-        },
+    let spinner_container = Node {
+        width: Val::Percent(15.0),
+        height: Val::Percent(100.0),
+        align_items: AlignItems::Center,
+        justify_content: JustifyContent::Center,
         ..default()
     };
 
@@ -577,7 +557,7 @@ pub fn change_sfx_volumes(
 }
 
 pub fn get_percentage_from(spinner_value: Text) -> f64 {
-    let value = spinner_value.sections[0].value.parse::<f64>().unwrap();
+    let value = spinner_value.parse::<f64>().unwrap();
 
     //Audio is 0-1 normalized so we convert to a decimal percentage
     let percentage_value = value * 0.01;
@@ -653,11 +633,11 @@ pub fn add_widget_components(
 
 pub fn load_background_image(
     asset_server: Res<AssetServer>,
-    mut element_query: Query<(&SettingsMenuElements, &mut UiImage), Added<SettingsMenuElements>>,
+    mut element_query: Query<(&SettingsMenuElements, &mut ImageNode), Added<SettingsMenuElements>>,
 ) {
-    for (element, mut image) in &mut element_query {
+    for (element, mut image_node) in &mut element_query {
         if let SettingsMenuElements::BackgroundImage = element {
-            *image = asset_server
+            image_node.image = asset_server
                 .load("textures/main_menu/HH-background.png")
                 .into()
         }
@@ -666,11 +646,11 @@ pub fn load_background_image(
 
 pub fn load_box_image(
     asset_server: Res<AssetServer>,
-    mut element_query: Query<(&SettingsMenuElements, &mut UiImage), Added<SettingsMenuElements>>,
+    mut element_query: Query<(&SettingsMenuElements, &mut ImageNode), Added<SettingsMenuElements>>,
 ) {
-    for (element, mut image) in &mut element_query {
+    for (element, mut image_node) in &mut element_query {
         if let SettingsMenuElements::OptionsBox = element {
-            *image = asset_server
+            image_node.image = asset_server
                 .load("textures/settings_menu/window-box.png")
                 .into()
         }
@@ -679,11 +659,11 @@ pub fn load_box_image(
 
 pub fn load_tab_image(
     asset_server: Res<AssetServer>,
-    mut element_query: Query<(&SettingsMenuElements, &mut UiImage), Added<SettingsMenuElements>>,
+    mut element_query: Query<(&SettingsMenuElements, &mut ImageNode), Added<SettingsMenuElements>>,
 ) {
-    for (element, mut image) in &mut element_query {
+    for (element, mut image_node) in &mut element_query {
         if let SettingsMenuElements::TabBox = element {
-            *image = asset_server
+            image_node.image = asset_server
                 .load("textures/settings_menu/tab-box.png")
                 .into()
         }
@@ -692,22 +672,22 @@ pub fn load_tab_image(
 
 pub fn load_button_image(
     asset_server: Res<AssetServer>,
-    mut element_query: Query<(&SettingsMenuElements, &mut UiImage), Added<SettingsMenuElements>>,
+    mut element_query: Query<(&SettingsMenuElements, &mut ImageNode), Added<SettingsMenuElements>>,
 ) {
-    for (element, mut image) in &mut element_query {
+    for (element, mut image_node) in &mut element_query {
         if let SettingsMenuElements::Button = element {
-            *image = asset_server.load("textures/main_menu/button.png").into()
+            image_node.image = asset_server.load("textures/main_menu/button.png").into()
         }
     }
 }
 
 pub fn load_increment_button_image(
     asset_server: Res<AssetServer>,
-    mut element_query: Query<(&SettingsMenuElements, &mut UiImage), Added<SettingsMenuElements>>,
+    mut element_query: Query<(&SettingsMenuElements, &mut ImageNode), Added<SettingsMenuElements>>,
 ) {
-    for (element, mut image) in &mut element_query {
+    for (element, mut image_node) in &mut element_query {
         if let SettingsMenuElements::IncrementButton = element {
-            *image = asset_server
+            image_node.image = asset_server
                 .load("textures/settings_menu/increment-button.png")
                 .into()
         }
@@ -716,11 +696,11 @@ pub fn load_increment_button_image(
 
 pub fn load_decrement_button_image(
     asset_server: Res<AssetServer>,
-    mut element_query: Query<(&SettingsMenuElements, &mut UiImage), Added<SettingsMenuElements>>,
+    mut element_query: Query<(&SettingsMenuElements, &mut ImageNode), Added<SettingsMenuElements>>,
 ) {
-    for (element, mut image) in &mut element_query {
+    for (element, mut image_node) in &mut element_query {
         if let SettingsMenuElements::DecrementButton = element {
-            *image = asset_server
+            image_node.image = asset_server
                 .load("textures/settings_menu/decrement-button.png")
                 .into()
         }
@@ -729,11 +709,11 @@ pub fn load_decrement_button_image(
 
 pub fn load_text_font(
     asset_server: Res<AssetServer>,
-    mut element_query: Query<(&SettingsMenuElements, &mut Text), Added<SettingsMenuElements>>,
+    mut element_query: Query<(&SettingsMenuElements, &mut TextFont), Added<SettingsMenuElements>>,
 ) {
     for (element, mut text) in &mut element_query {
         if let SettingsMenuElements::Text = element {
-            text.sections[0].style.font = asset_server.load("fonts/Untitled.ttf")
+            text.font = asset_server.load("fonts/Untitled.ttf")
         }
     }
 }
@@ -768,8 +748,8 @@ pub fn spinner_buttons_system(
         &mut Text,
         (With<SettingsMenuElements>, With<CountingSliderKeys>),
     >,
-    mut spinner_fill_query: Query<&mut Style, (With<CountingSliderKeys>, Without<Button>)>,
-    spinner_handle_query: Query<&Style, (With<CountingSliderKeys>, With<Button>)>,
+    mut spinner_fill_query: Query<&mut Node, (With<CountingSliderKeys>, Without<Button>)>,
+    spinner_handle_query: Query<&Node, (With<CountingSliderKeys>, With<Button>)>,
 ) {
     for (interaction, button_type, value_reference, fill_reference, handle_reference) in
         &mut spinner_button_query
@@ -785,7 +765,7 @@ pub fn spinner_buttons_system(
             .get_mut(value_reference.0)
             .expect("spinner_buttons_system: Spinner value should exist.");
 
-        let old_value = spinner_value.sections[0].value.parse::<u32>().unwrap();
+        let old_value = spinner_value.0.parse::<u32>().unwrap();
 
         let trying_to_overflow = *button_type == ButtonTypes::Increment && old_value == 100;
         let trying_to_underflow = *button_type == ButtonTypes::Decrement && old_value == 0;
@@ -802,7 +782,7 @@ pub fn spinner_buttons_system(
             panic!("spinner_buttons_system: ButtonTypes was not Increment or Drecement, which is impossible.")
         };
 
-        spinner_value.sections[0].value = new_value.to_string();
+        spinner_value.0 = new_value.to_string();
 
         let mut fill_value = spinner_fill_query
             .get_mut(fill_reference.0)
@@ -823,8 +803,8 @@ pub fn spinner_buttons_system(
             panic!("spinner_buttons_system: Handle width should be a percentage.")
         };
 
-        let new_fill_amount = spinner_value.sections[0].value.parse::<f32>().unwrap()
-            - (handle_width_percentage / 2.0);
+        let new_fill_amount =
+            spinner_value.0.parse::<f32>().unwrap() - (handle_width_percentage / 2.0);
 
         fill_value.width = Val::Percent(new_fill_amount);
     }
@@ -837,7 +817,7 @@ pub fn get_handle_click_position(
             &ButtonTypes,
             &ValueReference,
             Entity,
-            &mut Style,
+            &mut Node,
         ),
         (Changed<Interaction>, With<Button>),
     >,
@@ -867,7 +847,7 @@ pub fn get_handle_click_position(
             .get_mut(value_reference.0)
             .expect("get_handle_click_position: Spinner value should exist.");
 
-        let original_spinner_value = spinner_value.sections[0].value.parse::<f32>().unwrap();
+        let original_spinner_value = spinner_value.0.parse::<f32>().unwrap();
 
         //Attach original_mouse_x to Handle as component
         let original_mouse_x_reference = BeingClicked {
@@ -894,7 +874,7 @@ pub fn update_handle_position_on_hold(
         &mut Text,
         (With<SettingsMenuElements>, With<CountingSliderKeys>),
     >,
-    mut width_query: Query<&mut Style>,
+    mut width_query: Query<&mut Node>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     camera_query: Query<&Camera>,
     parent_query: Query<&Parent>,
@@ -951,7 +931,7 @@ pub fn update_handle_position_on_hold(
 
     new_spinner_value = new_spinner_value.clamp(0.00, 100.00);
 
-    spinner_value.sections[0].value = new_spinner_value.to_string();
+    spinner_value.0 = new_spinner_value.to_string();
 
     //Change fill bar width
     let mut fill_value = width_query
@@ -970,15 +950,14 @@ pub fn update_handle_position_on_hold(
             panic!("spinner_buttons_system: Handle width should be a percentage.")
         };
 
-    let new_fill_amount =
-        spinner_value.sections[0].value.parse::<f32>().unwrap() - (handle_width_percentage / 2.0);
+    let new_fill_amount = spinner_value.0.parse::<f32>().unwrap() - (handle_width_percentage / 2.0);
 
     fill_value.width = Val::Percent(new_fill_amount);
 }
 
 fn get_node_width(
     node: Entity,
-    width_query: Query<&Style>,
+    width_query: Query<&Node>,
     camera_query: Query<&Camera>,
     parent_query: Query<&Parent>,
 ) -> f32 {
@@ -1001,7 +980,7 @@ fn get_node_width(
 fn get_all_ancestors(
     node: Entity,
     parent_query: Query<&Parent>,
-    width_query: Query<&Style>,
+    width_query: Query<&Node>,
 ) -> Vec<bevy::ui::Val> {
     let mut to_be_visited_nodes = Vec::new();
     let mut seen_styles = Vec::new();

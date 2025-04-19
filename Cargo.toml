@@ -6,9 +6,9 @@ authors = ["Jesse Fischbeck <jlevifisch@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-bevy = { version = "^0.14", features = ["wayland"] }
-tiled = "^0.12"
-bevy_kira_audio = { version = "^0.20", features = ["wav"] }
+bevy = { version = "^0.15", features = ["wayland"] }
+tiled = "^0.14"
+bevy_kira_audio = { version = "^0.21", features = ["wav"] }
 unicode-segmentation = "^1.10"
 serde = "^1.0"
 serde_json = "^1.0"
