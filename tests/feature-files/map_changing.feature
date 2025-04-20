@@ -4,7 +4,7 @@ Feature: Map Changing
         And a map size of 3 x 3 tiles,
         And the Player is at 2,2,
         When the player interacts with the tile ahead of them,
-        Then the map size should be 16 x 10 tiles,
+        Then the map size should be 16 x 11 tiles,
         And the Player should be at 7,9.
 
     Scenario: A player doesn't transition to a different map
