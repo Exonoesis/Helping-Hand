@@ -1,10 +1,8 @@
-use std::fmt::Debug;
-
 use cucumber::{given, then, when, World};
 use helping_hand::map::{interactions::interactives::*, *};
-use tiled::{Loader, Map};
-
+use std::fmt::Debug;
 use std::path::PathBuf;
+use tiled::{Loader, Map};
 
 #[derive(Debug, Default, World)]
 #[world(init = Self::new)]

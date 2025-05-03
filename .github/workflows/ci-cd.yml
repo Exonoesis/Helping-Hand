@@ -1,0 +1,71 @@
+# Based on https://github.com/actions-rs/meta/blob/master/recipes/quickstart.md
+
+on: [push]
+
+name: Continuous Integration and Deployment
+
+jobs:
+  check:
+    name: Check Code
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Install Audio Driver via Alsa for Linux
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+               sudo apt update && sudo apt-get install libasound2-dev libudev-dev mold libwayland-dev libxkbcommon-dev
+          fi
+        shell: bash
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Run cargo clippy
+        run: cargo clippy
+
+      - name: Run cargo test
+        run: cargo test
+
+  upload:
+    name: Upload executable of the game
+    needs: check
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Install Audio Driver via Alsa for Linux
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+              sudo apt update && sudo apt-get install libasound2-dev libudev-dev mold libwayland-dev libxkbcommon-dev
+          fi
+        shell: bash
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build a release executable for the game
+        run: cargo build --release
+
+      - name: Upload game executable
+        uses: actions/upload-artifact@v4
+        with:
+          path: target/release/helping_hand*
+          name: helping_hand_bleeding_edge-${{ matrix.os }}

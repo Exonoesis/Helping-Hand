@@ -1,0 +1,136 @@
+{
+    "startingElement": "f5797444-91a6-4a22-bd3b-d69e9ef6419c",
+    "boards": {
+        "2ad15ff6-f2ba-4f1d-9d9d-68938c683d7e": {
+            "name": "Root",
+            "root": true,
+            "children": [
+                "630fdb8a-48d6-473e-9974-2460f7eb2b41"
+            ]
+        },
+        "630fdb8a-48d6-473e-9974-2460f7eb2b41": {
+            "name": "Main Board",
+            "notes": [],
+            "jumpers": [],
+            "branches": [],
+            "elements": [
+                "f5797444-91a6-4a22-bd3b-d69e9ef6419c",
+                "53ad95fe-66b8-41cc-a8e3-f5ebcac7a466",
+                "f7a166f2-78b5-4e22-aa49-2a183d3e66da"
+            ],
+            "connections": [
+                "db07062a-b8b0-45b8-9149-a65682018d7d",
+                "df046603-c1e3-4bdd-b964-2cf4f05ea803"
+            ]
+        }
+    },
+    "notes": {},
+    "elements": {
+        "f5797444-91a6-4a22-bd3b-d69e9ef6419c": {
+            "autoHeight": true,
+            "title": "<p>Intro Image 1<\/p>",
+            "theme": "default",
+            "components": [],
+            "content": "<p>This is some text to ignore<\/p>",
+            "outputs": [
+                "db07062a-b8b0-45b8-9149-a65682018d7d"
+            ],
+            "assets": {
+                "cover": {
+                    "id": "9aaf6ff8-89b6-47b9-bdd0-cc8d1c4d053f"
+                }
+            }
+        },
+        "53ad95fe-66b8-41cc-a8e3-f5ebcac7a466": {
+            "autoHeight": true,
+            "title": "<p>Intro Image 2<\/p>",
+            "theme": "default",
+            "components": [],
+            "content": "",
+            "outputs": [
+                "df046603-c1e3-4bdd-b964-2cf4f05ea803"
+            ],
+            "assets": {
+                "cover": {
+                    "id": "feb984f1-9503-4dd7-976a-09f429422bff"
+                }
+            }
+        },
+        "f7a166f2-78b5-4e22-aa49-2a183d3e66da": {
+            "autoHeight": true,
+            "title": "<p>Intro Image 3<\/p>",
+            "theme": "default",
+            "components": [],
+            "content": "",
+            "outputs": [],
+            "assets": {
+                "cover": {
+                    "id": "40d695d9-7427-46e1-8830-fed77ce60ce0"
+                }
+            }
+        }
+    },
+    "jumpers": {},
+    "connections": {
+        "db07062a-b8b0-45b8-9149-a65682018d7d": {
+            "sourceType": "elements",
+            "label": null,
+            "sourceid": "f5797444-91a6-4a22-bd3b-d69e9ef6419c",
+            "targetid": "53ad95fe-66b8-41cc-a8e3-f5ebcac7a466",
+            "targetFace": "left",
+            "targetType": "elements",
+            "theme": "default",
+            "type": "Bezier"
+        },
+        "df046603-c1e3-4bdd-b964-2cf4f05ea803": {
+            "sourceType": "elements",
+            "label": null,
+            "sourceid": "53ad95fe-66b8-41cc-a8e3-f5ebcac7a466",
+            "targetid": "f7a166f2-78b5-4e22-aa49-2a183d3e66da",
+            "targetFace": "left",
+            "targetType": "elements",
+            "theme": "default",
+            "type": "Bezier"
+        }
+    },
+    "branches": {},
+    "components": {
+        "65005bda-15d0-41c5-867f-68c118829f08": {
+            "name": "Root",
+            "root": true,
+            "children": []
+        }
+    },
+    "attributes": {},
+    "assets": {
+        "647d0495-341f-42b2-8788-b47dace22bf8": {
+            "root": true,
+            "children": [
+                "40d695d9-7427-46e1-8830-fed77ce60ce0",
+                "feb984f1-9503-4dd7-976a-09f429422bff",
+                "9aaf6ff8-89b6-47b9-bdd0-cc8d1c4d053f"
+            ]
+        },
+        "9aaf6ff8-89b6-47b9-bdd0-cc8d1c4d053f": {
+            "type": "image",
+            "name": "PI1.png"
+        },
+        "feb984f1-9503-4dd7-976a-09f429422bff": {
+            "type": "image",
+            "name": "PI2.png"
+        },
+        "40d695d9-7427-46e1-8830-fed77ce60ce0": {
+            "type": "image",
+            "name": "PI3.png"
+        }
+    },
+    "variables": {
+        "747d0495-341f-42b2-8788-b47dace22bf8": {
+            "root": true,
+            "children": []
+        }
+    },
+    "conditions": {},
+    "name": "test_story",
+    "cover": null
+}

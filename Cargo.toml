@@ -48,6 +48,10 @@ harness = false
 name = "map_changing"
 harness = false
 
+[[test]]
+name = "acts"
+harness = false
+
 # When measuring the performance of some feature, add a new Criterion benchmark below
 # following the format:
 [[bench]]

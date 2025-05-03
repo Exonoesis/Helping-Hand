@@ -15,8 +15,8 @@ use std::path::PathBuf;
 #[world(init = Self::new)]
 struct GameWorld {
     pub app: App,
-    pub map_location: PathBuf,
 
+    pub map_location: PathBuf,
     pub loaded_map: Tilemap,
     pub bevy_map: RenderedMap,
     pub collision_collection: CollisionCollection,
