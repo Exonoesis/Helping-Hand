@@ -57,10 +57,19 @@ fn read_act_file(game: &mut GameWorld) {
     game.current_act = read_act_from(act_file);
 }
 
-#[then(regex = r"the act's scene ([0-9]+) is an Image Cutscene pointing to the image (.+\.png).")]
-fn verify_image_cutscene(game: &mut GameWorld, scene_index: usize, image_path: String) {
+#[then(
+    regex = r"the act's scene ([0-9]+) called (.+) is an Image Cutscene pointing to the image (.+\.png)."
+)]
+fn verify_image_cutscene(
+    game: &mut GameWorld,
+    scene_index: usize,
+    scene_title: String,
+    image_path: String,
+) {
+    let given_title = scene_title;
     let given_path = PathBuf::from(image_path);
-    let expected_scene = Scene::ImageCutscene(given_path);
+    let scene_contents = SceneContents::ImageCutscene(given_path);
+    let expected_scene = Scene::make_scene(given_title, scene_contents);
 
     let act = &game.current_act;
     let given_scene_index = scene_index - 1;

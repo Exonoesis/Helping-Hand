@@ -2794,6 +2794,7 @@ dependencies = [
  "criterion",
  "cucumber",
  "futures",
+ "regex",
  "serde",
  "serde_json",
  "tiled",
