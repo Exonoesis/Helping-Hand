@@ -78,8 +78,7 @@ pub fn read_act_from(act_file: PathBuf) -> Act {
 
     let mut scenes_to_investigate = vec![starting_scene];
 
-    while !scenes_to_investigate.is_empty() {
-        let current_scene_node = scenes_to_investigate.pop().unwrap();
+    while let Some(current_scene_node) = scenes_to_investigate.pop() {
         read_act.add_scene(current_scene_node.get_scene().clone());
 
         let next_scenes = create_connected_scenes(current_scene_node, &arcweave_act_json);
@@ -163,6 +162,35 @@ fn get_image_from_id(act: &Value, id: String) -> String {
     get_string_from_json_value(image_value)
 }
 
+fn get_list_of_scene_connections(
+    arcweave_act_json: &Value,
+    current_scene_id: &String,
+) -> Vec<Value> {
+    // Get list of connections for this scene
+    let scene_connections = arcweave_act_json
+        .get("elements")
+        .and_then(|elements| elements.get(&current_scene_id))
+        .and_then(|element| element.get("outputs"))
+        .expect(&format!(
+            "create_connected_scenes: Unable to get scene outputs for item {}",
+            current_scene_id
+        ));
+    get_vec_from_json_value(scene_connections)
+}
+
+fn get_target_id(arcweave_act_json: &Value, connection_id: String) -> String {
+    let target_scene_id = arcweave_act_json
+        .get("connections")
+        .and_then(|connections| connections.get(&connection_id))
+        .and_then(|connection| connection.get("targetid"))
+        .expect(&format!(
+            "create_connected_scenes: Unable to get connection targetid for item {}",
+            connection_id
+        ));
+
+    get_string_from_json_value(target_scene_id)
+}
+
 /// Creates a SceneNode from the starting scene name
 fn create_starting_scene(scene_name: String, arcweave_act_json: &Value) -> SceneNode {
     let scene_value = arcweave_act_json.get(scene_name).unwrap();
@@ -197,33 +225,15 @@ fn create_connected_scenes(
 
     let current_scene_id = current_scene_node.get_id();
 
-    // Get list of connections for this scene
-    let scene_connections = arcweave_act_json
-        .get("elements")
-        .and_then(|elements| elements.get(&current_scene_id))
-        .and_then(|element| element.get("outputs"))
-        .expect(&format!(
-            "create_connected_scenes: Unable to get scene outputs for item {}",
-            current_scene_id
-        ));
-    let scene_connection_collection = get_vec_from_json_value(scene_connections);
+    let scene_connection_collection =
+        get_list_of_scene_connections(arcweave_act_json, current_scene_id);
 
     // For each connection, get the scene it connects to and add it to the final list
     for connection in scene_connection_collection {
         let connection_id = get_string_from_json_value(&connection);
 
-        let target_scene_id = arcweave_act_json
-            .get("connections")
-            .and_then(|connections| connections.get(&connection_id))
-            .and_then(|connection| connection.get("targetid"))
-            .expect(&format!(
-                "create_connected_scenes: Unable to get connection targetid for item {}",
-                connection_id
-            ));
-
-        // Create the scene
-        let connected_scene_id = get_string_from_json_value(target_scene_id);
-        let connected_scene = create_scene_from_id(connected_scene_id, arcweave_act_json);
+        let target_scene_id = get_target_id(arcweave_act_json, connection_id);
+        let connected_scene = create_scene_from_id(target_scene_id, arcweave_act_json);
 
         connected_scenes.push(connected_scene);
     }
