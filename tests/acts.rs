@@ -57,23 +57,28 @@ fn read_act_file(game: &mut GameWorld) {
     game.current_act = read_act_from(act_file);
 }
 
-#[then(
-    regex = r"the act's scene ([0-9]+) called (.+) is an Image Cutscene pointing to the image (.+\.png)."
-)]
-fn verify_image_cutscene(
-    game: &mut GameWorld,
-    scene_index: usize,
-    scene_title: String,
-    image_path: String,
-) {
+#[then(regex = r"the scene with the title '(.+)' is scene ([0-9]+) in the current act.")]
+fn verify_scene_index_by_title(game: &mut GameWorld, scene_title: String, scene_index: usize) {
+    let expected_index = scene_index - 1;
     let given_title = scene_title;
+    let current_scene = game.current_act.get_scene_by_title(&given_title);
+    let actual_index = game.current_act.get_scene_idx(&current_scene);
+
+    assert_eq!(expected_index, actual_index);
+}
+
+#[then(
+    regex = r"the act's scene called '(.+)' is an Image Cutscene pointing to the image (.+\.png)."
+)]
+fn verify_image_cutscene(game: &mut GameWorld, scene_title: String, image_path: String) {
+    let act = &game.current_act;
+    let given_title = scene_title;
+
+    let actual_scene = act.get_scene_by_title(&given_title);
+
     let given_path = PathBuf::from(image_path);
     let scene_contents = SceneContents::ImageCutscene(given_path);
     let expected_scene = Scene::make_scene(given_title, scene_contents);
-
-    let act = &game.current_act;
-    let given_scene_index = scene_index - 1;
-    let actual_scene = act.get_scene(given_scene_index);
 
     assert_eq!(expected_scene, *actual_scene);
 }

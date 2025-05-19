@@ -1,5 +1,6 @@
 use regex::Regex;
 use serde_json::Value;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
@@ -36,6 +37,10 @@ impl Scene {
             scene_contents,
         }
     }
+
+    pub fn get_title(&self) -> String {
+        self.title.clone()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -46,23 +51,57 @@ pub enum SceneContents {
 #[derive(Debug)]
 pub struct Act {
     scenes: Vec<Scene>,
+    //current_scene_idx: usize,
+    scene_locations: HashMap<String, usize>,
+    //scene_connections: Vec<Vec<usize>>,
 }
 
 impl Act {
     pub fn new() -> Self {
         let scenes = Vec::new();
+        //let current_scene_idx = 0;
+        let scene_locations = HashMap::new();
+        //let scene_connections = Vec::new();
 
-        Self { scenes }
+        Self {
+            scenes,
+            //current_scene_idx,
+            scene_locations,
+            //scene_connections,
+        }
     }
 
     pub fn add_scene(&mut self, scene: Scene) {
+        let scene_title = scene.get_title();
+        let index_to_add_at = self.scenes.len();
+
+        self.scene_locations.insert(scene_title, index_to_add_at);
+
         self.scenes.push(scene);
     }
 
-    // Replace this with a way to look up scene by title
-    pub fn get_scene(&self, index: usize) -> &Scene {
-        &self.scenes[index]
+    pub fn get_scene_by_title(&self, title: &String) -> &Scene {
+        let found_scene_idx = self.scene_locations.get(title);
+        let scene_index = found_scene_idx.expect(&format!(
+            "get_scene: Scene with title '{}' not found",
+            title
+        ));
+
+        &self.scenes[*scene_index]
     }
+
+    pub fn get_scene_idx(&self, scene_to_find: &Scene) -> usize {
+        let scene_location = self.scene_locations[&scene_to_find.get_title()];
+        scene_location
+    }
+
+    /*
+    fn add_scene_connection(&mut self, first_scene: &Scene, second_scene: &Scene) {
+        let first_scene_location = self.get_scene_idx(first_scene);
+        let second_scene_location = self.get_scene_idx(second_scene);
+        self.connections[first_scene_location].push(second_scene_location);
+    }
+    */
 }
 
 /// Converts an arcweave file into a list of Scenes
