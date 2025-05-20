@@ -53,7 +53,7 @@ pub struct Act {
     scenes: Vec<Scene>,
     //current_scene_idx: usize,
     scene_locations: HashMap<String, usize>,
-    //scene_connections: Vec<Vec<usize>>,
+    scene_connections: Vec<Vec<usize>>,
 }
 
 impl Act {
@@ -61,20 +61,25 @@ impl Act {
         let scenes = Vec::new();
         //let current_scene_idx = 0;
         let scene_locations = HashMap::new();
-        //let scene_connections = Vec::new();
+        let scene_connections = Vec::new();
 
         Self {
             scenes,
             //current_scene_idx,
             scene_locations,
-            //scene_connections,
+            scene_connections,
         }
     }
 
     pub fn add_scene(&mut self, scene: Scene) {
         let scene_title = scene.get_title();
-        let index_to_add_at = self.scenes.len();
 
+        // Check if scene already exists
+        if self.scene_locations.contains_key(&scene_title) {
+            return;
+        }
+
+        let index_to_add_at = self.scenes.len();
         self.scene_locations.insert(scene_title, index_to_add_at);
 
         self.scenes.push(scene);
@@ -95,13 +100,23 @@ impl Act {
         scene_location
     }
 
-    /*
-    fn add_scene_connection(&mut self, first_scene: &Scene, second_scene: &Scene) {
+    pub fn add_scene_connection(&mut self, first_scene: &Scene, second_scene: &Scene) {
         let first_scene_location = self.get_scene_idx(first_scene);
         let second_scene_location = self.get_scene_idx(second_scene);
-        self.connections[first_scene_location].push(second_scene_location);
+
+        // If adding to a scene we haven't seen before we need to make space for it
+        if first_scene_location >= self.scene_connections.len() {
+            self.scene_connections
+                .resize_with(first_scene_location + 1, Vec::new);
+        }
+
+        self.scene_connections[first_scene_location].push(second_scene_location);
     }
-    */
+
+    pub fn get_scene_connections(&self, scene_to_check: &Scene) -> Vec<usize> {
+        let scene_index = self.get_scene_idx(scene_to_check);
+        self.scene_connections[scene_index].clone()
+    }
 }
 
 /// Converts an arcweave file into a list of Scenes
@@ -115,16 +130,15 @@ pub fn read_act_from(act_file: PathBuf) -> Act {
     let starting_scene_name = String::from("startingElement");
     let starting_scene = create_starting_scene(starting_scene_name, &arcweave_act_json);
 
+    // Loop to add all scenes to the act
     let mut scenes_to_investigate = vec![starting_scene];
-
     while let Some(current_scene_node) = scenes_to_investigate.pop() {
         read_act.add_scene(current_scene_node.get_scene().clone());
 
-        let next_scenes = create_connected_scenes(current_scene_node, &arcweave_act_json);
+        let next_scenes = create_connected_scenes(&current_scene_node, &arcweave_act_json);
         for next_scene in next_scenes {
-            // To-Do: Discuss how to store scene_connections
-            // read_act.add_scene_connection(current_scene_node.get_scene(), next_scene.get_scene());
-
+            read_act.add_scene(next_scene.get_scene().clone());
+            read_act.add_scene_connection(current_scene_node.get_scene(), next_scene.get_scene());
             scenes_to_investigate.push(next_scene);
         }
     }
@@ -157,6 +171,7 @@ fn load_json_file(file_path: PathBuf) -> Value {
     json_value
 }
 
+/// Gets an Arcweave nodes image id
 fn get_scene_image_id(act: &Value, id: &String) -> String {
     let image_id_value = act
         .get("elements")
@@ -172,6 +187,7 @@ fn get_scene_image_id(act: &Value, id: &String) -> String {
     get_string_from_json_value(image_id_value)
 }
 
+/// Gets an Arcweave nodes title
 fn get_title_from_id(act: &Value, id: &String) -> String {
     let title_value = act
         .get("elements")
@@ -188,6 +204,7 @@ fn get_title_from_id(act: &Value, id: &String) -> String {
     strip_html_tags(title)
 }
 
+/// Gets an Arcweave nodes image name | ex. Image1.png
 fn get_image_from_id(act: &Value, id: String) -> String {
     let image_value = act
         .get("assets")
@@ -201,6 +218,7 @@ fn get_image_from_id(act: &Value, id: String) -> String {
     get_string_from_json_value(image_value)
 }
 
+/// Gets an Arcweave nodes list of outputs
 fn get_list_of_scene_connections(
     arcweave_act_json: &Value,
     current_scene_id: &String,
@@ -217,6 +235,7 @@ fn get_list_of_scene_connections(
     get_vec_from_json_value(scene_connections)
 }
 
+/// Gets an Arcweave connection target
 fn get_target_id(arcweave_act_json: &Value, connection_id: String) -> String {
     let target_scene_id = arcweave_act_json
         .get("connections")
@@ -238,6 +257,7 @@ fn create_starting_scene(scene_name: String, arcweave_act_json: &Value) -> Scene
     create_scene_from_id(id, arcweave_act_json)
 }
 
+/// Creates a SceneNode from a given id
 fn create_scene_from_id(id: String, arcweave_act_json: &Value) -> SceneNode {
     // Look up scene and access its title
     let title = get_title_from_id(&arcweave_act_json, &id);
@@ -255,9 +275,9 @@ fn create_scene_from_id(id: String, arcweave_act_json: &Value) -> SceneNode {
     SceneNode::make_scene_node(id, scene)
 }
 
-/// Returns a list of SceneNode's connected to a given SceneNode
+/// Returns a list of SceneNodes connected to a given SceneNode
 fn create_connected_scenes(
-    current_scene_node: SceneNode,
+    current_scene_node: &SceneNode,
     arcweave_act_json: &Value,
 ) -> Vec<SceneNode> {
     let mut connected_scenes = Vec::new();

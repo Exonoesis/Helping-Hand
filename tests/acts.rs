@@ -72,15 +72,30 @@ fn verify_scene_index_by_title(game: &mut GameWorld, scene_title: String, scene_
 )]
 fn verify_image_cutscene(game: &mut GameWorld, scene_title: String, image_path: String) {
     let act = &game.current_act;
-    let given_title = scene_title;
 
-    let actual_scene = act.get_scene_by_title(&given_title);
+    let actual_scene = act.get_scene_by_title(&scene_title);
 
     let given_path = PathBuf::from(image_path);
     let scene_contents = SceneContents::ImageCutscene(given_path);
-    let expected_scene = Scene::make_scene(given_title, scene_contents);
+    let expected_scene = Scene::make_scene(scene_title, scene_contents);
 
     assert_eq!(expected_scene, *actual_scene);
+}
+
+#[then(regex = r"scene '(.+)' should connect to scene '(.+)'.")]
+fn verify_scene_connection_exists(
+    game: &mut GameWorld,
+    scene_title_1: String,
+    scene_title_2: String,
+) {
+    let act = &game.current_act;
+    let scene_to_check = act.get_scene_by_title(&scene_title_1);
+    let list_of_connections = act.get_scene_connections(scene_to_check);
+
+    let expected_scene = act.get_scene_by_title(&scene_title_2);
+    let expected_connection = act.get_scene_idx(expected_scene);
+
+    assert!(list_of_connections.contains(&expected_connection))
 }
 
 fn main() {
