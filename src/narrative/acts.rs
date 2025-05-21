@@ -51,7 +51,7 @@ pub enum SceneContents {
 #[derive(Debug)]
 pub struct Act {
     scenes: Vec<Scene>,
-    //current_scene_idx: usize,
+    current_scene_idx: usize,
     scene_locations: HashMap<String, usize>,
     scene_connections: Vec<Vec<usize>>,
 }
@@ -59,16 +59,40 @@ pub struct Act {
 impl Act {
     pub fn new() -> Self {
         let scenes = Vec::new();
-        //let current_scene_idx = 0;
+        let current_scene_idx = 0;
         let scene_locations = HashMap::new();
         let scene_connections = Vec::new();
 
         Self {
             scenes,
-            //current_scene_idx,
+            current_scene_idx,
             scene_locations,
             scene_connections,
         }
+    }
+
+    pub fn get_current_scene(&self) -> &Scene {
+        &self.scenes[self.current_scene_idx]
+    }
+
+    pub fn get_scene_by_title(&self, title: &String) -> &Scene {
+        let found_scene_idx = self.scene_locations.get(title);
+        let scene_index = found_scene_idx.expect(&format!(
+            "get_scene: Scene with title '{}' not found",
+            title
+        ));
+
+        &self.scenes[*scene_index]
+    }
+
+    pub fn get_scene_idx(&self, scene_to_find: &Scene) -> usize {
+        let scene_location = self.scene_locations[&scene_to_find.get_title()];
+        scene_location
+    }
+
+    pub fn get_scene_connections(&self, scene_to_check: &Scene) -> &Vec<usize> {
+        let scene_index = self.get_scene_idx(scene_to_check);
+        &self.scene_connections[scene_index]
     }
 
     pub fn add_scene(&mut self, scene: Scene) {
@@ -87,21 +111,6 @@ impl Act {
         self.scenes.push(scene);
     }
 
-    pub fn get_scene_by_title(&self, title: &String) -> &Scene {
-        let found_scene_idx = self.scene_locations.get(title);
-        let scene_index = found_scene_idx.expect(&format!(
-            "get_scene: Scene with title '{}' not found",
-            title
-        ));
-
-        &self.scenes[*scene_index]
-    }
-
-    pub fn get_scene_idx(&self, scene_to_find: &Scene) -> usize {
-        let scene_location = self.scene_locations[&scene_to_find.get_title()];
-        scene_location
-    }
-
     pub fn add_scene_connection(&mut self, first_scene: &Scene, second_scene: &Scene) {
         let first_scene_location = self.get_scene_idx(first_scene);
         let second_scene_location = self.get_scene_idx(second_scene);
@@ -109,9 +118,13 @@ impl Act {
         self.scene_connections[first_scene_location].push(second_scene_location);
     }
 
-    pub fn get_scene_connections(&self, scene_to_check: &Scene) -> &Vec<usize> {
-        let scene_index = self.get_scene_idx(scene_to_check);
-        &self.scene_connections[scene_index]
+    pub fn move_to_next_scene(&mut self) {
+        if self.current_scene_idx < self.scenes.len() - 1 {
+            // TODO: Dynamically change scenes via scene connections + user input
+            self.current_scene_idx += 1
+        } else {
+            // TODO: Load next act
+        }
     }
 }
 

@@ -57,6 +57,19 @@ fn read_act_file(game: &mut GameWorld) {
     game.current_act = read_act_from(act_file);
 }
 
+#[when("we move to the next scene,")]
+fn go_to_next_scene(game: &mut GameWorld) {
+    game.current_act.move_to_next_scene();
+}
+
+#[then(regex = r"the current scene is '(.+)'.")]
+fn verify_current_scene(game: &mut GameWorld, scene_title: String) {
+    let expected_scene = game.current_act.get_scene_by_title(&scene_title);
+    let actual_scene = game.current_act.get_current_scene();
+
+    assert_eq!(expected_scene, actual_scene);
+}
+
 #[then(regex = r"the scene with the title '(.+)' is scene ([0-9]+) in the current act.")]
 fn verify_scene_index_by_title(game: &mut GameWorld, scene_title: String, scene_index: usize) {
     let expected_index = scene_index - 1;

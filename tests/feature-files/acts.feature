@@ -4,6 +4,12 @@ Feature: Acts
         When the act is read from the act file,
         Then the scene with the title 'Intro Image 1' is scene 1 in the current act.
 
+    Scenario: The current scene is updated
+        Given an act file called introductory_act.json,
+        When the act is read from the act file,
+        And we move to the next scene,
+        Then the current scene is 'Intro Image 2'.
+
     Scenario: Image Cutscenes are loaded
         Given an act file called introductory_act.json,
         When the act is read from the act file,
