@@ -82,6 +82,8 @@ impl Act {
         let index_to_add_at = self.scenes.len();
         self.scene_locations.insert(scene_title, index_to_add_at);
 
+        self.scene_connections.push(Vec::new());
+
         self.scenes.push(scene);
     }
 
@@ -104,18 +106,12 @@ impl Act {
         let first_scene_location = self.get_scene_idx(first_scene);
         let second_scene_location = self.get_scene_idx(second_scene);
 
-        // If adding to a scene we haven't seen before we need to make space for it
-        if first_scene_location >= self.scene_connections.len() {
-            self.scene_connections
-                .resize_with(first_scene_location + 1, Vec::new);
-        }
-
         self.scene_connections[first_scene_location].push(second_scene_location);
     }
 
-    pub fn get_scene_connections(&self, scene_to_check: &Scene) -> Vec<usize> {
+    pub fn get_scene_connections(&self, scene_to_check: &Scene) -> &Vec<usize> {
         let scene_index = self.get_scene_idx(scene_to_check);
-        self.scene_connections[scene_index].clone()
+        &self.scene_connections[scene_index]
     }
 }
 
@@ -131,6 +127,9 @@ pub fn read_act_from(act_file: PathBuf) -> Act {
     let starting_scene = create_starting_scene(starting_scene_name, &arcweave_act_json);
 
     // Loop to add all scenes to the act
+    // TODO:
+    // We will need to track node visits to prevent
+    // infinite loops once we have bi-directional edges
     let mut scenes_to_investigate = vec![starting_scene];
     while let Some(current_scene_node) = scenes_to_investigate.pop() {
         read_act.add_scene(current_scene_node.get_scene().clone());
