@@ -113,5 +113,7 @@ fn verify_player_facing_direction(game: &mut Game, facing_direction: String) {
 
 // This runs before everything else, so you can setup things here.
 fn main() {
-    futures::executor::block_on(Game::run("tests/feature-files/grid-based-movement.feature"));
+    futures::executor::block_on(Game::run(
+        "tests/feature-files/in-practice/grid-based-movement.feature",
+    ));
 }

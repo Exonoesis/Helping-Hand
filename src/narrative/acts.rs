@@ -90,9 +90,18 @@ impl Act {
         scene_location
     }
 
-    pub fn get_scene_connections(&self, scene_to_check: &Scene) -> &Vec<usize> {
-        let scene_index = self.get_scene_idx(scene_to_check);
-        &self.scene_connections[scene_index]
+    pub fn get_scene_connections(&self, scene_to_check: &Scene) -> Vec<&Scene> {
+        let checked_scene_idx = self.get_scene_idx(scene_to_check);
+
+        let mut found_scene_connections = Vec::new();
+
+        let checked_scene_connections = &self.scene_connections[checked_scene_idx];
+        for connected_scene_idx in checked_scene_connections {
+            let found_scene = &self.scenes[*connected_scene_idx];
+            found_scene_connections.push(found_scene);
+        }
+
+        found_scene_connections
     }
 
     pub fn add_scene(&mut self, scene: Scene) {

@@ -81,5 +81,7 @@ fn verify_map_size(game: &mut Game, expected_map_width: u32, expected_map_height
 
 // This runs before everything else, so you can setup things here.
 fn main() {
-    futures::executor::block_on(Game::run("tests/feature-files/map_changing.feature"));
+    futures::executor::block_on(Game::run(
+        "tests/feature-files/in-practice/map_changing.feature",
+    ));
 }

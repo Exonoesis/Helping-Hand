@@ -188,5 +188,7 @@ fn verify_interactive_type_path_value(world: &mut GameWorld, path_name: String) 
 }
 
 fn main() {
-    futures::executor::block_on(GameWorld::run("tests/feature-files/interactives.feature"));
+    futures::executor::block_on(GameWorld::run(
+        "tests/feature-files/in-theory/interactives.feature",
+    ));
 }

@@ -64,10 +64,10 @@ fn go_to_next_scene(game: &mut GameWorld) {
 
 #[then(regex = r"the current scene is '(.+)'.")]
 fn verify_current_scene(game: &mut GameWorld, scene_title: String) {
-    let expected_scene = game.current_act.get_scene_by_title(&scene_title);
-    let actual_scene = game.current_act.get_current_scene();
+    let expected_scene_title = scene_title;
+    let actual_scene_title = game.current_act.get_current_scene().get_title();
 
-    assert_eq!(expected_scene, actual_scene);
+    assert_eq!(expected_scene_title, actual_scene_title);
 }
 
 #[then(regex = r"the scene with the title '(.+)' is scene ([0-9]+) in the current act.")]
@@ -98,19 +98,19 @@ fn verify_image_cutscene(game: &mut GameWorld, scene_title: String, image_path: 
 #[then(regex = r"scene '(.+)' should connect to scene '(.+)'.")]
 fn verify_scene_connection_exists(
     game: &mut GameWorld,
-    scene_title_1: String,
-    scene_title_2: String,
+    starting_scene_title: String,
+    connected_scene_title: String,
 ) {
     let act = &game.current_act;
-    let scene_to_check = act.get_scene_by_title(&scene_title_1);
-    let list_of_connections = act.get_scene_connections(scene_to_check);
+    let starting_scene = act.get_scene_by_title(&starting_scene_title);
+    let scene_connections = act.get_scene_connections(starting_scene);
+    let connection_has_expected_scene = scene_connections
+        .iter()
+        .any(|scene| scene.get_title() == connected_scene_title);
 
-    let expected_scene = act.get_scene_by_title(&scene_title_2);
-    let expected_connection = act.get_scene_idx(expected_scene);
-
-    assert!(list_of_connections.contains(&expected_connection))
+    assert!(connection_has_expected_scene);
 }
 
 fn main() {
-    futures::executor::block_on(GameWorld::run("tests/feature-files/acts.feature"));
+    futures::executor::block_on(GameWorld::run("tests/feature-files/in-theory/acts.feature"));
 }

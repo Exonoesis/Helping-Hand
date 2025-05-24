@@ -148,5 +148,5 @@ fn verify_camera_centered_on_player_center(game: &mut Game, expected_x: f32, exp
 }
 
 fn main() {
-    futures::executor::block_on(Game::run("tests/feature-files/camera.feature"));
+    futures::executor::block_on(Game::run("tests/feature-files/in-practice/camera.feature"));
 }

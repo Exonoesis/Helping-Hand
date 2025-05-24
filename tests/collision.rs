@@ -181,5 +181,7 @@ fn verify_tile_is_in_collision_collection(
 }
 
 fn main() {
-    futures::executor::block_on(GameWorld::run("tests/feature-files/collision.feature"));
+    futures::executor::block_on(GameWorld::run(
+        "tests/feature-files/in-theory/collision.feature",
+    ));
 }

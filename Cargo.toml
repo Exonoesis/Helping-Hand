@@ -53,6 +53,10 @@ harness = false
 name = "acts"
 harness = false
 
+#[[test]]
+#name = "scene_loading"
+#harness = false
+
 # When measuring the performance of some feature, add a new Criterion benchmark below
 # following the format:
 [[bench]]

@@ -380,5 +380,7 @@ fn verify_cords_convert_from_3d_to_1d(
 }
 
 fn main() {
-    futures::executor::block_on(GameWorld::run("tests/feature-files/tilemap.feature"));
+    futures::executor::block_on(GameWorld::run(
+        "tests/feature-files/in-theory/tilemap.feature",
+    ));
 }
