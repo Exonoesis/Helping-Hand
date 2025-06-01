@@ -17,6 +17,12 @@ impl Default for ImageNodeBundle {
     }
 }
 
+impl ImageNodeBundle {
+    pub fn from_nodes(node: Node, image: ImageNode) -> Self {
+        Self { node, image }
+    }
+}
+
 #[derive(Bundle)]
 pub struct ButtonNodeBundle {
     node: Node,

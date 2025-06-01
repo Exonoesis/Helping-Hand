@@ -63,18 +63,20 @@ fn go_to_next_scene(game: &mut GameWorld) {
 }
 
 #[then(regex = r"the current scene is '(.+)'.")]
-fn verify_current_scene(game: &mut GameWorld, scene_title: String) {
-    let expected_scene_title = scene_title;
+fn verify_current_scene(game: &mut GameWorld, expected_scene_title: String) {
     let actual_scene_title = game.current_act.get_current_scene().get_title();
 
     assert_eq!(expected_scene_title, actual_scene_title);
 }
 
 #[then(regex = r"the scene with the title '(.+)' is scene ([0-9]+) in the current act.")]
-fn verify_scene_index_by_title(game: &mut GameWorld, scene_title: String, scene_index: usize) {
+fn verify_scene_index_by_title(
+    game: &mut GameWorld,
+    given_scene_title: String,
+    scene_index: usize,
+) {
     let expected_index = scene_index - 1;
-    let given_title = scene_title;
-    let current_scene = game.current_act.get_scene_by_title(&given_title);
+    let current_scene = game.current_act.get_scene_by_title(&given_scene_title);
     let actual_index = game.current_act.get_scene_idx(&current_scene);
 
     assert_eq!(expected_index, actual_index);

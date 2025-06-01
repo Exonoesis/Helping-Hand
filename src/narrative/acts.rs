@@ -1,3 +1,4 @@
+use bevy::ecs::component::Component;
 use regex::Regex;
 use serde_json::Value;
 use std::collections::HashMap;
@@ -41,6 +42,10 @@ impl Scene {
     pub fn get_title(&self) -> String {
         self.title.clone()
     }
+
+    pub fn get_scene_contents(&self) -> &SceneContents {
+        &self.scene_contents
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -48,7 +53,15 @@ pub enum SceneContents {
     ImageCutscene(PathBuf),
 }
 
-#[derive(Debug)]
+impl SceneContents {
+    pub fn get_image_path(&self) -> &PathBuf {
+        match self {
+            SceneContents::ImageCutscene(path) => path,
+        }
+    }
+}
+
+#[derive(Debug, Component, Clone)]
 pub struct Act {
     scenes: Vec<Scene>,
     current_scene_idx: usize,
@@ -72,7 +85,12 @@ impl Act {
     }
 
     pub fn get_current_scene(&self) -> &Scene {
-        &self.scenes[self.current_scene_idx]
+        &self.scenes.get(self.current_scene_idx).expect(
+            &format!(
+                "get_current_scene: Scene {} does not exist in scenes. Did you call move_to_next_scene too many times?",
+                self.current_scene_idx,
+            )
+        )
     }
 
     pub fn get_scene_by_title(&self, title: &String) -> &Scene {
@@ -128,12 +146,8 @@ impl Act {
     }
 
     pub fn move_to_next_scene(&mut self) {
-        if self.current_scene_idx < self.scenes.len() - 1 {
-            // TODO: Dynamically change scenes via scene connections + user input
-            self.current_scene_idx += 1
-        } else {
-            // TODO: Load next act
-        }
+        // TODO: Dynamically change scenes via scene connections + user input
+        self.current_scene_idx += 1
     }
 }
 

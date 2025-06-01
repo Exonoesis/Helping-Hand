@@ -80,10 +80,7 @@ pub fn load_map(
         despawn_level(loaded_level_tiles, map_properties, camera, &mut commands);
     }
 
-    let change_level_request = change_level_requests
-        .read()
-        .next()
-        .expect("load_map: No change level events found.");
+    let change_level_request = change_level_requests.read().next().unwrap();
     let tiled_map = load_tiled_map(PathBuf::from(change_level_request.get_level_path()));
     let map = Tilemap::from_tiled(&tiled_map);
     let bevy_map = RenderedMap::new(&map, &asset_spawner, &mut texture_atlas_assets);
