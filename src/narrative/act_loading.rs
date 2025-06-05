@@ -28,12 +28,21 @@ impl LoadAct {
 /// TODO: Load a predetermined Act when clicking the "Play" button?
 /// Or just load the first one at the end of load_act?
 
-pub fn load_act(mut load_act_requests: EventReader<LoadAct>, mut commands: Commands) {
+pub fn load_act(
+    mut load_act_requests: EventReader<LoadAct>,
+    mut commands: Commands,
+    loaded_act: Query<Entity, With<Act>>,
+) {
     if load_act_requests.is_empty() {
         return;
     }
 
-    // if an act is already loaded, despawn it
+    // If an act is already loaded, despawn it
+    if loaded_act.iter().next().is_some() {
+        for entity in loaded_act.iter() {
+            commands.entity(entity).despawn_recursive();
+        }
+    }
 
     let load_act_request = load_act_requests.read().next().unwrap();
 
@@ -47,6 +56,7 @@ pub fn render_current_scene(
     asset_server: Res<AssetServer>,
     mut commands: Commands,
     current_act: Query<&Act>,
+    scene_ui: Query<Entity, With<SceneUI>>,
 ) {
     let found_loaded_act = current_act.iter().next();
 
@@ -54,7 +64,12 @@ pub fn render_current_scene(
         return;
     }
 
-    // if there's already a scene loaded, despawn it
+    // If there's already a scene loaded, despawn it
+    if scene_ui.iter().next().is_some() {
+        for entity in scene_ui.iter() {
+            commands.entity(entity).despawn_recursive();
+        }
+    }
 
     let node = Node {
         width: Val::Percent(100.0),
@@ -76,14 +91,4 @@ pub fn render_current_scene(
     let ui_container = (ImageNodeBundle::from_nodes(node, image), SceneUI);
 
     commands.spawn(ui_container);
-}
-
-// Despawns the Act itself
-pub fn unload_act() {}
-
-/// Despawns the UI used to render the current scene
-pub fn unload_act_ui(mut commands: Commands, query: Query<Entity, With<SceneUI>>) {
-    for entity in query.iter() {
-        commands.entity(entity).despawn_recursive();
-    }
 }
