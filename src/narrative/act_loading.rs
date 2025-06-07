@@ -1,4 +1,4 @@
-use crate::ui::menus::ImageNodeBundle;
+use crate::{map::interactions::map_changing::CameraBundle, ui::menus::ImageNodeBundle};
 use bevy::prelude::*;
 use std::path::PathBuf;
 
@@ -25,8 +25,10 @@ impl LoadAct {
     }
 }
 
-/// TODO: Load a predetermined Act when clicking the "Play" button?
-/// Or just load the first one at the end of load_act?
+pub fn load_starting_act(mut load_act_broadcaster: EventWriter<LoadAct>) {
+    let starting_act = LoadAct::new("assets/acts/introductory_act.json");
+    load_act_broadcaster.send(starting_act);
+}
 
 pub fn load_act(
     mut load_act_requests: EventReader<LoadAct>,
@@ -50,6 +52,9 @@ pub fn load_act(
     let loaded_act = read_act_from(act_file_path);
 
     commands.spawn(loaded_act);
+
+    let the_camera = CameraBundle::default();
+    commands.spawn(the_camera);
 }
 
 pub fn render_current_scene(
@@ -64,11 +69,9 @@ pub fn render_current_scene(
         return;
     }
 
-    // If there's already a scene loaded, despawn it
-    if scene_ui.iter().next().is_some() {
-        for entity in scene_ui.iter() {
-            commands.entity(entity).despawn_recursive();
-        }
+    // If there's already a scene loaded, do nothing
+    if !scene_ui.is_empty() {
+        return;
     }
 
     let node = Node {

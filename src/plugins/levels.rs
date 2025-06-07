@@ -20,10 +20,6 @@ impl Plugin for LevelsPlugin {
         app.add_event::<ChangeLevel>()
             .add_event::<PlayerInteraction>()
             .add_systems(
-                OnEnter(AppState::InGame),
-                load_starting_map.run_if(in_state(AppState::InGame)),
-            )
-            .add_systems(
                 Update,
                 (
                     load_map,
