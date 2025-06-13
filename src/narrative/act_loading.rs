@@ -95,3 +95,18 @@ pub fn render_current_scene(
 
     commands.spawn(ui_container);
 }
+
+pub fn load_next_scene() {
+    // To-do: load the next scene
+    // Sends a SceneTransition event
+}
+
+pub fn transition_from() {
+    // To-do: transition from one scene to another
+    // Sends a SceneFade event
+}
+
+pub fn fade() {
+    // To-do: fade one scene in over another
+    // Sends a DespawnImage event
+}

@@ -9,7 +9,14 @@ impl Plugin for ActsPlugin {
         app.add_event::<LoadAct>()
             .add_systems(
                 Update,
-                (load_act, render_current_scene).run_if(in_state(AppState::InGame)),
+                (
+                    load_act,
+                    render_current_scene,
+                    load_next_scene,
+                    transition_from,
+                    fade,
+                )
+                    .run_if(in_state(AppState::InGame)),
             )
             .add_systems(
                 OnEnter(AppState::InGame),
@@ -24,7 +31,14 @@ impl Plugin for MockActsPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<LoadAct>().add_systems(
             Update,
-            (load_act, render_current_scene).run_if(in_state(AppState::InGame)),
+            (
+                load_act,
+                render_current_scene,
+                load_next_scene,
+                transition_from,
+                fade,
+            )
+                .run_if(in_state(AppState::InGame)),
         );
     }
 }
