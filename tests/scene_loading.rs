@@ -28,6 +28,23 @@ fn load_act(game: &mut Game, act_file_name: String) {
     game.broadcast_event(LoadAct::new(&act_file_path_name));
 }
 
+#[when("the game transitions to the next scene,")]
+fn transition_to_next_scene(game: &mut Game) {
+    // Calls load_next_scene from act_loading
+}
+
+#[when("a request is made to fade the scene,")]
+fn fade_scene(game: &mut Game) {
+    // Calls fade_scene from act_loading by sending a FadeScene event
+    // game.broadcast_event(FadeScene::new());
+}
+
+#[when("the fade timer has elapsed,")]
+fn fade_tick_for(game: &mut Game) {
+    // Ticks for a given duration
+    // game.tick();
+}
+
 #[then(regex = r"the title of the current scene loaded is called '(.+)'.")]
 fn verify_current_scene_title(game: &mut Game, expected_scene_title: String) {
     let current_act = game.get_mut::<Act>();
@@ -46,6 +63,12 @@ fn verify_image_loaded(game: &mut Game, expected_image_path: String) {
     let actual_image_path = image_path.to_string();
 
     assert_eq!(expected_image_path, actual_image_path);
+}
+
+#[then("there is only one image loaded.")]
+fn verify_num_images_loaded(game: &mut Game) {
+
+    // Get all image nodes in the scene and ensure there is only one
 }
 
 // This runs before everything else, so you can setup things here.
