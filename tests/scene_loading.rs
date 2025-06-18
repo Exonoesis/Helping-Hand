@@ -3,7 +3,7 @@ mod mock_game;
 use crate::mock_game::Game;
 use cucumber::{given, then, when, World};
 
-use bevy::prelude::*;
+use bevy::prelude::ImageNode;
 use helping_hand::narrative::act_loading::*;
 use helping_hand::narrative::acts::*;
 use helping_hand::plugins::acts::MockActsPlugin;
@@ -30,19 +30,22 @@ fn load_act(game: &mut Game, act_file_name: String) {
 
 #[when("the game transitions to the next scene,")]
 fn transition_to_next_scene(game: &mut Game) {
-    // Calls load_next_scene from act_loading
+    load_next_scene();
 }
 
 #[when("a request is made to fade the scene,")]
-fn fade_scene(game: &mut Game) {
-    // Calls fade_scene from act_loading by sending a FadeScene event
-    // game.broadcast_event(FadeScene::new());
+fn fade_to_next_scene(game: &mut Game) {
+    let current_act = game.get_mut::<Act>().clone();
+    let current_scene = current_act.get_current_scene();
+    game.broadcast_event(FadeScene::new(Scene::clone(current_scene)));
 }
 
 #[when("the fade timer has elapsed,")]
 fn fade_tick_for(game: &mut Game) {
-    // Ticks for a given duration
-    // game.tick();
+    // Ticks 15 times (read fade duration from somewhere?)
+    for _ in 0..15 {
+        game.tick();
+    }
 }
 
 #[then(regex = r"the title of the current scene loaded is called '(.+)'.")]
@@ -67,8 +70,10 @@ fn verify_image_loaded(game: &mut Game, expected_image_path: String) {
 
 #[then("there is only one image loaded.")]
 fn verify_num_images_loaded(game: &mut Game) {
-
     // Get all image nodes in the scene and ensure there is only one
+
+    let image_count = game.get_number_of::<ImageNode>();
+    assert_eq!(image_count, 1);
 }
 
 // This runs before everything else, so you can setup things here.

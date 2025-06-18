@@ -3,7 +3,10 @@ use bevy::prelude::*;
 use std::path::PathBuf;
 
 use super::acts::read_act_from;
-use crate::narrative::acts::Act;
+use crate::narrative::acts::*;
+
+// Is there a better way to do this?
+use crate::narrative::acts::Scene as HelpingHandScene;
 
 #[derive(Component)]
 pub struct SceneUI;
@@ -22,6 +25,17 @@ impl LoadAct {
 
     pub fn get_act_file_path(&self) -> &str {
         &self.act_path_name
+    }
+}
+
+#[derive(Event)]
+pub struct FadeScene {
+    previous_scene: HelpingHandScene,
+}
+
+impl FadeScene {
+    pub fn new(previous_scene: HelpingHandScene) -> Self {
+        Self { previous_scene }
     }
 }
 
