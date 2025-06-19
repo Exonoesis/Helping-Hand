@@ -35,9 +35,9 @@ fn transition_to_next_scene(game: &mut Game) {
 
 #[when("a request is made to fade the scene,")]
 fn fade_to_next_scene(game: &mut Game) {
-    let current_act = game.get_mut::<Act>().clone();
-    let current_scene = current_act.get_current_scene();
-    game.broadcast_event(FadeScene::new(Scene::clone(current_scene)));
+    let current_act = game.get_mut::<Act>();
+    let current_scene = current_act.get_current_scene().clone();
+    game.broadcast_event(FadeScene::new(current_scene));
 }
 
 #[when("the fade timer has elapsed,")]

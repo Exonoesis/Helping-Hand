@@ -5,7 +5,8 @@ use std::path::PathBuf;
 use super::acts::read_act_from;
 use crate::narrative::acts::*;
 
-// Is there a better way to do this?
+// Is there a better way to do this? Should Scene be renamed to be less generic and
+// not conflict with Bevy's Scene type?
 use crate::narrative::acts::Scene as HelpingHandScene;
 
 #[derive(Component)]
