@@ -30,14 +30,15 @@ fn load_act(game: &mut Game, act_file_name: String) {
 
 #[when("the game transitions to the next scene,")]
 fn transition_to_next_scene(game: &mut Game) {
-    load_next_scene();
+    // Broadcast a LoadNextScene event instead?
+    load_next_scene(game.get_mut::<Act>());
 }
 
 #[when("a request is made to fade the scene,")]
 fn fade_to_next_scene(game: &mut Game) {
     let current_act = game.get_mut::<Act>();
     let current_scene = current_act.get_current_scene().clone();
-    game.broadcast_event(FadeScene::new(current_scene));
+    game.broadcast_event(SceneFade::new(current_scene));
 }
 
 #[when("the fade timer has elapsed,")]

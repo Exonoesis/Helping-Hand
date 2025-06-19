@@ -30,11 +30,22 @@ impl LoadAct {
 }
 
 #[derive(Event)]
-pub struct FadeScene {
+pub struct SceneFade {
     previous_scene: HelpingHandScene,
 }
 
-impl FadeScene {
+impl SceneFade {
+    pub fn new(previous_scene: HelpingHandScene) -> Self {
+        Self { previous_scene }
+    }
+}
+
+#[derive(Event)]
+pub struct SceneTransition {
+    previous_scene: HelpingHandScene,
+}
+
+impl SceneTransition {
     pub fn new(previous_scene: HelpingHandScene) -> Self {
         Self { previous_scene }
     }
@@ -111,14 +122,34 @@ pub fn render_current_scene(
     commands.spawn(ui_container);
 }
 
-pub fn load_next_scene() {
-    // To-do: load the next scene
-    // Sends a SceneTransition event
+// TODO: Trigger this with an event? (LoadNextScene?)
+pub fn load_next_scene(
+    mut scene_transition_broadcaster: EventWriter<SceneTransition>,
+    current_act: &mut Act,
+) {
+    let scene_to_transition_from = current_act.get_current_scene().clone();
+
+    if !current_act.has_more_scenes() {
+        return;
+    }
+
+    current_act.move_to_next_scene();
+    scene_transition_broadcaster.send(SceneTransition::new(scene_to_transition_from));
 }
 
-pub fn transition_from() {
-    // To-do: transition from one scene to another
-    // Sends a SceneFade event
+pub fn transition_from(
+    mut transition_requests: EventReader<SceneTransition>,
+    mut fade_broadcaster: EventWriter<SceneFade>,
+) {
+    if transition_requests.is_empty() {
+        return;
+    }
+
+    let transition_request = transition_requests.read().next().unwrap();
+    let scene_to_transition_from = transition_request.previous_scene.clone();
+
+    // TODO: Should check what scene type we are transitioning from (and to?)
+    fade_broadcaster.send(SceneFade::new(scene_to_transition_from));
 }
 
 pub fn fade() {

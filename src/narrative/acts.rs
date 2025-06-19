@@ -149,6 +149,12 @@ impl Act {
         // TODO: Dynamically change scenes via scene connections + user input
         self.current_scene_idx += 1
     }
+
+    pub fn has_more_scenes(&self) -> bool {
+        // TODO: Should check if the current scene has any valid connections,
+        // a node with no connections being a dead end thus the end of the act
+        self.current_scene_idx < self.scenes.len() - 1
+    }
 }
 
 /// Converts an arcweave file into a list of Scenes
