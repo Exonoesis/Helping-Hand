@@ -30,8 +30,7 @@ fn load_act(game: &mut Game, act_file_name: String) {
 
 #[when("the game transitions to the next scene,")]
 fn transition_to_next_scene(game: &mut Game) {
-    // Broadcast a LoadNextScene event instead?
-    load_next_scene(game.get_mut::<Act>());
+    game.broadcast_event(LoadNextScene::new());
 }
 
 #[when("a request is made to fade the scene,")]
@@ -43,7 +42,7 @@ fn fade_to_next_scene(game: &mut Game) {
 
 #[when("the fade timer has elapsed,")]
 fn fade_tick_for(game: &mut Game) {
-    // Ticks 15 times (read fade duration from somewhere?)
+    // Ticks 15 times (Q: Should this read fade duration from somewhere?)
     for _ in 0..15 {
         game.tick();
     }

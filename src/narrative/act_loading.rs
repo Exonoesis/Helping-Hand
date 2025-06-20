@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use super::acts::read_act_from;
 use crate::narrative::acts::*;
 
-// Is there a better way to do this? Should Scene be renamed to be less generic and
+// Q: Is there a better way to do this? Should Scene be renamed to be less generic and
 // not conflict with Bevy's Scene type?
 use crate::narrative::acts::Scene as HelpingHandScene;
 
@@ -38,6 +38,9 @@ impl SceneFade {
     pub fn new(previous_scene: HelpingHandScene) -> Self {
         Self { previous_scene }
     }
+    pub fn get_previous_scene(&self) -> &HelpingHandScene {
+        &self.previous_scene
+    }
 }
 
 #[derive(Event)]
@@ -48,6 +51,19 @@ pub struct SceneTransition {
 impl SceneTransition {
     pub fn new(previous_scene: HelpingHandScene) -> Self {
         Self { previous_scene }
+    }
+    pub fn get_previous_scene(&self) -> &HelpingHandScene {
+        &self.previous_scene
+    }
+}
+
+// Q: Should this hold a reference to the current act?
+#[derive(Event)]
+pub struct LoadNextScene {}
+
+impl LoadNextScene {
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
@@ -122,11 +138,17 @@ pub fn render_current_scene(
     commands.spawn(ui_container);
 }
 
-// TODO: Trigger this with an event? (LoadNextScene?)
 pub fn load_next_scene(
+    load_next_scene_requests: EventReader<LoadNextScene>,
+    mut current_act_query: Query<&mut Act>,
     mut scene_transition_broadcaster: EventWriter<SceneTransition>,
-    current_act: &mut Act,
 ) {
+    if load_next_scene_requests.is_empty() {
+        return;
+    }
+
+    let mut current_act = current_act_query.single_mut();
+
     let scene_to_transition_from = current_act.get_current_scene().clone();
 
     if !current_act.has_more_scenes() {
@@ -134,25 +156,30 @@ pub fn load_next_scene(
     }
 
     current_act.move_to_next_scene();
+
     scene_transition_broadcaster.send(SceneTransition::new(scene_to_transition_from));
 }
 
 pub fn transition_from(
     mut transition_requests: EventReader<SceneTransition>,
-    mut fade_broadcaster: EventWriter<SceneFade>,
+    mut scene_fade_broadcaster: EventWriter<SceneFade>,
 ) {
     if transition_requests.is_empty() {
         return;
     }
 
     let transition_request = transition_requests.read().next().unwrap();
-    let scene_to_transition_from = transition_request.previous_scene.clone();
+    let scene_to_transition_from = transition_request.get_previous_scene().clone();
 
     // TODO: Should check what scene type we are transitioning from (and to?)
-    fade_broadcaster.send(SceneFade::new(scene_to_transition_from));
+    scene_fade_broadcaster.send(SceneFade::new(scene_to_transition_from));
 }
 
 pub fn fade() {
-    // To-do: fade one scene in over another
+    // TODO: fade one scene in over another
     // Sends a DespawnImage event
+}
+
+pub fn despawn_image() {
+    // TODO: Despawn image in response to fade event
 }
