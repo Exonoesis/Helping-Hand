@@ -149,7 +149,7 @@ pub fn render_current_scene(
 
 // This is the spawning function
 pub fn load_next_scene(
-    load_next_scene_requests: EventReader<LoadNextScene>,
+    mut load_next_scene_requests: EventReader<LoadNextScene>,
     mut current_act_query: Query<&mut Act>,
     asset_server: Res<AssetServer>,
     mut commands: Commands,
@@ -158,6 +158,7 @@ pub fn load_next_scene(
         return;
     }
 
+    load_next_scene_requests.read().next();
     let mut current_act = current_act_query.single_mut();
 
     if !current_act.has_more_scenes() {

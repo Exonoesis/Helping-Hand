@@ -26,14 +26,11 @@ fn load_act(game: &mut Game, act_file_name: String) {
     );
 
     game.broadcast_event(LoadAct::new(&act_file_path_name));
-    game.tick()
 }
 
 #[when("the game transitions to the next scene,")]
 fn transition_to_next_scene(game: &mut Game) {
-    game.tick();
     game.broadcast_event(LoadNextScene::new());
-    game.tick();
 }
 
 #[when("the fade timer has elapsed,")]
