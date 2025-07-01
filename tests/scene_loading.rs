@@ -26,24 +26,20 @@ fn load_act(game: &mut Game, act_file_name: String) {
     );
 
     game.broadcast_event(LoadAct::new(&act_file_path_name));
+    game.tick()
 }
 
 #[when("the game transitions to the next scene,")]
 fn transition_to_next_scene(game: &mut Game) {
+    game.tick();
     game.broadcast_event(LoadNextScene::new());
-}
-
-#[when("a request is made to fade the scene,")]
-fn fade_to_next_scene(game: &mut Game) {
-    let current_act = game.get_mut::<Act>();
-    let current_scene = current_act.get_current_scene().clone();
-    game.broadcast_event(SceneFade::new(current_scene));
+    game.tick();
 }
 
 #[when("the fade timer has elapsed,")]
 fn fade_tick_for(game: &mut Game) {
     // Ticks 15 times (Q: Should this read fade duration from somewhere?)
-    for _ in 0..15 {
+    for _ in 0..5 {
         game.tick();
     }
 }

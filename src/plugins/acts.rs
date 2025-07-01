@@ -10,14 +10,15 @@ impl Plugin for ActsPlugin {
             .add_event::<LoadNextScene>()
             .add_event::<SceneTransition>()
             .add_event::<SceneFade>()
+            .add_event::<ImageDespawn>()
             .add_systems(
                 Update,
                 (
                     load_act,
                     render_current_scene,
                     load_next_scene,
-                    transition_from,
-                    fade,
+                    fade_into,
+                    load_next_scene_on_key_press,
                 )
                     .run_if(in_state(AppState::InGame)),
             )
@@ -36,15 +37,10 @@ impl Plugin for MockActsPlugin {
             .add_event::<LoadNextScene>()
             .add_event::<SceneTransition>()
             .add_event::<SceneFade>()
+            .add_event::<ImageDespawn>()
             .add_systems(
                 Update,
-                (
-                    load_act,
-                    render_current_scene,
-                    load_next_scene,
-                    transition_from,
-                    fade,
-                )
+                (load_act, render_current_scene, load_next_scene, fade_into)
                     .run_if(in_state(AppState::InGame)),
             );
     }

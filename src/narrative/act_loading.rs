@@ -1,4 +1,5 @@
 use crate::{map::interactions::map_changing::CameraBundle, ui::menus::ImageNodeBundle};
+use bevy::input::*;
 use bevy::prelude::*;
 use std::path::PathBuf;
 
@@ -54,6 +55,21 @@ impl SceneTransition {
     }
     pub fn get_previous_scene(&self) -> &HelpingHandScene {
         &self.previous_scene
+    }
+}
+
+// TODO: Is this an Entity? ImageNode? What am I looking for?
+#[derive(Event)]
+pub struct ImageDespawn {
+    image_to_despawn: Entity,
+}
+
+impl ImageDespawn {
+    pub fn new(image_to_despawn: Entity) -> Self {
+        Self { image_to_despawn }
+    }
+    pub fn get_image_to_despawn(&self) -> &Entity {
+        &self.image_to_despawn
     }
 }
 
@@ -116,14 +132,7 @@ pub fn render_current_scene(
         return;
     }
 
-    let node = Node {
-        width: Val::Percent(100.0),
-        height: Val::Percent(100.0),
-        align_items: AlignItems::Center,
-        justify_content: JustifyContent::Center,
-        flex_direction: FlexDirection::Column,
-        ..Default::default()
-    };
+    let node = create_full_screen_node();
 
     let current_scene = found_loaded_act.unwrap().get_current_scene();
     let scene_contents = current_scene.get_scene_contents();
@@ -135,13 +144,15 @@ pub fn render_current_scene(
 
     let ui_container = (ImageNodeBundle::from_nodes(node, image), SceneUI);
 
-    commands.spawn(ui_container);
+    commands.spawn(ui_container).insert(ZIndex(0));
 }
 
+// This is the spawning function
 pub fn load_next_scene(
     load_next_scene_requests: EventReader<LoadNextScene>,
     mut current_act_query: Query<&mut Act>,
-    mut scene_transition_broadcaster: EventWriter<SceneTransition>,
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
 ) {
     if load_next_scene_requests.is_empty() {
         return;
@@ -149,37 +160,64 @@ pub fn load_next_scene(
 
     let mut current_act = current_act_query.single_mut();
 
-    let scene_to_transition_from = current_act.get_current_scene().clone();
-
     if !current_act.has_more_scenes() {
         return;
     }
 
     current_act.move_to_next_scene();
 
-    scene_transition_broadcaster.send(SceneTransition::new(scene_to_transition_from));
+    let node = create_full_screen_node();
+
+    let current_scene = current_act.get_current_scene();
+    let scene_contents = current_scene.get_scene_contents();
+    let scene_image = scene_contents.get_image_path().to_str().unwrap();
+
+    let image = asset_server
+        .load(format!("acts/images/{}", scene_image))
+        .into();
+
+    let ui_container = (ImageNodeBundle::from_nodes(node, image), SceneUI);
+    // Attach Timer Component here <- Later
+
+    commands.spawn(ui_container).insert(ZIndex(1));
 }
 
-pub fn transition_from(
-    mut transition_requests: EventReader<SceneTransition>,
-    mut scene_fade_broadcaster: EventWriter<SceneFade>,
-) {
-    if transition_requests.is_empty() {
-        return;
-    }
-
-    let transition_request = transition_requests.read().next().unwrap();
-    let scene_to_transition_from = transition_request.get_previous_scene().clone();
-
-    // TODO: Should check what scene type we are transitioning from (and to?)
-    scene_fade_broadcaster.send(SceneFade::new(scene_to_transition_from));
-}
-
-pub fn fade() {
+// This is the fading function
+pub fn fade_into(mut despawn_image_broadcaster: EventWriter<ImageDespawn>) {
     // TODO: fade one scene in over another
+
+    // let timer = set_timer(15)
+    // while timer > 0
+
     // Sends a DespawnImage event
+
+    // despawn_image(entity) <- Event broadcast here
 }
 
 pub fn despawn_image() {
-    // TODO: Despawn image in response to fade event
+    // TODO: Despawn image in response to fade function
+    //
+    // remove Node 2's timer component
+    // set Node 2's ZIndex to 0
+}
+
+pub fn create_full_screen_node() -> Node {
+    Node {
+        width: Val::Percent(100.0),
+        height: Val::Percent(100.0),
+        align_items: AlignItems::Center,
+        justify_content: JustifyContent::Center,
+        ..Default::default()
+    }
+}
+
+// DELETE THIS?
+pub fn load_next_scene_on_key_press(
+    input: Res<ButtonInput<KeyCode>>,
+    mut load_next_scene_broadcaster: EventWriter<LoadNextScene>,
+) {
+    if input.just_released(KeyCode::KeyN) {
+        load_next_scene_broadcaster.send(LoadNextScene::new());
+        println!("Pressed Key N.")
+    }
 }
