@@ -2,6 +2,7 @@ use crate::{map::interactions::map_changing::CameraBundle, ui::menus::ImageNodeB
 use bevy::input::*;
 use bevy::prelude::*;
 use std::path::PathBuf;
+use std::time::Duration;
 
 use super::acts::read_act_from;
 use crate::narrative::acts::*;
@@ -55,6 +56,17 @@ impl SceneTransition {
     }
     pub fn get_previous_scene(&self) -> &HelpingHandScene {
         &self.previous_scene
+    }
+}
+
+#[derive(Component)]
+pub struct FadeTimer {
+    timer: Timer,
+}
+
+impl FadeTimer {
+    pub fn new(timer: Timer) -> Self {
+        Self { timer }
     }
 }
 
@@ -177,10 +189,21 @@ pub fn load_next_scene(
         .load(format!("acts/images/{}", scene_image))
         .into();
 
-    let ui_container = (ImageNodeBundle::from_nodes(node, image), SceneUI);
-    // Attach Timer Component here <- Later
+    let mut image_node = ImageNode::default();
+    image_node.image = image;
+    image_node.color.set_alpha(0.0);
 
-    commands.spawn(ui_container).insert(ZIndex(1));
+    let ui_container = (ImageNodeBundle::from_nodes(node, image_node), SceneUI);
+
+    // Attach Timer Component here
+    let duration = Duration::new(3, 0);
+    let timer = Timer::new(duration, TimerMode::Once);
+    let fade_timer = FadeTimer::new(timer);
+
+    commands
+        .spawn(ui_container)
+        .insert(ZIndex(1))
+        .insert(fade_timer);
 }
 
 // This is the fading function
@@ -219,6 +242,5 @@ pub fn load_next_scene_on_key_press(
 ) {
     if input.just_released(KeyCode::KeyN) {
         load_next_scene_broadcaster.send(LoadNextScene::new());
-        println!("Pressed Key N.")
     }
 }
