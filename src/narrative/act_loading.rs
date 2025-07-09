@@ -70,18 +70,12 @@ impl FadeTimer {
     }
 }
 
-// TODO: Is this an Entity? ImageNode? What am I looking for?
 #[derive(Event)]
-pub struct ImageDespawn {
-    image_to_despawn: Entity,
-}
+pub struct ImageDespawn {}
 
 impl ImageDespawn {
-    pub fn new(image_to_despawn: Entity) -> Self {
-        Self { image_to_despawn }
-    }
-    pub fn get_image_to_despawn(&self) -> &Entity {
-        &self.image_to_despawn
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
@@ -195,7 +189,7 @@ pub fn load_next_scene(
 
     let ui_container = (ImageNodeBundle::from_nodes(node, image_node), SceneUI);
 
-    // Attach Timer Component here
+    // Attach Timer Component
     let duration = Duration::new(3, 0);
     let timer = Timer::new(duration, TimerMode::Once);
     let fade_timer = FadeTimer::new(timer);
@@ -207,22 +201,32 @@ pub fn load_next_scene(
 }
 
 // This is the fading function
-pub fn fade_into(mut despawn_image_broadcaster: EventWriter<ImageDespawn>) {
+pub fn fade_into(
+    mut query: Query<(&mut ImageNode, &mut FadeTimer)>,
+    time: Res<Time>,
+    mut despawn_image_broadcaster: EventWriter<ImageDespawn>,
+) {
     // TODO: fade one scene in over another
 
-    // let timer = set_timer(15)
-    // while timer > 0
+    for (mut image_node, mut fade_timer) in query.iter_mut() {
+        fade_timer.timer.tick(time.delta());
 
-    // Sends a DespawnImage event
+        image_node.color.set_alpha(fade_timer.timer.fraction());
 
-    // despawn_image(entity) <- Event broadcast here
+        if fade_timer.timer.finished() {
+            despawn_image_broadcaster.send(ImageDespawn::new());
+        }
+    }
 }
 
+// Listen for despawn event
+// Node 1 = ImageNode without Timer
+// Node 2 = ImageNode with Timer
 pub fn despawn_image() {
-    // TODO: Despawn image in response to fade function
-    //
-    // remove Node 2's timer component
-    // set Node 2's ZIndex to 0
+    // TODO:
+    // Despawn Node 1
+    // Remove Node 2's timer component
+    // Set Node 2's ZIndex to 0
 }
 
 pub fn create_full_screen_node() -> Node {
