@@ -36,7 +36,7 @@ fn transition_to_next_scene(game: &mut Game) {
 #[when("the fade timer has elapsed,")]
 fn fade_tick_for(game: &mut Game) {
     // Ticks 15 times (Q: Should this read fade duration from somewhere?)
-    for _ in 0..5 {
+    for _ in 0..15 {
         game.tick();
     }
 }

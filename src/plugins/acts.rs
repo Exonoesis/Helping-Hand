@@ -19,6 +19,7 @@ impl Plugin for ActsPlugin {
                     load_next_scene,
                     fade_into,
                     load_next_scene_on_key_press,
+                    despawn_image,
                 )
                     .run_if(in_state(AppState::InGame)),
             )
@@ -40,7 +41,13 @@ impl Plugin for MockActsPlugin {
             .add_event::<ImageDespawn>()
             .add_systems(
                 Update,
-                (load_act, render_current_scene, load_next_scene, fade_into)
+                (
+                    load_act,
+                    render_current_scene,
+                    load_next_scene,
+                    fade_into,
+                    despawn_image,
+                )
                     .run_if(in_state(AppState::InGame)),
             );
     }

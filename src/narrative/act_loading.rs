@@ -222,11 +222,31 @@ pub fn fade_into(
 // Listen for despawn event
 // Node 1 = ImageNode without Timer
 // Node 2 = ImageNode with Timer
-pub fn despawn_image() {
-    // TODO:
+pub fn despawn_image(
+    mut despawn_image_requests: EventReader<ImageDespawn>,
+    scene_to_remove_query: Query<Entity, (With<SceneUI>, Without<FadeTimer>)>,
+    mut current_scene_query: Query<Entity, (With<SceneUI>, With<FadeTimer>)>,
+    mut commands: Commands,
+) {
+    if despawn_image_requests.is_empty() {
+        return;
+    }
+
+    despawn_image_requests.read().next();
+
     // Despawn Node 1
+    for entity in scene_to_remove_query.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
+
     // Remove Node 2's timer component
     // Set Node 2's ZIndex to 0
+    for entity in current_scene_query.iter_mut() {
+        commands
+            .entity(entity)
+            .remove::<FadeTimer>()
+            .insert(ZIndex(0));
+    }
 }
 
 pub fn create_full_screen_node() -> Node {
