@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use super::acts::read_act_from;
 use crate::narrative::acts::*;
 
-/// Identifier for components created for a single scene
+/// Identifies components created for a single scene
 #[derive(Component)]
 pub struct SceneUI;
 
@@ -53,7 +53,6 @@ impl ImageDespawn {
     }
 }
 
-// Q: Should this hold a reference to the current act?
 #[derive(Event)]
 pub struct LoadNextScene {}
 
@@ -198,7 +197,10 @@ pub fn despawn_image(
     mut current_scene_query: Query<Entity, (With<SceneUI>, With<FadeTimer>)>,
     mut commands: Commands,
 ) {
-    if despawn_image_requests.is_empty() {
+    if despawn_image_requests.is_empty()
+        || scene_to_remove_query.is_empty()
+        || current_scene_query.is_empty()
+    {
         return;
     }
 
@@ -225,15 +227,5 @@ pub fn create_full_screen_node() -> Node {
         align_items: AlignItems::Center,
         justify_content: JustifyContent::Center,
         ..Default::default()
-    }
-}
-
-// DELETE THIS (used for visual inspection)
-pub fn load_next_scene_on_key_press(
-    input: Res<ButtonInput<KeyCode>>,
-    mut load_next_scene_broadcaster: EventWriter<LoadNextScene>,
-) {
-    if input.just_released(KeyCode::KeyN) {
-        load_next_scene_broadcaster.send(LoadNextScene::new());
     }
 }
