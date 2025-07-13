@@ -1,18 +1,31 @@
+use crate::plugins::acts::FadeDuration;
 use crate::{map::interactions::map_changing::CameraBundle, ui::menus::ImageNodeBundle};
 use bevy::input::*;
 use bevy::prelude::*;
 use std::path::PathBuf;
-use std::time::Duration;
 
 use super::acts::read_act_from;
 use crate::narrative::acts::*;
 
-// Q: Is there a better way to do this? Should Scene be renamed to be less generic and
-// not conflict with Bevy's Scene type?
-use crate::narrative::acts::Scene as HelpingHandScene;
-
+/// Identifier for components created for a single scene
 #[derive(Component)]
 pub struct SceneUI;
+
+/// Timer for fading Image Cutscenes
+#[derive(Component)]
+pub struct FadeTimer {
+    timer: Timer,
+}
+
+impl FadeTimer {
+    pub fn new(timer: Timer) -> Self {
+        Self { timer }
+    }
+
+    pub fn get_timer(&mut self) -> &mut Timer {
+        &mut self.timer
+    }
+}
 
 #[derive(Event)]
 pub struct LoadAct {
@@ -28,45 +41,6 @@ impl LoadAct {
 
     pub fn get_act_file_path(&self) -> &str {
         &self.act_path_name
-    }
-}
-
-#[derive(Event)]
-pub struct SceneFade {
-    previous_scene: HelpingHandScene,
-}
-
-impl SceneFade {
-    pub fn new(previous_scene: HelpingHandScene) -> Self {
-        Self { previous_scene }
-    }
-    pub fn get_previous_scene(&self) -> &HelpingHandScene {
-        &self.previous_scene
-    }
-}
-
-#[derive(Event)]
-pub struct SceneTransition {
-    previous_scene: HelpingHandScene,
-}
-
-impl SceneTransition {
-    pub fn new(previous_scene: HelpingHandScene) -> Self {
-        Self { previous_scene }
-    }
-    pub fn get_previous_scene(&self) -> &HelpingHandScene {
-        &self.previous_scene
-    }
-}
-
-#[derive(Component)]
-pub struct FadeTimer {
-    timer: Timer,
-}
-
-impl FadeTimer {
-    pub fn new(timer: Timer) -> Self {
-        Self { timer }
     }
 }
 
@@ -89,6 +63,7 @@ impl LoadNextScene {
     }
 }
 
+/// Loads initial Act of the game
 pub fn load_starting_act(mut load_act_broadcaster: EventWriter<LoadAct>) {
     let starting_act = LoadAct::new("assets/acts/introductory_act.json");
     load_act_broadcaster.send(starting_act);
@@ -103,7 +78,6 @@ pub fn load_act(
         return;
     }
 
-    // If an act is already loaded, despawn it
     if loaded_act.iter().next().is_some() {
         for entity in loaded_act.iter() {
             commands.entity(entity).despawn_recursive();
@@ -133,7 +107,6 @@ pub fn render_current_scene(
         return;
     }
 
-    // If there's already a scene loaded, do nothing
     if !scene_ui.is_empty() {
         return;
     }
@@ -153,11 +126,11 @@ pub fn render_current_scene(
     commands.spawn(ui_container).insert(ZIndex(0));
 }
 
-// This is the spawning function
 pub fn load_next_scene(
     mut load_next_scene_requests: EventReader<LoadNextScene>,
     mut current_act_query: Query<&mut Act>,
     asset_server: Res<AssetServer>,
+    fade_duration: Res<FadeDuration>,
     mut commands: Commands,
 ) {
     if load_next_scene_requests.is_empty() {
@@ -183,14 +156,15 @@ pub fn load_next_scene(
         .load(format!("acts/images/{}", scene_image))
         .into();
 
+    // Set image to be invisible
     let mut image_node = ImageNode::default();
     image_node.image = image;
     image_node.color.set_alpha(0.0);
 
     let ui_container = (ImageNodeBundle::from_nodes(node, image_node), SceneUI);
 
-    // Attach Timer Component
-    let duration = Duration::new(3, 0);
+    // Create Timer Component
+    let duration = fade_duration.get_duration();
     let timer = Timer::new(duration, TimerMode::Once);
     let fade_timer = FadeTimer::new(timer);
 
@@ -200,28 +174,24 @@ pub fn load_next_scene(
         .insert(fade_timer);
 }
 
-// This is the fading function
 pub fn fade_into(
     mut query: Query<(&mut ImageNode, &mut FadeTimer)>,
     time: Res<Time>,
     mut despawn_image_broadcaster: EventWriter<ImageDespawn>,
 ) {
-    // TODO: fade one scene in over another
-
     for (mut image_node, mut fade_timer) in query.iter_mut() {
-        fade_timer.timer.tick(time.delta());
+        fade_timer.get_timer().tick(time.delta());
 
-        image_node.color.set_alpha(fade_timer.timer.fraction());
+        image_node
+            .color
+            .set_alpha(fade_timer.get_timer().fraction());
 
-        if fade_timer.timer.finished() {
+        if fade_timer.get_timer().finished() {
             despawn_image_broadcaster.send(ImageDespawn::new());
         }
     }
 }
 
-// Listen for despawn event
-// Node 1 = ImageNode without Timer
-// Node 2 = ImageNode with Timer
 pub fn despawn_image(
     mut despawn_image_requests: EventReader<ImageDespawn>,
     scene_to_remove_query: Query<Entity, (With<SceneUI>, Without<FadeTimer>)>,
@@ -234,13 +204,12 @@ pub fn despawn_image(
 
     despawn_image_requests.read().next();
 
-    // Despawn Node 1
+    // Despawn previous image
     for entity in scene_to_remove_query.iter() {
         commands.entity(entity).despawn_recursive();
     }
 
-    // Remove Node 2's timer component
-    // Set Node 2's ZIndex to 0
+    // Remove new images Timer Componenet and set ZIndex to 0
     for entity in current_scene_query.iter_mut() {
         commands
             .entity(entity)
@@ -259,7 +228,7 @@ pub fn create_full_screen_node() -> Node {
     }
 }
 
-// DELETE THIS?
+// DELETE THIS (used for visual inspection)
 pub fn load_next_scene_on_key_press(
     input: Res<ButtonInput<KeyCode>>,
     mut load_next_scene_broadcaster: EventWriter<LoadNextScene>,

@@ -125,7 +125,6 @@ impl Act {
     pub fn add_scene(&mut self, scene: Scene) {
         let scene_title = scene.get_title();
 
-        // Check if scene already exists
         if self.scene_locations.contains_key(&scene_title) {
             return;
         }
@@ -309,10 +308,7 @@ fn create_scene_from_id(id: String, arcweave_act_json: &Value) -> SceneNode {
     let image_path = PathBuf::from(image_name);
     let scene_contents = SceneContents::ImageCutscene(image_path);
 
-    // Make a Scene
     let scene = Scene::make_scene(title, scene_contents);
-
-    // Boom, SceneNode
     SceneNode::make_scene_node(id, scene)
 }
 

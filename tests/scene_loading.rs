@@ -1,17 +1,20 @@
 mod mock_game;
 
 use crate::mock_game::Game;
+use bevy::color::Alpha;
 use cucumber::{given, then, when, World};
 
 use bevy::prelude::ImageNode;
 use helping_hand::narrative::act_loading::*;
 use helping_hand::narrative::acts::*;
-use helping_hand::plugins::acts::MockActsPlugin;
+use helping_hand::plugins::acts::CoreActsPlugin;
 use std::path::PathBuf;
+use std::time::Duration;
 
 #[given("the game is capable of handling acts,")]
 fn add_acts_plugin(game: &mut Game) {
-    game.add_plugin(MockActsPlugin);
+    let fade_duration = Duration::from_secs(0);
+    game.add_plugin(CoreActsPlugin::new(fade_duration));
 }
 
 #[when(regex = r"the act called '(.+)' is loaded,")]
@@ -35,10 +38,18 @@ fn transition_to_next_scene(game: &mut Game) {
 
 #[when("the fade timer has elapsed,")]
 fn fade_tick_for(game: &mut Game) {
-    // Ticks 15 times (Q: Should this read fade duration from somewhere?)
+    let mut fade_timer_num = game.get_number_of::<FadeTimer>();
+
+    assert_eq!(1, fade_timer_num);
+
+    // 15 ticks should be plenty since duration is set to 0 seconds
     for _ in 0..15 {
         game.tick();
     }
+
+    fade_timer_num = game.get_number_of::<FadeTimer>();
+
+    assert_eq!(0, fade_timer_num)
 }
 
 #[then(regex = r"the title of the current scene loaded is called '(.+)'.")]
@@ -63,10 +74,17 @@ fn verify_image_loaded(game: &mut Game, expected_image_path: String) {
 
 #[then("there is only one image loaded.")]
 fn verify_num_images_loaded(game: &mut Game) {
-    // Get all image nodes in the scene and ensure there is only one
-
     let image_count = game.get_number_of::<ImageNode>();
     assert_eq!(image_count, 1);
+}
+
+#[then("the loaded image's opacity is 100%.")]
+fn verify_image_opacity(game: &mut Game) {
+    let image_node = game.get_mut::<ImageNode>();
+    let opacity = image_node.color.alpha();
+
+    // Value is normalized | [1.0 = 100%]
+    assert_eq!(1.0, opacity);
 }
 
 // This runs before everything else, so you can setup things here.
