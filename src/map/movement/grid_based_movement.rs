@@ -6,7 +6,7 @@ use crate::map::{player::*, GridDimensions, PxDimensions, XyzCords};
 
 use super::collision::CollisionCollection;
 
-#[derive(Event, Copy, Clone, Debug, PartialEq)]
+#[derive(Event, Copy, Clone, Debug, PartialEq, Component)]
 pub enum MovementDirection {
     Left,
     Right,
@@ -67,7 +67,7 @@ pub fn set_player_target(
         return;
     }
 
-    let (collision_tiles, map_grid_dimensions, map_px_dimensions) = world.single();
+    let (collision_tiles, map_grid_dimensions, map_px_dimensions) = world.single().unwrap();
 
     let (
         player_entity,
@@ -75,7 +75,7 @@ pub fn set_player_target(
         current_player_position,
         current_player_grid_coordinate,
         mut player_direction,
-    ) = player.single_mut();
+    ) = player.single_mut().unwrap();
 
     let direction = requests_to_move
         .read()
@@ -91,7 +91,7 @@ pub fn set_player_target(
         direction,
     );
     if found_new_physical_position.is_none() {
-        movement_notifications.send(PlayerMovementActions::Bumping);
+        movement_notifications.write(PlayerMovementActions::Bumping);
         return;
     }
     let new_physical_position = found_new_physical_position.unwrap();
@@ -102,19 +102,19 @@ pub fn set_player_target(
         direction,
     );
     if found_new_logical_position.is_none() {
-        movement_notifications.send(PlayerMovementActions::Bumping);
+        movement_notifications.write(PlayerMovementActions::Bumping);
         return;
     }
     let new_logical_position = found_new_logical_position.unwrap();
 
     if collision_tiles.has(&new_logical_position) {
-        movement_notifications.send(PlayerMovementActions::Bumping);
+        movement_notifications.write(PlayerMovementActions::Bumping);
         return;
     }
     let starting_position = StartingPosition::new(*current_player_position);
     let new_target = Target::new(new_physical_position, new_logical_position);
 
-    movement_notifications.send(PlayerMovementActions::Walking);
+    movement_notifications.write(PlayerMovementActions::Walking);
     let timer = Timer::new(*arrival_time.get_duration(), TimerMode::Once);
     let arrival_timer = ArrivalTimer::new(timer);
 
@@ -401,12 +401,12 @@ pub fn move_player_on_key_press(
     mut move_player_requester: EventWriter<MovementDirection>,
 ) {
     if input.pressed(KeyCode::KeyW) {
-        move_player_requester.send(MovementDirection::Up);
+        move_player_requester.write(MovementDirection::Up);
     } else if input.pressed(KeyCode::KeyS) {
-        move_player_requester.send(MovementDirection::Down);
+        move_player_requester.write(MovementDirection::Down);
     } else if input.pressed(KeyCode::KeyA) {
-        move_player_requester.send(MovementDirection::Left);
+        move_player_requester.write(MovementDirection::Left);
     } else if input.pressed(KeyCode::KeyD) {
-        move_player_requester.send(MovementDirection::Right);
+        move_player_requester.write(MovementDirection::Right);
     }
 }

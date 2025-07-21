@@ -1,6 +1,5 @@
 use crate::plugins::acts::FadeDuration;
 use crate::{map::interactions::map_changing::CameraBundle, ui::menus::ImageNodeBundle};
-use bevy::input::*;
 use bevy::prelude::*;
 use std::path::PathBuf;
 
@@ -65,7 +64,7 @@ impl LoadNextScene {
 /// Loads initial Act of the game
 pub fn load_starting_act(mut load_act_broadcaster: EventWriter<LoadAct>) {
     let starting_act = LoadAct::new("assets/acts/introductory_act.json");
-    load_act_broadcaster.send(starting_act);
+    load_act_broadcaster.write(starting_act);
 }
 
 pub fn load_act(
@@ -79,7 +78,7 @@ pub fn load_act(
 
     if loaded_act.iter().next().is_some() {
         for entity in loaded_act.iter() {
-            commands.entity(entity).despawn_recursive();
+            commands.entity(entity).despawn();
         }
     }
 
@@ -137,7 +136,7 @@ pub fn load_next_scene(
     }
 
     load_next_scene_requests.read().next();
-    let mut current_act = current_act_query.single_mut();
+    let mut current_act = current_act_query.single_mut().unwrap();
 
     if !current_act.has_more_scenes() {
         return;
@@ -186,7 +185,7 @@ pub fn fade_into(
             .set_alpha(fade_timer.get_timer().fraction());
 
         if fade_timer.get_timer().finished() {
-            despawn_image_broadcaster.send(ImageDespawn::new());
+            despawn_image_broadcaster.write(ImageDespawn::new());
         }
     }
 }
@@ -208,7 +207,7 @@ pub fn despawn_image(
 
     // Despawn previous image
     for entity in scene_to_remove_query.iter() {
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
 
     // Remove new images Timer Componenet and set ZIndex to 0

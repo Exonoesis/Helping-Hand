@@ -453,7 +453,7 @@ fn create_counting_slider(label: String) -> CountingSlider {
 }
 
 /// Spawns a Volume Slider at a given point in the UI.
-fn spawn_volume_slider(ui_container: &mut ChildBuilder, audio_type: AudioType) {
+fn spawn_volume_slider(ui_container: &mut ChildSpawnerCommands, audio_type: AudioType) {
     let volume_slider = match audio_type {
         AudioType::Music => create_counting_slider(String::from("Music")),
         AudioType::SFX => create_counting_slider(String::from("SFX")),
@@ -567,7 +567,7 @@ pub fn get_percentage_from(spinner_value: Text) -> f64 {
 
 pub fn set_keys(
     entity_query: Query<(Entity, &CountingSliderKeys), Added<CountingSliderKeys>>,
-    parent_query: Query<&Parent>,
+    parent_query: Query<&ChildOf>,
     mut widget_containers_query: Query<&mut SliderKeyComponents>,
 ) {
     for (entity, key) in &entity_query {
@@ -720,7 +720,7 @@ pub fn load_text_font(
 
 pub fn unload_settings_menu(mut commands: Commands, query: Query<Entity, With<SettingsMenuUI>>) {
     for entity in query.iter() {
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
 }
 
@@ -836,7 +836,9 @@ pub fn get_handle_click_position(
         }
 
         //Capture mouse.x position at time of click
-        let original_x_position = if let Some(position) = window_query.single().cursor_position() {
+        let original_x_position = if let Some(position) =
+            window_query.single().unwrap().cursor_position()
+        {
             position.x
         } else {
             panic!("slider_handle_system: Handle was clicked while mouse was outside game window")
@@ -877,7 +879,7 @@ pub fn update_handle_position_on_hold(
     mut width_query: Query<&mut Node>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     camera_query: Query<&Camera>,
-    parent_query: Query<&Parent>,
+    parent_query: Query<&ChildOf>,
     mouse_button_state: Res<ButtonInput<MouseButton>>,
 ) {
     //Detect if left mouse button is being held down
@@ -886,19 +888,20 @@ pub fn update_handle_position_on_hold(
     }
 
     //Get current mouse.x
-    let current_x_position = if let Some(position) = window_query.single().cursor_position() {
-        position.x
-    } else {
-        //Doesn't matter if mouse goes outside game window (values beyond slider extremes will be capped)
-        return;
-    };
+    let current_x_position =
+        if let Some(position) = window_query.single().unwrap().cursor_position() {
+            position.x
+        } else {
+            //Doesn't matter if mouse goes outside game window (values beyond slider extremes will be capped)
+            return;
+        };
 
     //Get original mouse.x + spinner and fill references
     if slider_handle_query.is_empty() {
         return;
     }
 
-    let handle_data_references = if let Ok(data) = slider_handle_query.get_single() {
+    let handle_data_references = if let Ok(data) = slider_handle_query.single() {
         data
     } else {
         panic!("update_handle_position_on_hold: Expected single cursor")
@@ -909,7 +912,7 @@ pub fn update_handle_position_on_hold(
     let spinner_value_reference = handle_data_references.2;
     let back_reference = handle_data_references.3;
 
-    let read_only_width_query = width_query.to_readonly();
+    let read_only_width_query = width_query.as_readonly();
 
     //Calculate change in mouse x movement as a percent
     let back_width_in_px = get_node_width(
@@ -959,11 +962,11 @@ fn get_node_width(
     node: Entity,
     width_query: Query<&Node>,
     camera_query: Query<&Camera>,
-    parent_query: Query<&Parent>,
+    parent_query: Query<&ChildOf>,
 ) -> f32 {
     let mut value_stack = get_all_ancestors(node, parent_query, width_query);
 
-    let camera = camera_query.single();
+    let camera = camera_query.single().unwrap();
 
     let viewport_size = camera.logical_viewport_size().unwrap();
     let mut node_width = viewport_size.x;
@@ -979,7 +982,7 @@ fn get_node_width(
 
 fn get_all_ancestors(
     node: Entity,
-    parent_query: Query<&Parent>,
+    parent_query: Query<&ChildOf>,
     width_query: Query<&Node>,
 ) -> Vec<bevy::ui::Val> {
     let mut to_be_visited_nodes = Vec::new();
@@ -997,7 +1000,7 @@ fn get_all_ancestors(
         seen_styles.push(current_node_value);
 
         if let Ok(parent) = parent_query.get(current_node) {
-            to_be_visited_nodes.push(parent.get());
+            to_be_visited_nodes.push(parent.parent());
         }
     }
 

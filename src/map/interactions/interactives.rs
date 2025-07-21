@@ -241,5 +241,5 @@ pub fn interact_entity(
         return;
     }
 
-    interactive_event_writer.send(PlayerInteraction);
+    interactive_event_writer.write(PlayerInteraction);
 }

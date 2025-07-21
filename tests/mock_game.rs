@@ -1,3 +1,5 @@
+use bevy::ecs::component::Mutable;
+
 use std::{
     sync::{Arc, Mutex},
     time::Duration,
@@ -130,7 +132,7 @@ impl Game {
     /// Returns a specified Component
     pub fn get_mut<C>(&mut self) -> Mut<'_, C>
     where
-        C: Component,
+        C: Component<Mutability = Mutable>,
     {
         self.app
             .world_mut()

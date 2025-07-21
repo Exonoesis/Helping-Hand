@@ -50,7 +50,7 @@ impl ChangeLevel {
 pub fn load_starting_map(mut change_level_requester: EventWriter<ChangeLevel>) {
     let tiled_map_name = "test_map_with_collision.tmx";
     let map_path = format!("tests/test-assets/maps/{}", tiled_map_name);
-    change_level_requester.send(ChangeLevel::new(&map_path));
+    change_level_requester.write(ChangeLevel::new(&map_path));
 }
 
 /// Loads the Tiled test map with a Camera into the game at the center of the map.
@@ -134,14 +134,14 @@ fn despawn_level(
 ) {
     for loaded_tile in &loaded_level_tiles {
         let loaded_tile_entity = loaded_tile.0;
-        commands.entity(loaded_tile_entity).despawn_recursive();
+        commands.entity(loaded_tile_entity).despawn();
     }
 
-    let camera_entity = camera.single();
-    commands.entity(camera_entity).despawn_recursive();
+    let camera_entity = camera.single().unwrap();
+    commands.entity(camera_entity).despawn();
 
-    let map_properties_entity = map_properties.single();
-    commands.entity(map_properties_entity).despawn_recursive();
+    let map_properties_entity = map_properties.single().unwrap();
+    commands.entity(map_properties_entity).despawn();
 }
 
 /// Returns a loaded Tiled map.
@@ -197,12 +197,12 @@ pub fn change_level_from_marker(
         return;
     }
 
-    let (current_player_position, player_dimensions, player_direction) = player.single();
+    let (current_player_position, player_dimensions, player_direction) = player.single().unwrap();
 
     // We use _ as a placeholder since there is currently only one type
     // of PlayerInteraction, therefore we don't need to read the type
     for _ in requests_to_interact.read() {
-        let (marker_collection, map_dimensions_in_px) = map_markers.single();
+        let (marker_collection, map_dimensions_in_px) = map_markers.single().unwrap();
 
         let found_inspected_point = set_physical_destination(
             current_player_position,
@@ -229,7 +229,7 @@ pub fn change_level_from_marker(
         }
 
         let level_name = ChangeLevel::new(&marker.get_path().to_str().unwrap());
-        change_level_requests.send(level_name);
+        change_level_requests.write(level_name);
     }
 }
 

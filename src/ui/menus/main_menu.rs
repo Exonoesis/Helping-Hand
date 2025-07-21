@@ -31,7 +31,7 @@ pub fn button_system(
             ButtonTypes::Play => next_state.set(AppState::InGame),
             ButtonTypes::Settings => next_state.set(AppState::SettingsMenu),
             ButtonTypes::Quit => {
-                exit_event.send(AppExit::Success);
+                exit_event.write(AppExit::Success);
             }
         }
     }
@@ -202,6 +202,6 @@ pub fn load_text_font(
 
 pub fn unload_main_menu(mut commands: Commands, query: Query<Entity, With<MainMenuUI>>) {
     for entity in query.iter() {
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
 }

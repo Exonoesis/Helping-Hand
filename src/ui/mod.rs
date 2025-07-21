@@ -7,10 +7,7 @@ use crate::map::{player::Player, GridDimensions, PxDimensions};
 pub fn follow_player(
     level_query: Query<(&PxDimensions, &GridDimensions)>,
     player_query: Query<(&Transform, &PxDimensions), (With<Player>, Changed<Transform>)>,
-    mut camera_query: Query<
-        (&mut Transform, &OrthographicProjection),
-        (With<Camera2d>, Without<Player>),
-    >,
+    mut camera_query: Query<(&mut Transform, &Projection), (With<Camera2d>, Without<Player>)>,
 ) {
     //Check for empties
     if camera_query.is_empty() {
@@ -25,16 +22,22 @@ pub fn follow_player(
 
     //Start unpacking
     let (mut camera_transform, camera_bounds) = camera_query
-        .get_single_mut()
+        .single_mut()
         .expect("follow_player: could not find camera");
     let (player_transform, player_tile_dimensions) = player_query
-        .get_single()
+        .single()
         .expect("follow_player: could not find player");
-    let (level_dimensions, level_grid) = level_query.single();
+    let (level_dimensions, level_grid) = level_query.single().unwrap();
 
     //Further unpacking
-    let camera_width = camera_bounds.area.width();
-    let camera_height = camera_bounds.area.height();
+    let area = if let Projection::Orthographic(orthographic) = camera_bounds {
+        orthographic.area
+    } else {
+        panic!("Camera bounds is not an orthographic projection")
+    };
+
+    let camera_width = area.width();
+    let camera_height = area.height();
 
     //Helper variables
     let player_center_position =
