@@ -1,11 +1,10 @@
-use bevy::ecs::component::Mutable;
-
 use std::{
     sync::{Arc, Mutex},
     time::Duration,
 };
 
 use bevy::{
+    ecs::component::Mutable,
     input::InputPlugin,
     prelude::*,
     render::{settings::WgpuSettings, view::screenshot::CapturedScreenshots, RenderPlugin},
