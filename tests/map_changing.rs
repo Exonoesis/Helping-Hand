@@ -4,16 +4,16 @@ use crate::mock_game::Game;
 use cucumber::{given, then, when, World};
 
 use helping_hand::{
-    map::{interactions::map_changing::ChangeLevel, player::*, XyzCords},
-    plugins::levels::MockLevelsPlugin,
+    map::{interactions::map_changing::LoadLevel, player::*, XyzCords},
+    plugins::levels::CoreLevelsPlugin,
 };
 
 #[given(regex = r"a Tiled map called (.+),")]
 fn given_some_tiled_map(game: &mut Game, tiled_map_name: String) {
-    game.add_plugin(MockLevelsPlugin);
+    game.add_plugin(CoreLevelsPlugin);
 
     let map_path = format!("tests/test-assets/maps/{}", tiled_map_name);
-    game.broadcast_event(ChangeLevel::new(&map_path));
+    game.broadcast_event(LoadLevel::new(&map_path));
 }
 
 #[given(regex = r"a map size of ([0-9]+) x ([0-9]+) tiles,")]

@@ -18,25 +18,30 @@ use super::interactives::{
 };
 
 #[derive(Event)]
-pub struct ChangeLevel {
-    level_name: String,
+pub struct LoadLevel {
+    level_path: PathBuf,
 }
 
-impl ChangeLevel {
+impl LoadLevel {
     pub fn new(desired_level_name: &str) -> Self {
         Self {
-            level_name: String::from(desired_level_name),
+            level_path: PathBuf::from(desired_level_name),
         }
     }
 
-    pub fn get_level_path(&self) -> &str {
-        &self.level_name
+    pub fn from(change_level_request: &ChangeLevel) -> Self {
+        Self {
+            level_path: change_level_request.get_level_path().clone(),
+        }
+    }
+
+    pub fn get_level_path(&self) -> &PathBuf {
+        &self.level_path
     }
 
     pub fn get_level_name(&self) -> String {
-        let level_path = PathBuf::from(self.get_level_path());
-
-        let level_name = level_path
+        let level_name = self
+            .level_path
             .file_stem()
             .unwrap()
             .to_str()
@@ -46,38 +51,39 @@ impl ChangeLevel {
     }
 }
 
+#[derive(Event)]
+pub struct ChangeLevel {
+    level_path: PathBuf,
+}
+
+impl ChangeLevel {
+    pub fn new(desired_level_name: &str) -> Self {
+        Self {
+            level_path: PathBuf::from(desired_level_name),
+        }
+    }
+
+    pub fn get_level_path(&self) -> &PathBuf {
+        &self.level_path
+    }
+}
+
 /// Loads some predetermined map when clicking the "Play" button.
-pub fn load_starting_map(mut change_level_requester: EventWriter<ChangeLevel>) {
+pub fn load_starting_map(mut change_level_requester: EventWriter<LoadLevel>) {
     let tiled_map_name = "test_map_with_collision.tmx";
     let map_path = format!("tests/test-assets/maps/{}", tiled_map_name);
-    change_level_requester.write(ChangeLevel::new(&map_path));
+    change_level_requester.write(LoadLevel::new(&map_path));
 }
 
 /// Loads the Tiled test map with a Camera into the game at the center of the map.
 pub fn load_map(
-    mut change_level_requests: EventReader<ChangeLevel>,
+    mut change_level_requests: EventReader<LoadLevel>,
     mut commands: Commands,
     asset_spawner: Res<AssetServer>,
     mut texture_atlas_assets: ResMut<Assets<TextureAtlasLayout>>,
-    loaded_level_tiles: Query<(Entity, &XyzCords, &TileType, &PxDimensions)>,
-    camera: Query<Entity, With<Camera2d>>,
-    map_properties: Query<
-        Entity,
-        (
-            With<PxDimensions>,
-            With<InteractiveCollection>,
-            With<CollisionCollection>,
-            With<GridDimensions>,
-        ),
-    >,
 ) {
     if change_level_requests.is_empty() {
         return;
-    }
-
-    let map_already_loaded = loaded_level_tiles.iter().len() > 0;
-    if map_already_loaded {
-        despawn_level(loaded_level_tiles, map_properties, camera, &mut commands);
     }
 
     let change_level_request = change_level_requests.read().next().unwrap();
@@ -117,8 +123,9 @@ pub fn load_map(
     commands.spawn((physical_properties, logical_properties));
 }
 
-/// Unloads the current Tiled map.
-fn despawn_level(
+pub fn change_to_new_level(
+    mut change_level_requests: EventReader<ChangeLevel>,
+    mut load_level_broadcaster: EventWriter<LoadLevel>,
     loaded_level_tiles: Query<(Entity, &XyzCords, &TileType, &PxDimensions)>,
     map_properties: Query<
         Entity,
@@ -130,8 +137,12 @@ fn despawn_level(
         ),
     >,
     camera: Query<Entity, With<Camera2d>>,
-    commands: &mut Commands,
+    mut commands: Commands,
 ) {
+    if change_level_requests.is_empty() {
+        return;
+    }
+
     for loaded_tile in &loaded_level_tiles {
         let loaded_tile_entity = loaded_tile.0;
         commands.entity(loaded_tile_entity).despawn();
@@ -142,6 +153,11 @@ fn despawn_level(
 
     let map_properties_entity = map_properties.single().unwrap();
     commands.entity(map_properties_entity).despawn();
+
+    let change_level_request = change_level_requests.read().next().unwrap();
+    let load_level_request = LoadLevel::from(change_level_request);
+
+    load_level_broadcaster.write(load_level_request);
 }
 
 /// Returns a loaded Tiled map.

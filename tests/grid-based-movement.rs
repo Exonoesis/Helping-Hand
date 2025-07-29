@@ -6,10 +6,10 @@ use cucumber::{given, then, when, World};
 
 use helping_hand::{
     map::{
-        interactions::map_changing::ChangeLevel, movement::grid_based_movement::*, player::Player,
+        interactions::map_changing::LoadLevel, movement::grid_based_movement::*, player::Player,
         XyzCords,
     },
-    plugins::levels::MockLevelsPlugin,
+    plugins::levels::CoreLevelsPlugin,
 };
 
 /// Converts a string into a MovementDirection
@@ -30,10 +30,10 @@ fn convert_string_to_movement_direction(movement_string: String) -> MovementDire
 
 #[given(regex = r"a Tiled map called (.+),")]
 fn given_some_tiled_map(game: &mut Game, tiled_map_name: String) {
-    game.add_plugin(MockLevelsPlugin);
+    game.add_plugin(CoreLevelsPlugin);
 
     let map_path = format!("tests/test-assets/maps/{}", tiled_map_name);
-    game.broadcast_event(ChangeLevel::new(&map_path));
+    game.broadcast_event(LoadLevel::new(&map_path));
 }
 
 #[given(regex = r"the Player is at ([0-9]+),([0-9]+),([0-9]+),")]

@@ -1,14 +1,14 @@
 use bevy::prelude::*;
 use bevy_kira_audio::{AudioChannel, AudioControl};
 
-use crate::map::interactions::map_changing::ChangeLevel;
+use crate::map::interactions::map_changing::LoadLevel;
 
 #[derive(Default, Component, Resource)]
 pub struct MusicChannel;
 
 pub fn play_level_music(
     asset_server: Res<AssetServer>,
-    mut level_change_requests: EventReader<ChangeLevel>,
+    mut level_change_requests: EventReader<LoadLevel>,
     background_music: Res<AudioChannel<MusicChannel>>,
 ) {
     let level_has_changed = !level_change_requests.is_empty();
