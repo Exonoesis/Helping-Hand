@@ -228,3 +228,29 @@ pub fn create_full_screen_node() -> Node {
         ..Default::default()
     }
 }
+
+/// Progresses to the next image cutscene on any key or mouse button press
+pub fn load_next_scene_on_player_input(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mouse_button_input: Res<ButtonInput<MouseButton>>,
+    current_act_query: Query<&mut Act>,
+    mut load_next_scene_broadcaster: EventWriter<LoadNextScene>,
+) {
+    let found_loaded_act = current_act_query.iter().next();
+
+    if found_loaded_act.is_none() {
+        return;
+    }
+
+    let current_act = found_loaded_act.unwrap();
+    let current_scene = current_act.get_current_scene();
+    let current_scene_type = current_scene.get_scene_contents();
+
+    if matches!(current_scene_type, SceneContents::ImageCutscene(_)) {
+        if keyboard_input.get_just_pressed().next().is_some()
+            || mouse_button_input.get_just_pressed().next().is_some()
+        {
+            load_next_scene_broadcaster.write(LoadNextScene::new());
+        }
+    }
+}

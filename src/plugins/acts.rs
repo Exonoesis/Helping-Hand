@@ -10,6 +10,10 @@ impl Plugin for ActsPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(CoreActsPlugin::new(Duration::from_secs(3)))
             .add_systems(
+                Update,
+                (load_next_scene_on_player_input,).run_if(in_state(AppState::InGame)),
+            )
+            .add_systems(
                 OnEnter(AppState::InGame),
                 load_starting_act.run_if(in_state(AppState::InGame)),
             );
