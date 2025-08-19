@@ -255,6 +255,7 @@ pub fn load_next_scene_on_player_input(
     }
 }
 
+// So this always panics, even though the path is fine
 pub fn check_image_path(asset_server: Res<AssetServer>, scene_image: &str) -> Handle<Image> {
     let image: Handle<Image> = asset_server
         .load(format!("acts/images/{}", scene_image))
