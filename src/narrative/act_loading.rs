@@ -151,23 +151,8 @@ pub fn load_next_scene(
     let scene_image_path = scene_contents.get_image_path();
     let scene_image = scene_image_path.to_str().unwrap();
 
-    // TODO: Make a helper function that returns a Handle<Image> that
-    // - checks if the asset actually exists, and if it does not,
-    // -> Panic
-    // - if it does exist, return the image
-    let image: Handle<Image> = asset_server
-        .load(format!("acts/images/{}", scene_image))
-        .into();
-
-    let asset_path: &Path = image.path().unwrap().path();
-    if !asset_path.exists() {
-        panic!(
-            "in_some_helper_function: Asset does not exist: {}",
-            asset_path.display()
-        )
-    }
-
-    // return image
+    // Check image path is correct
+    let image = check_image_path(asset_server, scene_image);
 
     // Set image to be invisible
     let mut image_node = ImageNode::default();
@@ -268,4 +253,20 @@ pub fn load_next_scene_on_player_input(
             load_next_scene_broadcaster.write(LoadNextScene::new());
         }
     }
+}
+
+pub fn check_image_path(asset_server: Res<AssetServer>, scene_image: &str) -> Handle<Image> {
+    let image: Handle<Image> = asset_server
+        .load(format!("acts/images/{}", scene_image))
+        .into();
+
+    let asset_path: &Path = image.path().unwrap().path();
+    /*if !asset_path.exists() {
+        panic!(
+            "check_image_path: Check the file path for asset: {}",
+            asset_path.display()
+        )
+    }*/
+
+    image
 }
