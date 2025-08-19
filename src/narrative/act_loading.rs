@@ -1,7 +1,7 @@
 use crate::plugins::acts::FadeDuration;
 use crate::{map::interactions::map_changing::CameraBundle, ui::menus::ImageNodeBundle};
 use bevy::prelude::*;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use super::acts::read_act_from;
 use crate::narrative::acts::*;
@@ -148,11 +148,26 @@ pub fn load_next_scene(
 
     let current_scene = current_act.get_current_scene();
     let scene_contents = current_scene.get_scene_contents();
-    let scene_image = scene_contents.get_image_path().to_str().unwrap();
+    let scene_image_path = scene_contents.get_image_path();
+    let scene_image = scene_image_path.to_str().unwrap();
 
-    let image = asset_server
+    // TODO: Make a helper function that returns a Handle<Image> that
+    // - checks if the asset actually exists, and if it does not,
+    // -> Panic
+    // - if it does exist, return the image
+    let image: Handle<Image> = asset_server
         .load(format!("acts/images/{}", scene_image))
         .into();
+
+    let asset_path: &Path = image.path().unwrap().path();
+    if !asset_path.exists() {
+        panic!(
+            "in_some_helper_function: Asset does not exist: {}",
+            asset_path.display()
+        )
+    }
+
+    // return image
 
     // Set image to be invisible
     let mut image_node = ImageNode::default();

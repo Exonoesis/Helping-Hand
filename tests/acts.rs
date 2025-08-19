@@ -28,8 +28,8 @@ fn get_act_file_location(act_file_name: String) -> PathBuf {
 
     // Appends the Manifest Directory which represents the root of the whole project.
     // We need this since we cannot use relative paths for testing purposes.
-    if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
-        act_file_path.push(manifest_dir);
+    if let Ok(project_root) = std::env::var("CARGO_MANIFEST_DIR") {
+        act_file_path.push(project_root);
     }
 
     act_file_path.push("tests/test-assets/acts");

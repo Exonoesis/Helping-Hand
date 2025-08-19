@@ -1,136 +1,422 @@
 {
-    "startingElement": "f5797444-91a6-4a22-bd3b-d69e9ef6419c",
+    "startingElement": "e418ef08-91bb-4590-a7cf-539eb8cf89d1",
     "boards": {
+        "630fdb8a-48d6-473e-9974-2460f7eb2b41": {
+            "name": "Chapter 0",
+            "notes": [],
+            "jumpers": [],
+            "branches": [],
+            "elements": [
+                "e418ef08-91bb-4590-a7cf-539eb8cf89d1",
+                "ba6072ae-1fc0-4aa6-9774-0bab159d3177",
+                "827f33a2-4914-45e4-a7e4-bce3fd8b6822",
+                "9ae594e4-69c5-4a03-8d67-1fd740215ef0"
+            ],
+            "connections": [
+                "f745a034-1307-402d-b63a-7f04b2a9e6fb",
+                "aed07a2d-bde1-4c37-b396-ebc2d86fe8c4",
+                "7e76ed52-33cd-409e-98bf-5c315187cd54"
+            ]
+        },
         "2ad15ff6-f2ba-4f1d-9d9d-68938c683d7e": {
             "name": "Root",
             "root": true,
             "children": [
                 "630fdb8a-48d6-473e-9974-2460f7eb2b41"
             ]
-        },
-        "630fdb8a-48d6-473e-9974-2460f7eb2b41": {
-            "name": "Main Board",
-            "notes": [],
-            "jumpers": [],
-            "branches": [],
-            "elements": [
-                "f5797444-91a6-4a22-bd3b-d69e9ef6419c",
-                "53ad95fe-66b8-41cc-a8e3-f5ebcac7a466",
-                "f7a166f2-78b5-4e22-aa49-2a183d3e66da"
-            ],
-            "connections": [
-                "db07062a-b8b0-45b8-9149-a65682018d7d",
-                "df046603-c1e3-4bdd-b964-2cf4f05ea803"
-            ]
         }
     },
     "notes": {},
     "elements": {
-        "f5797444-91a6-4a22-bd3b-d69e9ef6419c": {
-            "autoHeight": true,
+        "e418ef08-91bb-4590-a7cf-539eb8cf89d1": {
+            "theme": "default",
             "title": "<p>Intro Image 1<\/p>",
-            "theme": "default",
-            "components": [],
-            "content": "<p>This is some text to ignore<\/p>",
-            "outputs": [
-                "db07062a-b8b0-45b8-9149-a65682018d7d"
-            ],
             "assets": {
                 "cover": {
-                    "id": "9aaf6ff8-89b6-47b9-bdd0-cc8d1c4d053f"
+                    "id": "2ec98c1e-e643-419c-8b6c-4ea89928e3d8"
                 }
-            }
-        },
-        "53ad95fe-66b8-41cc-a8e3-f5ebcac7a466": {
+            },
+            "content": "<p>Outdoor shot of a small shop building, there's a sign that says \"Pokemon Breeding Center\" across the top and many animal care items can be seen in the front windows.<\/p>",
+            "outputs": [
+                "f745a034-1307-402d-b63a-7f04b2a9e6fb"
+            ],
+            "attributes": [],
             "autoHeight": true,
+            "components": [
+                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
+            ]
+        },
+        "ba6072ae-1fc0-4aa6-9774-0bab159d3177": {
+            "theme": "default",
             "title": "<p>Intro Image 2<\/p>",
-            "theme": "default",
-            "components": [],
-            "content": "",
+            "assets": {
+                "cover": {
+                    "id": "6496ee21-f118-4dc6-bf9b-d1df1100a9ba"
+                }
+            },
+            "content": "<p>Indoor shot of the Eevee pen main area, we see several Eevee's running around happy and playful.<\/p>",
             "outputs": [
-                "df046603-c1e3-4bdd-b964-2cf4f05ea803"
+                "aed07a2d-bde1-4c37-b396-ebc2d86fe8c4"
             ],
-            "assets": {
-                "cover": {
-                    "id": "feb984f1-9503-4dd7-976a-09f429422bff"
-                }
-            }
-        },
-        "f7a166f2-78b5-4e22-aa49-2a183d3e66da": {
             "autoHeight": true,
-            "title": "<p>Intro Image 3<\/p>",
+            "components": [
+                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
+            ]
+        },
+        "827f33a2-4914-45e4-a7e4-bce3fd8b6822": {
             "theme": "default",
-            "components": [],
-            "content": "",
-            "outputs": [],
+            "title": "<p>Intro Image 3<\/p>",
             "assets": {
                 "cover": {
-                    "id": "40d695d9-7427-46e1-8830-fed77ce60ce0"
+                    "id": "052a172a-b1ae-419c-a1b3-13768a6dd586"
                 }
-            }
+            },
+            "content": "<p>Switch perspectives to a shadowy spot away from the others, we see our protagonist from the back silhouette, they're watching the others play from afar.<\/p>",
+            "outputs": [
+                "7e76ed52-33cd-409e-98bf-5c315187cd54"
+            ],
+            "autoHeight": true,
+            "components": [
+                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
+            ]
+        },
+        "9ae594e4-69c5-4a03-8d67-1fd740215ef0": {
+            "theme": "default",
+            "title": "<p>Map Cutscene 1<\/p>",
+            "content": "<p><span class=\"mention-component mention\" data-id=\"9ebcc176-8210-45ed-9f72-3e2e4aecb6e6\" data-label=\"Breeding Center\" data-type=\"component\">Breeding Center<\/span> <\/p><p>[<span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> @ Player Start] - <span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> is at the starting position at the base of the climbing trees, facing up.<\/p><p>[<span class=\"mention-component mention\" data-id=\"0fd9bec6-219e-4efb-996e-636d0d754c3b\" data-label=\"Siblings\" data-type=\"component\">Siblings<\/span> > Run in Circles] - Other generic Eevee (<span class=\"mention-component mention\" data-id=\"0fd9bec6-219e-4efb-996e-636d0d754c3b\" data-label=\"Siblings\" data-type=\"component\">Siblings<\/span>) are running in small circles chasing one another. (Can give the sprites small color variations)<\/p><p>[<span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> > Go to Player] - <span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> approaches the player from the food bowl area [left?] (if this is visible then he's eating there, if not he just comes from that direction)<\/p>",
+            "outputs": [],
+            "autoHeight": true,
+            "components": [
+                "3fcab303-4ce4-4886-adb5-8039d5a023ee"
+            ]
+        }
+    },
+    "connections": {
+        "f745a034-1307-402d-b63a-7f04b2a9e6fb": {
+            "type": "Bezier",
+            "label": null,
+            "theme": "default",
+            "sourceid": "e418ef08-91bb-4590-a7cf-539eb8cf89d1",
+            "targetid": "ba6072ae-1fc0-4aa6-9774-0bab159d3177",
+            "sourceType": "elements",
+            "targetType": "elements"
+        },
+        "aed07a2d-bde1-4c37-b396-ebc2d86fe8c4": {
+            "type": "Bezier",
+            "label": null,
+            "theme": "default",
+            "sourceid": "ba6072ae-1fc0-4aa6-9774-0bab159d3177",
+            "targetid": "827f33a2-4914-45e4-a7e4-bce3fd8b6822",
+            "sourceType": "elements",
+            "targetType": "elements"
+        },
+        "7e76ed52-33cd-409e-98bf-5c315187cd54": {
+            "type": "Bezier",
+            "label": null,
+            "theme": "default",
+            "sourceid": "827f33a2-4914-45e4-a7e4-bce3fd8b6822",
+            "targetid": "9ae594e4-69c5-4a03-8d67-1fd740215ef0",
+            "sourceType": "elements",
+            "targetType": "elements"
         }
     },
     "jumpers": {},
-    "connections": {
-        "db07062a-b8b0-45b8-9149-a65682018d7d": {
-            "sourceType": "elements",
-            "label": null,
-            "sourceid": "f5797444-91a6-4a22-bd3b-d69e9ef6419c",
-            "targetid": "53ad95fe-66b8-41cc-a8e3-f5ebcac7a466",
-            "targetFace": "left",
-            "targetType": "elements",
-            "theme": "default",
-            "type": "Bezier"
-        },
-        "df046603-c1e3-4bdd-b964-2cf4f05ea803": {
-            "sourceType": "elements",
-            "label": null,
-            "sourceid": "53ad95fe-66b8-41cc-a8e3-f5ebcac7a466",
-            "targetid": "f7a166f2-78b5-4e22-aa49-2a183d3e66da",
-            "targetFace": "left",
-            "targetType": "elements",
-            "theme": "default",
-            "type": "Bezier"
-        }
-    },
-    "branches": {},
-    "components": {
-        "65005bda-15d0-41c5-867f-68c118829f08": {
-            "name": "Root",
-            "root": true,
-            "children": []
-        }
-    },
-    "attributes": {},
     "assets": {
+        "052a172a-b1ae-419c-a1b3-13768a6dd586": {
+            "name": "PI3.png",
+            "type": "image"
+        },
+        "073efe10-dd58-4795-b70a-e698e7a4cebb": {
+            "name": "PI8.png",
+            "type": "image"
+        },
+        "0d21327c-8627-492e-8cbb-f79e876219f6": {
+            "name": "Chapter 0 Images",
+            "children": [
+                "2ec98c1e-e643-419c-8b6c-4ea89928e3d8",
+                "6496ee21-f118-4dc6-bf9b-d1df1100a9ba",
+                "052a172a-b1ae-419c-a1b3-13768a6dd586",
+                "7d2de2e6-a07a-419b-811d-3996d1c1d2d9",
+                "c3119b28-1a5e-4274-9644-3e1f9d8c8111",
+                "cf3616d2-ae28-477f-bd99-bee2ad5509c1",
+                "67dce851-a273-4427-8811-48b3ba77cbd1",
+                "073efe10-dd58-4795-b70a-e698e7a4cebb",
+                "c7f9c5c6-c6df-4439-84fa-f57c93d7f91d",
+                "5e4acb0f-66bd-4f41-9e5f-b6d2c4cb5fa1",
+                "87fbce4b-bd6e-422c-a412-e68d6e3b76ba",
+                "70e9cfb6-995b-4547-8198-6df467cb3717",
+                "fbe53c41-8780-4d89-8840-41543925dea2",
+                "4fe42c88-6829-4639-bded-d8941d2442cd",
+                "2651fd07-893f-459b-b13e-ff4aa6d91c5f"
+            ]
+        },
+        "2651fd07-893f-459b-b13e-ff4aa6d91c5f": {
+            "name": "PI15.png",
+            "type": "image"
+        },
+        "2ec98c1e-e643-419c-8b6c-4ea89928e3d8": {
+            "name": "PI1.png",
+            "type": "image"
+        },
+        "4fe42c88-6829-4639-bded-d8941d2442cd": {
+            "name": "PI14.png",
+            "type": "image"
+        },
+        "5e4acb0f-66bd-4f41-9e5f-b6d2c4cb5fa1": {
+            "name": "PI10.png",
+            "type": "image"
+        },
         "647d0495-341f-42b2-8788-b47dace22bf8": {
             "root": true,
             "children": [
-                "40d695d9-7427-46e1-8830-fed77ce60ce0",
-                "feb984f1-9503-4dd7-976a-09f429422bff",
-                "9aaf6ff8-89b6-47b9-bdd0-cc8d1c4d053f"
+                "0d21327c-8627-492e-8cbb-f79e876219f6"
             ]
         },
-        "9aaf6ff8-89b6-47b9-bdd0-cc8d1c4d053f": {
-            "type": "image",
-            "name": "PI1.png"
+        "6496ee21-f118-4dc6-bf9b-d1df1100a9ba": {
+            "name": "PI2.png",
+            "type": "image"
         },
-        "feb984f1-9503-4dd7-976a-09f429422bff": {
-            "type": "image",
-            "name": "PI2.png"
+        "67dce851-a273-4427-8811-48b3ba77cbd1": {
+            "name": "PI7.png",
+            "type": "image"
         },
-        "40d695d9-7427-46e1-8830-fed77ce60ce0": {
-            "type": "image",
-            "name": "PI3.png"
+        "70e9cfb6-995b-4547-8198-6df467cb3717": {
+            "name": "PI12.png",
+            "type": "image"
+        },
+        "7d2de2e6-a07a-419b-811d-3996d1c1d2d9": {
+            "name": "PI4.png",
+            "type": "image"
+        },
+        "87fbce4b-bd6e-422c-a412-e68d6e3b76ba": {
+            "name": "PI11.png",
+            "type": "image"
+        },
+        "fbe53c41-8780-4d89-8840-41543925dea2": {
+            "name": "PI13.png",
+            "type": "image"
+        },
+        "cf3616d2-ae28-477f-bd99-bee2ad5509c1": {
+            "name": "PI6.png",
+            "type": "image"
+        },
+        "c3119b28-1a5e-4274-9644-3e1f9d8c8111": {
+            "name": "PI5.png",
+            "type": "image"
+        },
+        "c7f9c5c6-c6df-4439-84fa-f57c93d7f91d": {
+            "name": "PI9.png",
+            "type": "image"
         }
     },
+    "branches": {},
+    "conditions": {},
     "variables": {
         "747d0495-341f-42b2-8788-b47dace22bf8": {
             "root": true,
             "children": []
         }
     },
-    "conditions": {},
-    "name": "test_story",
+    "components": {
+        "0357170f-8f2e-4f1b-b1fb-b517d0584ed7": {
+            "name": "Card Games",
+            "children": [
+                "045a05ea-5346-4565-9270-022d4ff3cd8c"
+            ]
+        },
+        "045a05ea-5346-4565-9270-022d4ff3cd8c": {
+            "name": "Guessing Game",
+            "attributes": []
+        },
+        "0c850ecd-835f-45ec-902e-ac4ad1ad0256": {
+            "name": "Iye",
+            "attributes": [
+                "56a2870b-965d-44d9-b9dd-6939445b0aa7",
+                "ebec11c0-481b-4baf-8437-a0d6e9e4ec0c",
+                "c285ffb4-f751-4eb5-9926-f2219948b8fc"
+            ]
+        },
+        "0fd9bec6-219e-4efb-996e-636d0d754c3b": {
+            "name": "Siblings",
+            "attributes": [
+                "8295a4f4-1e0c-445d-a89c-a2349de4879a"
+            ]
+        },
+        "1270978b-4257-4bdb-9629-4986fae794a8": {
+            "name": "Locations",
+            "children": [
+                "9ebcc176-8210-45ed-9f72-3e2e4aecb6e6"
+            ]
+        },
+        "31929ecc-d743-4439-9707-44b8269cb87e": {
+            "name": "Jay",
+            "attributes": [
+                "83dd9d56-f8b5-466a-8d66-6e12984afd57",
+                "c7bb2219-123f-459a-8c20-2afc687fcbce",
+                "575f4762-f448-4aee-af1e-f7c2850ee017"
+            ]
+        },
+        "371ce904-6d5c-43ba-bd05-b672a7cb7772": {
+            "name": "Chase Scene",
+            "attributes": []
+        },
+        "3fcab303-4ce4-4886-adb5-8039d5a023ee": {
+            "name": "Map Cutscene",
+            "attributes": []
+        },
+        "65005bda-15d0-41c5-867f-68c118829f08": {
+            "name": "Root",
+            "root": true,
+            "children": [
+                "98a21778-2580-4fa1-9b0b-e353da9180a9",
+                "0357170f-8f2e-4f1b-b1fb-b517d0584ed7",
+                "1270978b-4257-4bdb-9629-4986fae794a8",
+                "77cd3701-66d4-4e07-9f76-4d71b3cf5b01"
+            ]
+        },
+        "674fe4a4-506e-43c8-9692-d9e94db86ad3": {
+            "name": "Linsey (Human)",
+            "attributes": [
+                "57e40253-545b-4cc8-be92-46bf2635b1d6",
+                "80b751a7-8935-4de4-9a12-abbcc445b148"
+            ]
+        },
+        "77cd3701-66d4-4e07-9f76-4d71b3cf5b01": {
+            "name": "Characters",
+            "children": [
+                "674fe4a4-506e-43c8-9692-d9e94db86ad3",
+                "0fd9bec6-219e-4efb-996e-636d0d754c3b",
+                "0c850ecd-835f-45ec-902e-ac4ad1ad0256",
+                "31929ecc-d743-4439-9707-44b8269cb87e"
+            ]
+        },
+        "98a21778-2580-4fa1-9b0b-e353da9180a9": {
+            "name": "Scene Types",
+            "children": [
+                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d",
+                "3fcab303-4ce4-4886-adb5-8039d5a023ee",
+                "b811ea01-9c9e-46a7-911e-a3bed96205b6",
+                "afcaf75a-8019-4caf-897e-0bda212ae48b",
+                "371ce904-6d5c-43ba-bd05-b672a7cb7772"
+            ]
+        },
+        "9ebcc176-8210-45ed-9f72-3e2e4aecb6e6": {
+            "name": "Breeding Center",
+            "attributes": [
+                "3ba23a37-bd49-4ed6-a864-22bccef5ab9b"
+            ]
+        },
+        "afcaf75a-8019-4caf-897e-0bda212ae48b": {
+            "name": "Exploring Scene",
+            "attributes": []
+        },
+        "b811ea01-9c9e-46a7-911e-a3bed96205b6": {
+            "name": "Dialogue Scene",
+            "attributes": []
+        },
+        "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d": {
+            "name": "Image Cutscene",
+            "attributes": []
+        }
+    },
+    "attributes": {
+        "3ba23a37-bd49-4ed6-a864-22bccef5ab9b": {
+            "cId": "9ebcc176-8210-45ed-9f72-3e2e4aecb6e6",
+            "name": "File Name",
+            "cType": "components",
+            "value": {
+                "data": "breeding_center.tmx",
+                "type": "string",
+                "plain": true
+            }
+        },
+        "56a2870b-965d-44d9-b9dd-6939445b0aa7": {
+            "cId": "0c850ecd-835f-45ec-902e-ac4ad1ad0256",
+            "name": "Pronouns",
+            "cType": "components",
+            "value": {
+                "data": "He\/Him",
+                "type": "string",
+                "plain": true
+            }
+        },
+        "575f4762-f448-4aee-af1e-f7c2850ee017": {
+            "cId": "31929ecc-d743-4439-9707-44b8269cb87e",
+            "name": "Bio",
+            "cType": "components",
+            "value": {
+                "data": "<p>Shy and standoffish, they have strong opinions that they usually keep to themselves. One thing they are very open about is their hatred of evolution. He has only really been close with their sibling <span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span>, who taught them how to do card battles. When <span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> was adopted Jay stopped playing games entirely out of sadness (and lack of a partner to play against).&nbsp;<\/p><p>When they are forced into the wild they quickly encounter the card games again and are reminded of <span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span>. Deciding to seek them out (convinced they must have escaped or something) they hear of a card game tournament and know that <span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> couldn't pass up going to something like that. So they set off to the tournament in the big city.<\/p>",
+                "type": "string"
+            }
+        },
+        "57e40253-545b-4cc8-be92-46bf2635b1d6": {
+            "cId": "674fe4a4-506e-43c8-9692-d9e94db86ad3",
+            "name": "Pronouns",
+            "cType": "components",
+            "value": {
+                "data": "She\/Her",
+                "type": "string",
+                "plain": true
+            }
+        },
+        "80b751a7-8935-4de4-9a12-abbcc445b148": {
+            "cId": "674fe4a4-506e-43c8-9692-d9e94db86ad3",
+            "name": "Bio",
+            "cType": "components",
+            "value": {
+                "data": "<p>The Manager of the Eevee Breeding Center. She gives trainers their Starter Pokemon as well as their first pack of Battle Cards. Seeing that Jay is the last remaining Eevee of the litter and his aggression towards trainers she is forced to make the tough decision to set him loose so that a new batch of Eevee can be bred.<\/p>",
+                "type": "string"
+            }
+        },
+        "8295a4f4-1e0c-445d-a89c-a2349de4879a": {
+            "cId": "0fd9bec6-219e-4efb-996e-636d0d754c3b",
+            "name": null,
+            "cType": "components",
+            "value": {
+                "data": "<p>Group of 4 Eevee from the same litter as <span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> and <span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> <\/p>",
+                "type": "string"
+            }
+        },
+        "83dd9d56-f8b5-466a-8d66-6e12984afd57": {
+            "cId": "31929ecc-d743-4439-9707-44b8269cb87e",
+            "name": "Pronouns",
+            "cType": "components",
+            "value": {
+                "data": "They\/Them",
+                "type": "string",
+                "plain": true
+            }
+        },
+        "c285ffb4-f751-4eb5-9926-f2219948b8fc": {
+            "cId": "0c850ecd-835f-45ec-902e-ac4ad1ad0256",
+            "name": "Bio",
+            "cType": "components",
+            "value": {
+                "data": "<p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span>'s sibling, he's competitive and a little overbearing at times. He really loves playing games with others and isn't above tricking others into doing what he wants to do. His favorite thing is card battles. He also has very strong opinions that evolving is the worst thing ever, something that he and <span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> agreed on instantly and kick-started their bond. He was adopted before the start of the game but we see him as an Eevee in the introduction flashback tutorial.<\/p>",
+                "type": "string"
+            }
+        },
+        "c7bb2219-123f-459a-8c20-2afc687fcbce": {
+            "cId": "31929ecc-d743-4439-9707-44b8269cb87e",
+            "name": "Parents",
+            "cType": "components",
+            "value": {
+                "data": "Flareon (mother), Lopunny (father)",
+                "type": "string",
+                "plain": true
+            }
+        },
+        "ebec11c0-481b-4baf-8437-a0d6e9e4ec0c": {
+            "cId": "0c850ecd-835f-45ec-902e-ac4ad1ad0256",
+            "name": "Parents",
+            "cType": "components",
+            "value": {
+                "data": "Flareon (mother), Lopunny (father)",
+                "type": "string",
+                "plain": true
+            }
+        }
+    },
+    "name": "Helping Hand",
     "cover": null
 }

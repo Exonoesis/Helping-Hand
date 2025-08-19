@@ -51,12 +51,45 @@ impl Scene {
 #[derive(Debug, Clone, PartialEq)]
 pub enum SceneContents {
     ImageCutscene(PathBuf),
+    MapCutscene(PathBuf, Vec<MapCommand>),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct MapCommand {}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum SceneType {
+    ImageCutscene,
+    MapCutscene,
 }
 
 impl SceneContents {
     pub fn get_image_path(&self) -> &PathBuf {
-        match self {
-            SceneContents::ImageCutscene(path) => path,
+        if let SceneContents::ImageCutscene(path) = self {
+            return path;
+        }
+
+        panic!("get_image_path: This was called on a Scene that isn't an Image Cutscene.");
+    }
+
+    pub fn parse_from(arcweave_act_json: &Value, scene_id: &String) -> SceneContents {
+        let scene_type = get_scene_type_from_id(&arcweave_act_json, &scene_id);
+
+        match scene_type {
+            SceneType::ImageCutscene => {
+                let image_id = get_scene_image_id(&arcweave_act_json, &scene_id);
+                let image_name = get_image_from_id(&arcweave_act_json, image_id);
+                let image_path = PathBuf::from(image_name);
+
+                SceneContents::ImageCutscene(image_path)
+            }
+            SceneType::MapCutscene => {
+                // TODO
+                let map_path = PathBuf::new();
+                let scene_commands = get_scene_commands_from_id();
+
+                SceneContents::MapCutscene(map_path, scene_commands)
+            }
         }
     }
 }
@@ -258,6 +291,48 @@ fn get_image_from_id(act: &Value, id: String) -> String {
     get_string_from_json_value(image_value)
 }
 
+/// Gets an Arcweave nodes type name | ex.
+fn get_scene_type_from_id(act: &Value, id: &String) -> SceneType {
+    // Array(Vec<Value>)
+    let components_list = act
+        .get("elements")
+        .and_then(|elements| elements.get(&id))
+        .and_then(|componenets| componenets.get("components"))
+        .expect(&format!(
+            "get_scene_type_from_id: Unable to get components list for item {}",
+            id
+        ));
+
+    let component_id = components_list.as_array().unwrap().first().unwrap();
+
+    let id_string = get_string_from_json_value(&component_id);
+
+    let component_name = act
+        .get("components")
+        .and_then(|component| component.get(id_string))
+        .and_then(|name| name.get("name"))
+        .expect(&format!(
+            "get_scene_type_from_id: Unable to get component name for item {}",
+            id
+        ));
+
+    let type_name = get_string_from_json_value(component_name);
+
+    match type_name.as_str() {
+        "Image Cutscene" => return SceneType::ImageCutscene,
+        "Map Cutscene" => return SceneType::MapCutscene,
+        _ => panic!(
+            "get_scene_type_from_id: Unrecognized scene type found: {}",
+            type_name
+        ),
+    }
+}
+
+// TODO:
+fn get_scene_commands_from_id() -> Vec<MapCommand> {
+    Vec::new()
+}
+
 /// Gets an Arcweave nodes list of outputs
 fn get_list_of_scene_connections(
     arcweave_act_json: &Value,
@@ -302,11 +377,7 @@ fn create_scene_from_id(id: String, arcweave_act_json: &Value) -> SceneNode {
     // Look up scene and access its title
     let title = get_title_from_id(&arcweave_act_json, &id);
 
-    // Look up scene and access its image
-    let image_id = get_scene_image_id(&arcweave_act_json, &id);
-    let image_name = get_image_from_id(&arcweave_act_json, image_id);
-    let image_path = PathBuf::from(image_name);
-    let scene_contents = SceneContents::ImageCutscene(image_path);
+    let scene_contents = SceneContents::parse_from(arcweave_act_json, &id);
 
     let scene = Scene::make_scene(title, scene_contents);
     SceneNode::make_scene_node(id, scene)
