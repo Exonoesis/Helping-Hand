@@ -89,12 +89,35 @@ fn verify_image_cutscene(game: &mut GameWorld, scene_title: String, image_path: 
     let act = &game.current_act;
 
     let actual_scene = act.get_scene_by_title(&scene_title);
+    let actual_contents = actual_scene.get_scene_contents();
 
-    let given_path = PathBuf::from(image_path);
-    let scene_contents = SceneContents::ImageCutscene(given_path);
-    let expected_scene = Scene::make_scene(scene_title, scene_contents);
+    let actual_scene_type = actual_scene.get_scene_type();
+    let actual_image_path = actual_contents.get_image_path();
 
-    assert_eq!(expected_scene, *actual_scene);
+    let expected_scene_type = SceneType::ImageCutscene;
+    let expected_image_path = PathBuf::from(image_path);
+
+    assert_eq!(*actual_scene_type, expected_scene_type);
+    assert_eq!(*actual_image_path, expected_image_path);
+}
+
+#[then(
+    regex = r"the act's scene called '(.+)' is a Map Cutscene pointing to the map file called (.+\.tmx)."
+)]
+fn verify_map_cutscene(game: &mut GameWorld, scene_title: String, map_file_path: String) {
+    let act = &game.current_act;
+
+    let actual_scene = act.get_scene_by_title(&scene_title);
+    let actual_contents = actual_scene.get_scene_contents();
+
+    let actual_scene_type = actual_scene.get_scene_type();
+    let actual_map_path = actual_contents.get_map_path();
+
+    let expected_scene_type = SceneType::MapCutscene;
+    let expected_map_path = PathBuf::from(map_file_path);
+
+    assert_eq!(*actual_scene_type, expected_scene_type);
+    assert_eq!(*actual_map_path, expected_map_path);
 }
 
 #[then(regex = r"scene '(.+)' should connect to scene '(.+)'.")]

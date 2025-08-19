@@ -78,6 +78,14 @@ impl SceneContents {
         panic!("get_image_path: This was called on a Scene that isn't an Image Cutscene.");
     }
 
+    pub fn get_map_path(&self) -> &PathBuf {
+        if let SceneContents::MapCutscene(path, _) = self {
+            return path;
+        }
+
+        panic!("get_map_path: This was called on a Scene that isn't an Map Cutscene.");
+    }
+
     pub fn parse_from(
         arcweave_act_json: &Value,
         scene_type: &SceneType,
@@ -299,7 +307,7 @@ fn get_image_from_id(act: &Value, id: String) -> String {
     get_string_from_json_value(image_value)
 }
 
-/// Gets an Arcweave nodes type name | ex.
+/// Gets an Arcweave nodes type name
 fn get_scene_type_from_id(act: &Value, id: &String) -> SceneType {
     // Array(Vec<Value>)
     let components_list = act
@@ -382,10 +390,8 @@ fn create_starting_scene(scene_name: String, arcweave_act_json: &Value) -> Scene
 
 /// Creates a SceneNode from a given id
 fn create_scene_from_id(id: String, arcweave_act_json: &Value) -> SceneNode {
-    // Look up scene and access its title
     let title = get_title_from_id(&arcweave_act_json, &id);
     let scene_type = get_scene_type_from_id(&arcweave_act_json, &id);
-
     let scene_contents = SceneContents::parse_from(arcweave_act_json, &scene_type, &id);
 
     let scene = Scene::make_scene(title, scene_type, scene_contents);
