@@ -100,8 +100,8 @@ impl SceneContents {
                 SceneContents::ImageCutscene(image_path)
             }
             SceneType::MapCutscene => {
-                // TODO
-                let map_path = PathBuf::new();
+                // TODO:
+                let map_path = get_map_path_from_id(&arcweave_act_json, &scene_id);
                 let scene_commands = get_scene_commands_from_id();
 
                 SceneContents::MapCutscene(map_path, scene_commands)
@@ -342,6 +342,57 @@ fn get_scene_type_from_id(act: &Value, id: &String) -> SceneType {
             type_name
         ),
     }
+}
+
+fn get_map_path_from_id(act: &Value, id: &String) -> PathBuf {
+    let content_value = act
+        .get("elements")
+        .and_then(|elements| elements.get(&id))
+        .and_then(|content| content.get("content"))
+        .expect(&format!(
+            "get_map_path_from_id: Unable to get content for item {}",
+            id
+        ));
+
+    let content_string = get_string_from_json_value(content_value);
+    let regex = Regex::new(r#"data-id=\"([0-9a-f-]+)\""#).unwrap();
+
+    let map_component_id = regex
+        .captures(&content_string)
+        .and_then(|cap| cap.get(1))
+        .map(|m| m.as_str().to_string())
+        .unwrap();
+
+    let map_component_attributes_list = act
+        .get("components")
+        .and_then(|component| component.get(map_component_id))
+        .and_then(|attributes| attributes.get("attributes"))
+        .expect(&format!(
+            "get_map_path_from_id: Unable to get component attribute id for item {}",
+            id
+        ));
+
+    let map_component_attribute = map_component_attributes_list
+        .as_array()
+        .unwrap()
+        .first()
+        .unwrap();
+
+    let map_path_id = get_string_from_json_value(map_component_attribute);
+
+    let map_path_value = act
+        .get("attributes")
+        .and_then(|attribute| attribute.get(map_path_id))
+        .and_then(|value| value.get("value"))
+        .and_then(|data| data.get("data"))
+        .expect(&format!(
+            "get_map_path_from_id: Unable to get attribute data for item {}",
+            id
+        ));
+
+    let map_path_name = get_string_from_json_value(map_path_value);
+
+    PathBuf::from(map_path_name)
 }
 
 // TODO:
