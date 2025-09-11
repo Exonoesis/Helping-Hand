@@ -3,7 +3,12 @@
     "boards": {
         "630fdb8a-48d6-473e-9974-2460f7eb2b41": {
             "name": "Chapter 0",
-            "notes": [],
+            "notes": [
+                "ada4d7b2-52ce-4ae4-96c1-b16321a1ee1c",
+                "a56ab2b5-624e-4b21-a85a-da7ad7be576b",
+                "1761a1e7-7c21-4bad-914a-63eb64086999",
+                "3903c1e1-9b75-417e-8d92-c6eed775afae"
+            ],
             "jumpers": [],
             "branches": [],
             "elements": [
@@ -26,7 +31,28 @@
             ]
         }
     },
-    "notes": {},
+    "notes": {
+        "ada4d7b2-52ce-4ae4-96c1-b16321a1ee1c": {
+            "autoHeight": true,
+            "theme": "default",
+            "content": "<p>Outdoor shot of a small shop building, there's a sign that says \"Pokemon Breeding Center\" across the top and many animal care items can be seen in the front windows.<\/p>"
+        },
+        "a56ab2b5-624e-4b21-a85a-da7ad7be576b": {
+            "autoHeight": true,
+            "theme": "default",
+            "content": "<p>Indoor shot of the Eevee pen main area, we see several Eevee's running around happy and playful.<\/p>"
+        },
+        "1761a1e7-7c21-4bad-914a-63eb64086999": {
+            "autoHeight": true,
+            "theme": "default",
+            "content": "<p>Switch perspectives to a shadowy spot away from the others, we see our protagonist from the back silhouette, they're watching the others play from afar.<\/p>"
+        },
+        "3903c1e1-9b75-417e-8d92-c6eed775afae": {
+            "autoHeight": true,
+            "theme": "default",
+            "content": "<p> - Jay is at the starting position at the base of the climbing trees, facing up.<\/p><p>- Other generic Eevee (Siblings) are running in small circles chasing one another. (Can give the sprites small color variations)<\/p><p>[Wait]<\/p><p> - Iye approaches the player from the food bowl area [left?] (if this is visible then he's eating there, if not he just comes from that direction)<\/p>"
+        }
+    },
     "elements": {
         "e418ef08-91bb-4590-a7cf-539eb8cf89d1": {
             "theme": "default",
@@ -36,7 +62,7 @@
                     "id": "2ec98c1e-e643-419c-8b6c-4ea89928e3d8"
                 }
             },
-            "content": "<p>Outdoor shot of a small shop building, there's a sign that says \"Pokemon Breeding Center\" across the top and many animal care items can be seen in the front windows.<\/p>",
+            "content": "<p><\/p>",
             "outputs": [
                 "f745a034-1307-402d-b63a-7f04b2a9e6fb"
             ],
@@ -54,7 +80,7 @@
                     "id": "6496ee21-f118-4dc6-bf9b-d1df1100a9ba"
                 }
             },
-            "content": "<p>Indoor shot of the Eevee pen main area, we see several Eevee's running around happy and playful.<\/p>",
+            "content": "<p><\/p>",
             "outputs": [
                 "aed07a2d-bde1-4c37-b396-ebc2d86fe8c4"
             ],
@@ -71,7 +97,7 @@
                     "id": "052a172a-b1ae-419c-a1b3-13768a6dd586"
                 }
             },
-            "content": "<p>Switch perspectives to a shadowy spot away from the others, we see our protagonist from the back silhouette, they're watching the others play from afar.<\/p>",
+            "content": "<p><\/p>",
             "outputs": [
                 "7e76ed52-33cd-409e-98bf-5c315187cd54"
             ],
@@ -83,7 +109,7 @@
         "9ae594e4-69c5-4a03-8d67-1fd740215ef0": {
             "theme": "default",
             "title": "<p>Map Cutscene 1<\/p>",
-            "content": "<p><span class=\"mention-component mention\" data-id=\"9ebcc176-8210-45ed-9f72-3e2e4aecb6e6\" data-label=\"Breeding Center\" data-type=\"component\">Breeding Center<\/span> <\/p><p>[<span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> @ Player Start] - <span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> is at the starting position at the base of the climbing trees, facing up.<\/p><p>[<span class=\"mention-component mention\" data-id=\"0fd9bec6-219e-4efb-996e-636d0d754c3b\" data-label=\"Siblings\" data-type=\"component\">Siblings<\/span> > Run in Circles] - Other generic Eevee (<span class=\"mention-component mention\" data-id=\"0fd9bec6-219e-4efb-996e-636d0d754c3b\" data-label=\"Siblings\" data-type=\"component\">Siblings<\/span>) are running in small circles chasing one another. (Can give the sprites small color variations)<\/p><p>[<span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> > Go to Player] - <span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> approaches the player from the food bowl area [left?] (if this is visible then he's eating there, if not he just comes from that direction)<\/p>",
+            "content": "<p><span class=\"mention-component mention\" data-id=\"9ebcc176-8210-45ed-9f72-3e2e4aecb6e6\" data-label=\"Breeding Center\" data-type=\"component\">Breeding Center<\/span> <\/p><p>[<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> @ Player Start <\/p><p><span class=\"mention-component mention\" data-id=\"0fd9bec6-219e-4efb-996e-636d0d754c3b\" data-label=\"Siblings\" data-type=\"component\">Siblings<\/span> > Run in Circles<\/p><p>] <\/p><p>[Wait 8s]<\/p><p>[<span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> > Go to Player] <\/p>",
             "outputs": [],
             "autoHeight": true,
             "components": [
@@ -192,20 +218,20 @@
             "name": "PI11.png",
             "type": "image"
         },
-        "fbe53c41-8780-4d89-8840-41543925dea2": {
-            "name": "PI13.png",
-            "type": "image"
-        },
-        "cf3616d2-ae28-477f-bd99-bee2ad5509c1": {
-            "name": "PI6.png",
-            "type": "image"
-        },
         "c3119b28-1a5e-4274-9644-3e1f9d8c8111": {
             "name": "PI5.png",
             "type": "image"
         },
         "c7f9c5c6-c6df-4439-84fa-f57c93d7f91d": {
             "name": "PI9.png",
+            "type": "image"
+        },
+        "cf3616d2-ae28-477f-bd99-bee2ad5509c1": {
+            "name": "PI6.png",
+            "type": "image"
+        },
+        "fbe53c41-8780-4d89-8840-41543925dea2": {
+            "name": "PI13.png",
             "type": "image"
         }
     },
