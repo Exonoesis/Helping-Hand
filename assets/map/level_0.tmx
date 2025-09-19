@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="19" height="20" tilewidth="64" tileheight="64" infinite="0" nextlayerid="10" nextobjectid="9">
  <tileset firstgid="1" name="Room_Builder_free_64x64" tilewidth="64" tileheight="64" tilecount="391" columns="17">
-  <image source="../../../assets/textures/environments/Room_Builder_free_64x64.png" width="1088" height="1472"/>
+  <image source="../textures/environments/Room_Builder_free_64x64.png" width="1088" height="1472"/>
  </tileset>
  <tileset firstgid="392" name="Interiors_free_64x64" tilewidth="64" tileheight="64" tilecount="1424" columns="16">
-  <image source="../../../assets/textures/environments/Interiors_free_64x64.png" width="1024" height="5696"/>
+  <image source="../textures/environments/Interiors_free_64x64.png" width="1024" height="5696"/>
  </tileset>
  <layer id="1" name="Floor" width="19" height="20">
   <data encoding="csv">
