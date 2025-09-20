@@ -27,7 +27,11 @@ Feature: Acts
         Given an act file called introductory_act.json,
         When the act is read from the act file,
         Then the act's scene called 'Map Cutscene 1' is a Map Cutscene pointing to the map file called breeding_center.tmx.
-        And the act's scene called 'Map Cutscene 1' is a Map Cutscene with 3 Commands.
+        And the act's scene called 'Map Cutscene 1' is a Map Cutscene with 3 Map Actions.
+        And in the 1st Map Action of 'Map Cutscene 1', the 1st Map Instruction places Jay at the PlayerStart location.
+        And in the 1st Map Action of 'Map Cutscene 1', the 2nd Map Instruction repeatedly moves Siblings along the RunInCircles path.
+        And in the 2nd Map Action of 'Map Cutscene 1', the 1st Map Instruction waits 8 seconds.
+        And in the 3rd Map Action of 'Map Cutscene 1', the 1st Map Instruction moves Iye along the GoToPlayer path.
 
     Scenario: Scenes 3-4 are connected correctly
         Given an act file called introductory_act.json,

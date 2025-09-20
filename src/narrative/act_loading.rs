@@ -261,13 +261,23 @@ pub fn check_image_path(asset_server: Res<AssetServer>, scene_image: &str) -> Ha
         .load(format!("acts/images/{}", scene_image))
         .into();
 
-    let asset_path: &Path = image.path().unwrap().path();
-    /*if !asset_path.exists() {
+    let image_path: &Path = image.path().unwrap().path();
+
+    let mut asset_path = PathBuf::new();
+    // Bevy will not report the folder of the asset server. By default,
+    // this is the `assets` folder at the root of the project.
+    //
+    // This has to be hardcoded in the meantime. Otherwise, no image would
+    // ever be found, since it would look in the `acts` folder at root, but
+    // it should really be in `assets/acts` for example.
+    asset_path.push("assets/");
+    asset_path.push(image_path);
+    if !asset_path.exists() {
         panic!(
             "check_image_path: Check the file path for asset: {}",
             asset_path.display()
         )
-    }*/
+    }
 
     image
 }

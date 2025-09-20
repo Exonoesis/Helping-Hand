@@ -57,11 +57,11 @@ impl Scene {
 #[derive(Debug, Clone, PartialEq)]
 pub enum SceneContents {
     ImageCutscene(PathBuf),
-    MapCutscene(PathBuf, Vec<MapCommand>),
+    MapCutscene(PathBuf, Vec<MapActions>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct MapCommand {}
+pub struct MapActions {}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SceneType {
@@ -396,7 +396,7 @@ fn get_map_path_from_id(act: &Value, id: &String) -> PathBuf {
 }
 
 // TODO:
-fn get_scene_commands_from_id() -> Vec<MapCommand> {
+fn get_scene_commands_from_id() -> Vec<MapActions> {
     Vec::new()
 }
 
