@@ -19,7 +19,7 @@ fn add_acts_plugin(game: &mut Game) {
 
 #[when(regex = r"the act called '(.+)' is loaded,")]
 fn load_act(game: &mut Game, act_file_name: String) {
-    let act_file_path_name = format!("tests/test-assets/acts/{}", act_file_name);
+    let act_file_path_name = format!("assets/acts/{}", act_file_name);
     let act_file_path = PathBuf::from(&act_file_path_name);
 
     assert!(

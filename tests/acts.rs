@@ -32,7 +32,7 @@ fn get_act_file_location(act_file_name: String) -> PathBuf {
         act_file_path.push(project_root);
     }
 
-    act_file_path.push("tests/test-assets/acts");
+    act_file_path.push("assets/acts");
     act_file_path.push(act_file_name);
 
     act_file_path
