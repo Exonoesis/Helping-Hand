@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
+use std::time::Duration;
 
 #[derive(Clone)]
 pub struct SceneNode {
@@ -57,11 +58,36 @@ impl Scene {
 #[derive(Debug, Clone, PartialEq)]
 pub enum SceneContents {
     ImageCutscene(PathBuf),
-    MapCutscene(PathBuf, Vec<MapActions>),
+    MapCutscene(PathBuf, Vec<MapAction>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct MapActions {}
+pub struct MapAction {
+    map_instructions: Vec<MapInstruction>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+enum MapInstruction {
+    Wait(Duration),
+    Place(Character, MapLocation),
+    Move(Character, MapPath),
+    Loop(Character, MapPath),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Character {
+    name: String,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct MapLocation {
+    name: String,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct MapPath {
+    name: String,
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SceneType {
@@ -86,6 +112,14 @@ impl SceneContents {
         panic!("get_map_path: This was called on a Scene that isn't an Map Cutscene.");
     }
 
+    pub fn get_map_actions(&self) -> &Vec<MapAction> {
+        if let SceneContents::MapCutscene(_, actions) = self {
+            return actions;
+        }
+
+        panic!("get_map_actions: This was called on a Scene that isn't an Map Cutscene.");
+    }
+
     pub fn parse_from(
         arcweave_act_json: &Value,
         scene_type: &SceneType,
@@ -100,11 +134,10 @@ impl SceneContents {
                 SceneContents::ImageCutscene(image_path)
             }
             SceneType::MapCutscene => {
-                // TODO:
                 let map_path = get_map_path_from_id(&arcweave_act_json, &scene_id);
-                let scene_commands = get_scene_commands_from_id();
+                let map_actions = parse_map_actions(&arcweave_act_json, &scene_id);
 
-                SceneContents::MapCutscene(map_path, scene_commands)
+                SceneContents::MapCutscene(map_path, map_actions)
             }
         }
     }
@@ -395,9 +428,78 @@ fn get_map_path_from_id(act: &Value, id: &String) -> PathBuf {
     PathBuf::from(map_path_name)
 }
 
+// TODO: Refactor this function to take (&arcweave_act_json, &scene_id) or another one?
+fn parse_map_actions(map_cutscene_contents: String) -> Vec<MapAction> {
+    let map_actions = Vec::<MapAction>::new();
+
+    map_actions
+}
+
 // TODO:
-fn get_scene_commands_from_id() -> Vec<MapActions> {
-    Vec::new()
+// Refactor to parse multiple? or do it above?
+fn parse_map_instruction(single_map_instruction: String) -> MapInstruction {
+    // single_map_instruction example: Jay @ PlayerStart
+
+    let trimmed_map_instruction: Vec<&str> = single_map_instruction.split_whitespace().collect();
+
+    let instruction_action = trimmed_map_instruction[1];
+
+    match instruction_action {
+        "@" => {
+            return MapInstruction::Place(
+                Character {
+                    name: trimmed_map_instruction[0].to_string(),
+                },
+                MapLocation {
+                    name: trimmed_map_instruction[2].to_string(),
+                },
+            )
+        }
+        ">" => {
+            return MapInstruction::Move(
+                Character {
+                    name: trimmed_map_instruction[0].to_string(),
+                },
+                MapPath {
+                    name: trimmed_map_instruction[2].to_string(),
+                },
+            )
+        }
+        "<->" => {
+            return MapInstruction::Loop(
+                Character {
+                    name: trimmed_map_instruction[0].to_string(),
+                },
+                MapPath {
+                    name: trimmed_map_instruction[2].to_string(),
+                },
+            )
+        }
+        _ => {}
+    }
+
+    let special_instruction = trimmed_map_instruction[0];
+    let instruction_duration = trimmed_map_instruction[1];
+
+    match special_instruction {
+        "Wait" => {
+            let duration = str_to_duration(instruction_duration);
+            return MapInstruction::Wait(duration);
+        }
+        _ => panic!(
+            "parse_map_instruction: Unrecognized instruction found: {}",
+            special_instruction
+        ),
+    }
+}
+
+/// Takes an str in the format of: [number]s and returns a duration in seconds
+/// Example: "16s" would return a Duration of 16 seconds
+fn str_to_duration(duration_str: &str) -> Duration {
+    let trimmed_duration_str = duration_str.trim_end_matches("s").parse::<u64>().unwrap();
+    let duration = Duration::from_secs(trimmed_duration_str);
+
+    duration
 }
 
 /// Gets an Arcweave nodes list of outputs

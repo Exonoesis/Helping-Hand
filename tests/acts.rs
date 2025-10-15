@@ -120,6 +120,20 @@ fn verify_map_cutscene(game: &mut GameWorld, scene_title: String, map_file_path:
     assert_eq!(*actual_map_path, expected_map_path);
 }
 
+#[then(regex = r"the act's scene called '(.+)' is a Map Cutscene with ([0-9]+) Map Actions.")]
+fn verify_number_of_map_actions(game: &mut GameWorld, scene_title: String, num_map_actions: usize) {
+    let act = &game.current_act;
+
+    let actual_scene = act.get_scene_by_title(&scene_title);
+    let actual_contents = actual_scene.get_scene_contents();
+    let actual_map_actions = actual_contents.get_map_actions();
+
+    let actual_action_num = actual_map_actions.len();
+    let expected_action_num = num_map_actions;
+
+    assert_eq!(expected_action_num, actual_action_num);
+}
+
 #[then(regex = r"scene '(.+)' should connect to scene '(.+)'.")]
 fn verify_scene_connection_exists(
     game: &mut GameWorld,
