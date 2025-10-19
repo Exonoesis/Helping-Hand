@@ -121,84 +121,84 @@
             "autoHeight": true
         },
         "051eb73d-d381-420e-b49e-a97e3403dc71": {
-            "autoHeight": true,
+            "theme": "default",
             "content": "<p>- Linsey enters the pen with another human character who is much younger. She calls for all the Eevee to gather around.<\/p><p>- Stop playing and gather around the new human.<\/p><p>- The two run off to hide, knowing that this human is here to take one of them away.<\/p>",
-            "theme": "default"
+            "autoHeight": true
         },
         "7e56f531-1c7e-45f2-a3da-0eeb6a144232": {
-            "autoHeight": true,
+            "theme": "default",
             "content": "<p>Human from that day holding an Eevee in their arms grinning as they leave out the front door of the center<\/p>",
-            "theme": "default"
+            "autoHeight": true
         },
         "fa700f16-e45c-477e-9b7f-df24b9633b3d": {
-            "autoHeight": true,
+            "theme": "default",
             "content": "<p>Night shot of the center from the perspective of the Eevee pen<\/p>",
-            "theme": "default"
+            "autoHeight": true
         },
         "e62e3d24-9e2a-4296-baa7-5e641712e3cb": {
-            "autoHeight": true,
+            "theme": "default",
             "content": "<p>Have a day shot of the pen with Eevee\u2019s silhouetted<\/p>",
-            "theme": "default"
+            "autoHeight": true
         },
         "e9607d73-a042-442a-8c15-746f8458212c": {
-            "autoHeight": true,
+            "theme": "default",
             "content": "<p>And one by one each image has one less Eevee<\/p>",
-            "theme": "default"
+            "autoHeight": true
         },
         "34ad5dfb-74d1-4c8c-ab34-1ba342ddf1c7": {
-            "autoHeight": true,
+            "theme": "default",
             "content": "<p>And one less<\/p>",
-            "theme": "default"
+            "autoHeight": true
         },
         "bcb27043-d029-44cb-a9a3-c0bda9959456": {
-            "autoHeight": true,
+            "theme": "default",
             "content": "<p>Until only Jay and Iye remain<\/p>",
-            "theme": "default"
+            "autoHeight": true
         },
         "84c9b755-ac1d-45a2-9af3-dc3f97e8f77f": {
-            "autoHeight": true,
+            "theme": "default",
             "content": "<p>Up close shot of Iye being picked up, him wiggling and trying to get away and Jay looking distressed<\/p>",
-            "theme": "default"
+            "autoHeight": true
         },
         "e162d637-874a-4c27-bf62-b6b9b8b635ba": {
-            "autoHeight": true,
+            "theme": "default",
             "content": "<p>Free-roam inside the Eevee Pen (the sleeping area is not accessible)<\/p>",
-            "theme": "default"
+            "autoHeight": true
         },
         "abdc6ace-af4a-4f49-9d50-3ae261f78ae8": {
-            "autoHeight": true,
+            "theme": "default",
             "content": "<p>- Linsey enters the pen with another human character who is much younger. She calls for Jay in a very defeated tone.<\/p><p>- After a moment they path to the players location.<\/p>",
-            "theme": "default"
+            "autoHeight": true
         },
         "b9090ff2-f35c-41d7-a7f4-405b656a76a0": {
-            "autoHeight": true,
+            "theme": "default",
             "content": "<p>The player has full control and can attempt to run away from the two. The longer this goes on the faster they move. This chase is unwinnable and ends when the player is caught.<\/p>",
-            "theme": "default"
+            "autoHeight": true
         },
         "95439899-8fd6-4faf-93b3-6bbeb63879d9": {
-            "autoHeight": true,
+            "theme": "default",
             "content": "<p>Jay baring his teeth in an aggressive stance<\/p>",
-            "theme": "default"
+            "autoHeight": true
         },
         "9e275918-fa41-4b8c-90c5-151d3262e3e3": {
-            "autoHeight": true,
+            "theme": "default",
             "content": "<p>Child recoiling, tears forming in their eyes, Lindsey on the side looking pinching the bridge of her nose and looking like this is the last straw<\/p>",
-            "theme": "default"
+            "autoHeight": true
         },
         "b47ac154-93a9-4774-b519-de391dc5535a": {
-            "autoHeight": true,
+            "theme": "default",
             "content": "<p>Night scene of the pen from before, but we see Linsey shadowed in the background heading towards the sleeping area<\/p>",
-            "theme": "default"
+            "autoHeight": true
         },
         "3b437702-156b-43ad-93a7-c9990eebe101": {
-            "autoHeight": true,
+            "theme": "default",
             "content": "<p>We see a sleeping Jay, curled up and content with a shadow looming over them.<\/p>",
-            "theme": "default"
+            "autoHeight": true
         },
         "0765424c-4f5e-411e-8e1b-055861c415fd": {
-            "autoHeight": true,
+            "theme": "default",
             "content": "<p>Back to the pen scene, we see Linsey again but this time holding a box and heading towards the door<\/p>",
-            "theme": "default"
+            "autoHeight": true
         }
     },
     "elements": {
@@ -257,7 +257,7 @@
         "9ae594e4-69c5-4a03-8d67-1fd740215ef0": {
             "theme": "default",
             "title": "<p>Map Cutscene 1<\/p>",
-            "content": "<p><span class=\"mention-component mention\" data-id=\"9ebcc176-8210-45ed-9f72-3e2e4aecb6e6\" data-label=\"Breeding Center\" data-type=\"component\">Breeding Center<\/span> <\/p><p>[<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> @ PlayerStart <\/p><p><span class=\"mention-component mention\" data-id=\"0fd9bec6-219e-4efb-996e-636d0d754c3b\" data-label=\"Siblings\" data-type=\"component\">Siblings<\/span> <-> RunInCircles<\/p><p>] <\/p><p>[Wait 8s]<\/p><p>[<span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> > GoToPlayer] <\/p>",
+            "content": "<p><span class=\"mention-component mention\" data-id=\"9ebcc176-8210-45ed-9f72-3e2e4aecb6e6\" data-label=\"Breeding Center\" data-type=\"component\">Breeding Center<\/span> <\/p><p>[<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> @ PlayerStart,<\/p><p><span class=\"mention-component mention\" data-id=\"0fd9bec6-219e-4efb-996e-636d0d754c3b\" data-label=\"Siblings\" data-type=\"component\">Siblings<\/span> <-> RunInCircles<\/p><p>] <\/p><p>[Wait 8s]<\/p><p>[<span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> > GoToPlayer] <\/p>",
             "outputs": [],
             "autoHeight": true,
             "components": [
@@ -265,324 +265,324 @@
             ]
         },
         "99142c43-1b40-461d-ba30-248c0ef13956": {
-            "components": [
-                "b811ea01-9c9e-46a7-911e-a3bed96205b6"
-            ],
-            "title": "<p>Dialogue 1<\/p>",
-            "autoHeight": true,
-            "content": "<p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : Hey, they kick you out of tag again?<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : No, I left! They won't listen to me about the humans.<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : Maybe it's because they're just trying to have fun?<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : How can they run around having fun when at any moment a human could come in here and take one of us away?!<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : Would you rather they hide and be scared all the time? Let them have fun Jay, they don't want to think about where the humans take us or what happens after that.<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : You don't understand! Dee came back yesterday, I saw her and that human that took her away up in the front! She didn't have fur anymore, her skin was all blue and she had fins, like a fish. She's a fish, Iye! The humans turned her into a fish!<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : Whoa\u2026 That's freaky\u2026<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : Yeah, and you know what Em said when I told them all what I saw?! \u201cCool!\u201d Can you believe it?!<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : I don't want some human to grab me and turn me into a fish\u2026 But what can we do about it? We can't stop them, can we?<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : I... I don't know...<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : We need to come up with a plan, even if it's just us, okay? Say, let's play a quick card game, that always helps me calm down and think.<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : Hmmm, okay. I guess it can't hurt.<\/p>",
             "theme": "default",
+            "title": "<p>Dialogue 1<\/p>",
+            "content": "<p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : Hey, they kick you out of tag again?<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : No, I left! They won't listen to me about the humans.<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : Maybe it's because they're just trying to have fun?<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : How can they run around having fun when at any moment a human could come in here and take one of us away?!<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : Would you rather they hide and be scared all the time? Let them have fun Jay, they don't want to think about where the humans take us or what happens after that.<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : You don't understand! Dee came back yesterday, I saw her and that human that took her away up in the front! She didn't have fur anymore, her skin was all blue and she had fins, like a fish. She's a fish, Iye! The humans turned her into a fish!<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : Whoa\u2026 That's freaky\u2026<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : Yeah, and you know what Em said when I told them all what I saw?! \u201cCool!\u201d Can you believe it?!<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : I don't want some human to grab me and turn me into a fish\u2026 But what can we do about it? We can't stop them, can we?<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : I... I don't know...<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : We need to come up with a plan, even if it's just us, okay? Say, let's play a quick card game, that always helps me calm down and think.<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : Hmmm, okay. I guess it can't hurt.<\/p>",
             "outputs": [
                 "1c274071-3eca-4afd-b8da-8664072d6291"
+            ],
+            "autoHeight": true,
+            "components": [
+                "b811ea01-9c9e-46a7-911e-a3bed96205b6"
             ]
         },
         "937a21d8-5cd0-40e2-b3df-180cf04461db": {
-            "components": [
-                "045a05ea-5346-4565-9270-022d4ff3cd8c"
-            ],
-            "title": "<p><span class=\"mention mention-component\" data-id=\"045a05ea-5346-4565-9270-022d4ff3cd8c\" data-type=\"component\" data-label=\"Guessing Game\">Guessing Game<\/span><\/p>",
-            "autoHeight": true,
-            "content": "",
             "theme": "default",
+            "title": "<p><span class=\"mention mention-component\" data-id=\"045a05ea-5346-4565-9270-022d4ff3cd8c\" data-type=\"component\" data-label=\"Guessing Game\">Guessing Game<\/span><\/p>",
+            "content": "",
             "outputs": [
                 "b40724a0-6f87-40d3-91f1-827fdf2edbdf"
+            ],
+            "autoHeight": true,
+            "components": [
+                "045a05ea-5346-4565-9270-022d4ff3cd8c"
             ]
         },
         "a12f53f1-976e-458a-9a7d-f5f718b41eb1": {
-            "components": [
-                "afcaf75a-8019-4caf-897e-0bda212ae48b"
-            ],
-            "title": "<p>Exploring Breeding Center<\/p>",
-            "autoHeight": true,
-            "content": "<p><\/p>",
             "theme": "default",
+            "title": "<p>Exploring Breeding Center<\/p>",
+            "content": "<p><\/p>",
             "outputs": [
                 "bfc8d219-eaea-4e37-97df-5ef3142ece7e",
                 "73dd1292-839f-47b2-a299-239814bb7077",
                 "61434174-1dc3-4117-81d0-1f8f1bc60622",
                 "8a3a7646-0223-40c6-95e2-4921a737687d"
+            ],
+            "autoHeight": true,
+            "components": [
+                "afcaf75a-8019-4caf-897e-0bda212ae48b"
             ]
         },
         "9008fca8-a82b-4ead-9e2f-aaceea21c0dd": {
-            "components": [],
-            "title": "<p>Climbing Tree<\/p>",
-            "autoHeight": true,
-            "content": "<p>Nice and tall, perfect for keeping a lookout. I can see the whole store from up there.<\/p>",
             "theme": "default",
+            "title": "<p>Climbing Tree<\/p>",
+            "content": "<p>Nice and tall, perfect for keeping a lookout. I can see the whole store from up there.<\/p>",
             "outputs": [
                 "50e1a309-53fa-4b32-9c4f-d8bf92893772"
-            ]
+            ],
+            "autoHeight": true,
+            "components": []
         },
         "259b5682-66d5-4bd5-8746-66ce19f9e74c": {
-            "components": [],
-            "title": "<p>Toys<\/p>",
-            "autoHeight": true,
-            "content": "<p>My siblings used to play with these all the time. I just don't see the point.<\/p>",
             "theme": "default",
+            "title": "<p>Toys<\/p>",
+            "content": "<p>My siblings used to play with these all the time. I just don't see the point.<\/p>",
             "outputs": [
                 "8d28a21a-4b2e-45c2-ac97-45413644304d"
-            ]
+            ],
+            "autoHeight": true,
+            "components": []
         },
         "4187ff44-79db-4fbf-8d52-a7103693d4c7": {
-            "components": [],
-            "title": "<p>Covered Hole<\/p>",
-            "autoHeight": true,
-            "content": "<p>I'm not allowed in the sleeping area until closing time. I'd never stay out here otherwise.<\/p>",
             "theme": "default",
+            "title": "<p>Covered Hole<\/p>",
+            "content": "<p>I'm not allowed in the sleeping area until closing time. I'd never stay out here otherwise.<\/p>",
             "outputs": [
                 "c69031a5-5484-4296-91ef-6d3aa2af2a5f"
-            ]
+            ],
+            "autoHeight": true,
+            "components": []
         },
         "edf1a449-7e0b-4164-b750-4354f46a15f7": {
-            "components": [
-                "3fcab303-4ce4-4886-adb5-8039d5a023ee"
-            ],
-            "title": "<p>Map Cutscene 3<\/p>",
-            "autoHeight": true,
-            "content": "<p>[<span class=\"mention-component mention\" data-id=\"674fe4a4-506e-43c8-9692-d9e94db86ad3\" data-label=\"Linsey (Human)\" data-type=\"component\">Linsey (Human)<\/span> > Enters Pen]<\/p><p>[Wait 5s]<\/p><p>[<span class=\"mention-component mention\" data-id=\"674fe4a4-506e-43c8-9692-d9e94db86ad3\" data-label=\"Linsey (Human)\" data-type=\"component\">Linsey (Human)<\/span> > <span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span>]<\/p>",
             "theme": "default",
+            "title": "<p>Map Cutscene 3<\/p>",
+            "content": "<p>[<span class=\"mention-component mention\" data-id=\"674fe4a4-506e-43c8-9692-d9e94db86ad3\" data-label=\"Linsey (Human)\" data-type=\"component\">Linsey (Human)<\/span> > Enters Pen]<\/p><p>[Wait 5s]<\/p><p>[<span class=\"mention-component mention\" data-id=\"674fe4a4-506e-43c8-9692-d9e94db86ad3\" data-label=\"Linsey (Human)\" data-type=\"component\">Linsey (Human)<\/span> > <span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span>]<\/p>",
             "outputs": [
                 "41eeb2e4-dbad-46f0-a3e4-3a107b7def29"
+            ],
+            "autoHeight": true,
+            "components": [
+                "3fcab303-4ce4-4886-adb5-8039d5a023ee"
             ]
         },
         "e6612f56-f756-4428-8d4f-fd19dbb2cce7": {
-            "components": [
-                "3fcab303-4ce4-4886-adb5-8039d5a023ee"
-            ],
-            "title": "<p>Map Cutscene 2<\/p>",
-            "autoHeight": true,
-            "content": "<p><span class=\"mention-component mention\" data-id=\"9ebcc176-8210-45ed-9f72-3e2e4aecb6e6\" data-label=\"Breeding Center\" data-type=\"component\">Breeding Center<\/span> <\/p><p>[<span class=\"mention-component mention\" data-id=\"674fe4a4-506e-43c8-9692-d9e94db86ad3\" data-label=\"Linsey (Human)\" data-type=\"component\">Linsey (Human)<\/span> > Enters Pen] <\/p><p>[Wait 3s]<\/p><p>[<span class=\"mention-component mention\" data-id=\"0fd9bec6-219e-4efb-996e-636d0d754c3b\" data-label=\"Siblings\" data-type=\"component\">Siblings<\/span> > Gather around Linsey]<\/p><p>[Wait 3s]<\/p><p>[<span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> & <span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span>  > To Sleeping Area] <\/p>",
             "theme": "default",
+            "title": "<p>Map Cutscene 2<\/p>",
+            "content": "<p><span class=\"mention-component mention\" data-id=\"9ebcc176-8210-45ed-9f72-3e2e4aecb6e6\" data-label=\"Breeding Center\" data-type=\"component\">Breeding Center<\/span> <\/p><p>[<span class=\"mention-component mention\" data-id=\"674fe4a4-506e-43c8-9692-d9e94db86ad3\" data-label=\"Linsey (Human)\" data-type=\"component\">Linsey (Human)<\/span> > Enters Pen] <\/p><p>[Wait 3s]<\/p><p>[<span class=\"mention-component mention\" data-id=\"0fd9bec6-219e-4efb-996e-636d0d754c3b\" data-label=\"Siblings\" data-type=\"component\">Siblings<\/span> > Gather around Linsey]<\/p><p>[Wait 3s]<\/p><p>[<span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> & <span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span>  > To Sleeping Area] <\/p>",
             "outputs": [
                 "19336b00-26a0-461e-a14d-efcfae83d29f"
+            ],
+            "autoHeight": true,
+            "components": [
+                "3fcab303-4ce4-4886-adb5-8039d5a023ee"
             ]
         },
         "a539efc1-6145-4c9c-a46f-25f2f60dce9b": {
-            "components": [
-                "b811ea01-9c9e-46a7-911e-a3bed96205b6"
-            ],
-            "title": "<p>Dialogue 2<\/p>",
-            "autoHeight": true,
-            "content": "<p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : This is so frustrating! Why does she keep bringing them here?!<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : I don't know, they should just leave us alone. We don't want to be fish or anything else!<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : Yeah, we're great just the way we are! We're not going to change for any dumb human!<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : Never, promise?<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : Of course! Promise!<\/p>",
             "theme": "default",
+            "title": "<p>Dialogue 2<\/p>",
+            "content": "<p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : This is so frustrating! Why does she keep bringing them here?!<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : I don't know, they should just leave us alone. We don't want to be fish or anything else!<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : Yeah, we're great just the way we are! We're not going to change for any dumb human!<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : Never, promise?<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : Of course! Promise!<\/p>",
             "outputs": [
                 "0bd8dd00-89d7-4e0e-9a82-7e3f49b94262"
+            ],
+            "autoHeight": true,
+            "components": [
+                "b811ea01-9c9e-46a7-911e-a3bed96205b6"
             ]
         },
         "cc825142-5940-4552-96f4-10ea3f5eba56": {
+            "theme": "default",
+            "title": "<p>Mid Image 1<\/p>",
             "assets": {
                 "cover": {
                     "id": "7d2de2e6-a07a-419b-811d-3996d1c1d2d9"
                 }
             },
-            "components": [
-                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
-            ],
-            "title": "<p>Mid Image 1<\/p>",
-            "autoHeight": true,
             "content": "<p><\/p>",
-            "theme": "default",
             "outputs": [
                 "7df1695c-3285-40a1-98b3-c6a1e8f13bca"
+            ],
+            "autoHeight": true,
+            "components": [
+                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
             ]
         },
         "3ad32c31-8bc3-4082-b774-bdfdef28510a": {
+            "theme": "default",
+            "title": "<p>Mid Image 2<\/p>",
             "assets": {
                 "cover": {
                     "id": "c3119b28-1a5e-4274-9644-3e1f9d8c8111"
                 }
             },
-            "components": [
-                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
-            ],
-            "title": "<p>Mid Image 2<\/p>",
-            "autoHeight": true,
             "content": "<p><\/p>",
-            "theme": "default",
             "outputs": [
                 "815e28a7-4137-495b-9507-e0828ac26930"
+            ],
+            "autoHeight": true,
+            "components": [
+                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
             ]
         },
         "c68f1f09-fe6e-4b57-9838-aa59c05eb8a9": {
+            "theme": "default",
+            "title": "<p>Mid Image 3<\/p>",
             "assets": {
                 "cover": {
                     "id": "cf3616d2-ae28-477f-bd99-bee2ad5509c1"
                 }
             },
-            "components": [
-                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
-            ],
-            "title": "<p>Mid Image 3<\/p>",
-            "autoHeight": true,
             "content": "<p><\/p>",
-            "theme": "default",
             "outputs": [
                 "6826d50b-4003-4267-a0f0-d91b271f8df7"
+            ],
+            "autoHeight": true,
+            "components": [
+                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
             ]
         },
         "b76b746f-7761-4e99-85cb-031dc6243cbf": {
+            "theme": "default",
+            "title": "<p>Mid Image 4<\/p>",
             "assets": {
                 "cover": {
                     "id": "67dce851-a273-4427-8811-48b3ba77cbd1"
                 }
             },
-            "components": [
-                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
-            ],
-            "title": "<p>Mid Image 4<\/p>",
-            "autoHeight": true,
             "content": "<p><\/p>",
-            "theme": "default",
             "outputs": [
                 "e1cdd69a-9e16-4339-ab1a-2bd086ecd462"
+            ],
+            "autoHeight": true,
+            "components": [
+                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
             ]
         },
         "5c09a505-1d73-47ed-b0c0-d02aed4bdb33": {
+            "theme": "default",
+            "title": "<p>Mid Image 5<\/p>",
             "assets": {
                 "cover": {
                     "id": "073efe10-dd58-4795-b70a-e698e7a4cebb"
                 }
             },
-            "components": [
-                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
-            ],
-            "title": "<p>Mid Image 5<\/p>",
-            "autoHeight": true,
             "content": "<p><\/p>",
-            "theme": "default",
             "outputs": [
                 "9e10b166-9938-48df-ba11-633dffcb241c"
+            ],
+            "autoHeight": true,
+            "components": [
+                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
             ]
         },
         "ae210c18-452d-4906-8e2e-aeba39709150": {
+            "theme": "default",
+            "title": "<p>Mid Image 7<\/p>",
             "assets": {
                 "cover": {
                     "id": "5e4acb0f-66bd-4f41-9e5f-b6d2c4cb5fa1"
                 }
             },
-            "components": [
-                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
-            ],
-            "title": "<p>Mid Image 7<\/p>",
-            "autoHeight": true,
             "content": "<p><\/p>",
-            "theme": "default",
             "outputs": [
                 "5d852c9b-7fb4-48e0-ad08-21c3be4eb08c"
+            ],
+            "autoHeight": true,
+            "components": [
+                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
             ]
         },
         "0ba1e919-f383-422e-b1ec-9af9c32b48b8": {
-            "components": [
-                "371ce904-6d5c-43ba-bd05-b672a7cb7772"
-            ],
-            "title": "<p>Chase Scene 1<\/p>",
-            "autoHeight": true,
-            "content": "<p><\/p>",
             "theme": "default",
+            "title": "<p>Chase Scene 1<\/p>",
+            "content": "<p><\/p>",
             "outputs": [
                 "46e633db-2d9d-4a2c-863b-457d3cdb5ce7"
+            ],
+            "autoHeight": true,
+            "components": [
+                "371ce904-6d5c-43ba-bd05-b672a7cb7772"
             ]
         },
         "ae665844-6642-4ab6-b200-9191a7000445": {
+            "theme": "default",
+            "title": "<p>End Image 1<\/p>",
             "assets": {
                 "cover": {
                     "id": "87fbce4b-bd6e-422c-a412-e68d6e3b76ba"
                 }
             },
-            "components": [
-                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
-            ],
-            "title": "<p>End Image 1<\/p>",
-            "autoHeight": true,
             "content": "<p><\/p>",
-            "theme": "default",
             "outputs": [
                 "b12f0007-0b1b-46da-8814-b2635b42178a"
+            ],
+            "autoHeight": true,
+            "components": [
+                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
             ]
         },
         "707b7637-6b3a-4d06-982b-39a90b0c0fb0": {
+            "theme": "default",
+            "title": "<p>End Image 2<\/p>",
             "assets": {
                 "cover": {
                     "id": "70e9cfb6-995b-4547-8198-6df467cb3717"
                 }
             },
-            "components": [
-                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
-            ],
-            "title": "<p>End Image 2<\/p>",
-            "autoHeight": true,
             "content": "<p><\/p>",
-            "theme": "default",
             "outputs": [
                 "d1475162-c583-4af0-a365-1c1c13bc9faf"
+            ],
+            "autoHeight": true,
+            "components": [
+                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
             ]
         },
         "383f5d3c-636d-420c-8a0c-1171ff8c1185": {
+            "theme": "default",
+            "title": "<p>End Image 3<\/p>",
             "assets": {
                 "cover": {
                     "id": "fbe53c41-8780-4d89-8840-41543925dea2"
                 }
             },
-            "components": [
-                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
-            ],
-            "title": "<p>End Image 3<\/p>",
-            "autoHeight": true,
             "content": "<p><\/p>",
-            "theme": "default",
             "outputs": [
                 "642d2071-aa93-4733-80a7-64d533c0c74a"
+            ],
+            "autoHeight": true,
+            "components": [
+                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
             ]
         },
         "5514499c-7bc3-4af4-8fad-b9fb48c23349": {
+            "theme": "default",
+            "title": "<p>End Image 4<\/p>",
             "assets": {
                 "cover": {
                     "id": "4fe42c88-6829-4639-bded-d8941d2442cd"
                 }
             },
-            "components": [
-                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
-            ],
-            "title": "<p>End Image 4<\/p>",
-            "autoHeight": true,
             "content": "<p><\/p>",
-            "theme": "default",
             "outputs": [
                 "82e2cb90-218c-47d7-a370-c3276bd19949"
+            ],
+            "autoHeight": true,
+            "components": [
+                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
             ]
         },
         "735a9303-3e5b-44e1-ba8a-437f6ff16742": {
+            "theme": "default",
+            "title": "<p>End Image 5<\/p>",
             "assets": {
                 "cover": {
                     "id": "2651fd07-893f-459b-b13e-ff4aa6d91c5f"
                 }
             },
-            "components": [
-                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
-            ],
-            "title": "<p>End Image 5<\/p>",
-            "autoHeight": true,
             "content": "<p><\/p>",
-            "theme": "default",
             "outputs": [
                 "dc861a90-4cbc-4b7e-9078-43bdea98e8f8"
+            ],
+            "autoHeight": true,
+            "components": [
+                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
             ]
         },
         "a4db1a61-3409-41de-90a6-140598cae6b4": {
+            "theme": "default",
+            "title": "<p>Mid Image 6<\/p>",
             "assets": {
                 "cover": {
                     "id": "c7f9c5c6-c6df-4439-84fa-f57c93d7f91d"
                 }
             },
-            "components": [
-                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
-            ],
-            "title": "<p>Mid Image 6<\/p>",
-            "autoHeight": true,
             "content": "<p><\/p>",
-            "theme": "default",
             "outputs": [
                 "399c353a-b1d5-4b96-857e-72869154805e"
+            ],
+            "autoHeight": true,
+            "components": [
+                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d"
             ]
         }
     },
@@ -606,273 +606,273 @@
             "targetType": "elements"
         },
         "1c274071-3eca-4afd-b8da-8664072d6291": {
-            "targetType": "elements",
             "type": "Bezier",
-            "sourceType": "elements",
             "label": null,
-            "sourceid": "99142c43-1b40-461d-ba30-248c0ef13956",
             "theme": "default",
-            "targetid": "937a21d8-5cd0-40e2-b3df-180cf04461db"
+            "sourceid": "99142c43-1b40-461d-ba30-248c0ef13956",
+            "targetid": "937a21d8-5cd0-40e2-b3df-180cf04461db",
+            "sourceType": "elements",
+            "targetType": "elements"
         },
         "bfc8d219-eaea-4e37-97df-5ef3142ece7e": {
-            "targetType": "branches",
             "type": "Bezier",
-            "sourceType": "elements",
             "label": null,
-            "sourceid": "a12f53f1-976e-458a-9a7d-f5f718b41eb1",
             "theme": "default",
-            "targetid": "01bc8207-863d-4778-aa88-3295bb0d63b9"
+            "sourceid": "a12f53f1-976e-458a-9a7d-f5f718b41eb1",
+            "targetid": "01bc8207-863d-4778-aa88-3295bb0d63b9",
+            "sourceType": "elements",
+            "targetType": "branches"
         },
         "66277d7d-b221-49de-8d4f-141726d4100d": {
-            "targetType": "elements",
             "type": "Bezier",
-            "sourceType": "conditions",
             "label": null,
-            "sourceid": "0d107559-2e43-4c3e-a2fb-eab347f0d8f8",
             "theme": "default",
-            "targetid": "edf1a449-7e0b-4164-b750-4354f46a15f7"
+            "sourceid": "0d107559-2e43-4c3e-a2fb-eab347f0d8f8",
+            "targetid": "edf1a449-7e0b-4164-b750-4354f46a15f7",
+            "sourceType": "conditions",
+            "targetType": "elements"
         },
         "50e1a309-53fa-4b32-9c4f-d8bf92893772": {
-            "sourceType": "elements",
+            "type": "Bezier",
             "label": null,
+            "theme": "default",
             "sourceid": "9008fca8-a82b-4ead-9e2f-aaceea21c0dd",
             "targetid": "a12f53f1-976e-458a-9a7d-f5f718b41eb1",
+            "sourceType": "elements",
             "targetFace": "right",
-            "targetType": "elements",
-            "theme": "default",
-            "type": "Bezier"
+            "targetType": "elements"
         },
         "8d28a21a-4b2e-45c2-ac97-45413644304d": {
-            "targetType": "elements",
             "type": "Bezier",
-            "sourceType": "elements",
             "label": null,
-            "sourceid": "259b5682-66d5-4bd5-8746-66ce19f9e74c",
             "theme": "default",
-            "targetid": "a12f53f1-976e-458a-9a7d-f5f718b41eb1"
+            "sourceid": "259b5682-66d5-4bd5-8746-66ce19f9e74c",
+            "targetid": "a12f53f1-976e-458a-9a7d-f5f718b41eb1",
+            "sourceType": "elements",
+            "targetType": "elements"
         },
         "c69031a5-5484-4296-91ef-6d3aa2af2a5f": {
-            "sourceType": "elements",
+            "type": "Bezier",
             "label": null,
+            "theme": "default",
             "sourceid": "4187ff44-79db-4fbf-8d52-a7103693d4c7",
             "targetid": "a12f53f1-976e-458a-9a7d-f5f718b41eb1",
+            "sourceType": "elements",
             "targetFace": "right",
-            "targetType": "elements",
-            "theme": "default",
-            "type": "Bezier"
+            "targetType": "elements"
         },
         "73dd1292-839f-47b2-a299-239814bb7077": {
-            "sourceType": "elements",
+            "type": "Bezier",
             "label": null,
+            "theme": "default",
             "sourceid": "a12f53f1-976e-458a-9a7d-f5f718b41eb1",
             "targetid": "9008fca8-a82b-4ead-9e2f-aaceea21c0dd",
+            "sourceType": "elements",
             "targetFace": "left",
-            "targetType": "elements",
-            "theme": "default",
-            "type": "Bezier"
+            "targetType": "elements"
         },
         "61434174-1dc3-4117-81d0-1f8f1bc60622": {
-            "sourceType": "elements",
+            "type": "Bezier",
             "label": null,
+            "theme": "default",
             "sourceid": "a12f53f1-976e-458a-9a7d-f5f718b41eb1",
             "targetid": "259b5682-66d5-4bd5-8746-66ce19f9e74c",
+            "sourceType": "elements",
             "targetFace": "left",
-            "targetType": "elements",
-            "theme": "default",
-            "type": "Bezier"
+            "targetType": "elements"
         },
         "8a3a7646-0223-40c6-95e2-4921a737687d": {
-            "sourceType": "elements",
+            "type": "Bezier",
             "label": null,
+            "theme": "default",
             "sourceid": "a12f53f1-976e-458a-9a7d-f5f718b41eb1",
             "targetid": "4187ff44-79db-4fbf-8d52-a7103693d4c7",
+            "sourceType": "elements",
             "targetFace": "left",
-            "targetType": "elements",
-            "theme": "default",
-            "type": "Bezier"
+            "targetType": "elements"
         },
         "b40724a0-6f87-40d3-91f1-827fdf2edbdf": {
-            "targetType": "elements",
             "type": "Bezier",
-            "sourceType": "elements",
             "label": null,
-            "sourceid": "937a21d8-5cd0-40e2-b3df-180cf04461db",
             "theme": "default",
-            "targetid": "e6612f56-f756-4428-8d4f-fd19dbb2cce7"
+            "sourceid": "937a21d8-5cd0-40e2-b3df-180cf04461db",
+            "targetid": "e6612f56-f756-4428-8d4f-fd19dbb2cce7",
+            "sourceType": "elements",
+            "targetType": "elements"
         },
         "19336b00-26a0-461e-a14d-efcfae83d29f": {
-            "targetType": "elements",
             "type": "Bezier",
-            "sourceType": "elements",
             "label": null,
-            "sourceid": "e6612f56-f756-4428-8d4f-fd19dbb2cce7",
             "theme": "default",
-            "targetid": "a539efc1-6145-4c9c-a46f-25f2f60dce9b"
+            "sourceid": "e6612f56-f756-4428-8d4f-fd19dbb2cce7",
+            "targetid": "a539efc1-6145-4c9c-a46f-25f2f60dce9b",
+            "sourceType": "elements",
+            "targetType": "elements"
         },
         "0bd8dd00-89d7-4e0e-9a82-7e3f49b94262": {
             "type": "Bezier",
             "label": null,
+            "theme": "default",
             "sourceid": "a539efc1-6145-4c9c-a46f-25f2f60dce9b",
             "targetid": "cc825142-5940-4552-96f4-10ea3f5eba56",
-            "targetType": "elements",
+            "sourceFace": "right",
             "sourceType": "elements",
-            "theme": "default",
-            "sourceFace": "right"
+            "targetType": "elements"
         },
         "7df1695c-3285-40a1-98b3-c6a1e8f13bca": {
-            "targetType": "elements",
             "type": "Bezier",
-            "sourceType": "elements",
             "label": null,
-            "sourceid": "cc825142-5940-4552-96f4-10ea3f5eba56",
             "theme": "default",
-            "targetid": "3ad32c31-8bc3-4082-b774-bdfdef28510a"
+            "sourceid": "cc825142-5940-4552-96f4-10ea3f5eba56",
+            "targetid": "3ad32c31-8bc3-4082-b774-bdfdef28510a",
+            "sourceType": "elements",
+            "targetType": "elements"
         },
         "e1cdd69a-9e16-4339-ab1a-2bd086ecd462": {
-            "targetType": "elements",
             "type": "Bezier",
-            "sourceType": "elements",
             "label": null,
-            "sourceid": "b76b746f-7761-4e99-85cb-031dc6243cbf",
             "theme": "default",
-            "targetid": "5c09a505-1d73-47ed-b0c0-d02aed4bdb33"
+            "sourceid": "b76b746f-7761-4e99-85cb-031dc6243cbf",
+            "targetid": "5c09a505-1d73-47ed-b0c0-d02aed4bdb33",
+            "sourceType": "elements",
+            "targetType": "elements"
         },
         "5d852c9b-7fb4-48e0-ad08-21c3be4eb08c": {
             "type": "Bezier",
             "label": null,
+            "theme": "default",
             "sourceid": "ae210c18-452d-4906-8e2e-aeba39709150",
             "targetid": "a12f53f1-976e-458a-9a7d-f5f718b41eb1",
-            "targetType": "elements",
-            "targetFace": "left",
+            "sourceFace": "right",
             "sourceType": "elements",
-            "theme": "default",
-            "sourceFace": "right"
+            "targetFace": "left",
+            "targetType": "elements"
         },
         "6826d50b-4003-4267-a0f0-d91b271f8df7": {
             "type": "Bezier",
             "label": null,
+            "theme": "default",
             "sourceid": "c68f1f09-fe6e-4b57-9838-aa59c05eb8a9",
             "targetid": "b76b746f-7761-4e99-85cb-031dc6243cbf",
-            "targetType": "elements",
-            "targetFace": "top",
+            "sourceFace": "bottom",
             "sourceType": "elements",
-            "theme": "default",
-            "sourceFace": "bottom"
+            "targetFace": "top",
+            "targetType": "elements"
         },
         "815e28a7-4137-495b-9507-e0828ac26930": {
             "type": "Bezier",
             "label": null,
+            "theme": "default",
             "sourceid": "3ad32c31-8bc3-4082-b774-bdfdef28510a",
             "targetid": "c68f1f09-fe6e-4b57-9838-aa59c05eb8a9",
-            "targetType": "elements",
-            "targetFace": "left",
+            "sourceFace": "right",
             "sourceType": "elements",
-            "theme": "default",
-            "sourceFace": "right"
+            "targetFace": "left",
+            "targetType": "elements"
         },
         "41eeb2e4-dbad-46f0-a3e4-3a107b7def29": {
-            "targetType": "elements",
             "type": "Bezier",
-            "sourceType": "elements",
             "label": null,
-            "sourceid": "edf1a449-7e0b-4164-b750-4354f46a15f7",
             "theme": "default",
-            "targetid": "0ba1e919-f383-422e-b1ec-9af9c32b48b8"
+            "sourceid": "edf1a449-7e0b-4164-b750-4354f46a15f7",
+            "targetid": "0ba1e919-f383-422e-b1ec-9af9c32b48b8",
+            "sourceType": "elements",
+            "targetType": "elements"
         },
         "46e633db-2d9d-4a2c-863b-457d3cdb5ce7": {
-            "targetType": "elements",
             "type": "Bezier",
-            "sourceType": "elements",
             "label": null,
-            "sourceid": "0ba1e919-f383-422e-b1ec-9af9c32b48b8",
             "theme": "default",
-            "targetid": "ae665844-6642-4ab6-b200-9191a7000445"
+            "sourceid": "0ba1e919-f383-422e-b1ec-9af9c32b48b8",
+            "targetid": "ae665844-6642-4ab6-b200-9191a7000445",
+            "sourceType": "elements",
+            "targetType": "elements"
         },
         "b12f0007-0b1b-46da-8814-b2635b42178a": {
-            "targetType": "elements",
             "type": "Bezier",
-            "sourceType": "elements",
             "label": null,
-            "sourceid": "ae665844-6642-4ab6-b200-9191a7000445",
             "theme": "default",
-            "targetid": "707b7637-6b3a-4d06-982b-39a90b0c0fb0"
+            "sourceid": "ae665844-6642-4ab6-b200-9191a7000445",
+            "targetid": "707b7637-6b3a-4d06-982b-39a90b0c0fb0",
+            "sourceType": "elements",
+            "targetType": "elements"
         },
         "642d2071-aa93-4733-80a7-64d533c0c74a": {
-            "targetType": "elements",
             "type": "Bezier",
-            "sourceType": "elements",
             "label": null,
-            "sourceid": "383f5d3c-636d-420c-8a0c-1171ff8c1185",
             "theme": "default",
-            "targetid": "5514499c-7bc3-4af4-8fad-b9fb48c23349"
+            "sourceid": "383f5d3c-636d-420c-8a0c-1171ff8c1185",
+            "targetid": "5514499c-7bc3-4af4-8fad-b9fb48c23349",
+            "sourceType": "elements",
+            "targetType": "elements"
         },
         "d1475162-c583-4af0-a365-1c1c13bc9faf": {
             "type": "Bezier",
             "label": null,
+            "theme": "default",
             "sourceid": "707b7637-6b3a-4d06-982b-39a90b0c0fb0",
             "targetid": "383f5d3c-636d-420c-8a0c-1171ff8c1185",
-            "targetType": "elements",
-            "targetFace": "left",
+            "sourceFace": "right",
             "sourceType": "elements",
-            "theme": "default",
-            "sourceFace": "right"
+            "targetFace": "left",
+            "targetType": "elements"
         },
         "82e2cb90-218c-47d7-a370-c3276bd19949": {
-            "sourceType": "elements",
+            "type": "Bezier",
             "label": null,
+            "theme": "default",
             "sourceid": "5514499c-7bc3-4af4-8fad-b9fb48c23349",
             "targetid": "735a9303-3e5b-44e1-ba8a-437f6ff16742",
+            "sourceType": "elements",
             "targetFace": "top",
-            "targetType": "elements",
-            "theme": "default",
-            "type": "Bezier"
+            "targetType": "elements"
         },
         "dc861a90-4cbc-4b7e-9078-43bdea98e8f8": {
-            "targetType": "jumpers",
             "type": "Bezier",
-            "sourceType": "elements",
             "label": null,
-            "sourceid": "735a9303-3e5b-44e1-ba8a-437f6ff16742",
             "theme": "default",
-            "targetid": "695ae0ae-bca4-4f87-a122-a1a91346a640"
+            "sourceid": "735a9303-3e5b-44e1-ba8a-437f6ff16742",
+            "targetid": "695ae0ae-bca4-4f87-a122-a1a91346a640",
+            "sourceType": "elements",
+            "targetType": "jumpers"
         },
         "9e10b166-9938-48df-ba11-633dffcb241c": {
-            "targetType": "elements",
             "type": "Bezier",
-            "sourceType": "elements",
             "label": null,
-            "sourceid": "5c09a505-1d73-47ed-b0c0-d02aed4bdb33",
             "theme": "default",
-            "targetid": "a4db1a61-3409-41de-90a6-140598cae6b4"
+            "sourceid": "5c09a505-1d73-47ed-b0c0-d02aed4bdb33",
+            "targetid": "a4db1a61-3409-41de-90a6-140598cae6b4",
+            "sourceType": "elements",
+            "targetType": "elements"
         },
         "399c353a-b1d5-4b96-857e-72869154805e": {
             "type": "Bezier",
             "label": null,
+            "theme": "default",
             "sourceid": "a4db1a61-3409-41de-90a6-140598cae6b4",
             "targetid": "ae210c18-452d-4906-8e2e-aeba39709150",
-            "targetType": "elements",
-            "targetFace": "left",
+            "sourceFace": "right",
             "sourceType": "elements",
-            "theme": "default",
-            "sourceFace": "right"
+            "targetFace": "left",
+            "targetType": "elements"
         },
         "3395e98b-f863-461b-ae68-c277ffc3fc61": {
-            "sourceType": "elements",
+            "type": "Bezier",
             "label": null,
+            "theme": "default",
             "sourceid": "827f33a2-4914-45e4-a7e4-bce3fd8b6822",
             "targetid": "9ae594e4-69c5-4a03-8d67-1fd740215ef0",
+            "sourceType": "elements",
             "targetFace": "left",
-            "targetType": "elements",
-            "theme": "default",
-            "type": "Bezier"
+            "targetType": "elements"
         }
     },
     "jumpers": {
         "695ae0ae-bca4-4f87-a122-a1a91346a640": {
-            "elementId": "02ea7f48-aa5d-41f1-87b1-9b881176a7a0",
-            "height": 86,
             "align": "left",
-            "width": 185
+            "width": 185,
+            "height": 86,
+            "elementId": "02ea7f48-aa5d-41f1-87b1-9b881176a7a0"
         }
     },
     "assets": {
@@ -965,16 +965,16 @@
     },
     "branches": {
         "01bc8207-863d-4778-aa88-3295bb0d63b9": {
+            "theme": "default",
             "conditions": {
                 "ifCondition": "0d107559-2e43-4c3e-a2fb-eab347f0d8f8"
-            },
-            "theme": "default"
+            }
         }
     },
     "conditions": {
         "0d107559-2e43-4c3e-a2fb-eab347f0d8f8": {
-            "script": "visits(<span class=\"mention-element mention\" data-id=\"9008fca8-a82b-4ead-9e2f-aaceea21c0dd\" data-label=\"Climbing Tree\" data-type=\"element\">climbing_tree<\/span>) &amp;&amp; visits(<span class=\"mention-element mention\" data-id=\"259b5682-66d5-4bd5-8746-66ce19f9e74c\" data-label=\"Toys\" data-type=\"element\">toys<\/span>) &amp;&amp; visits(<span class=\"mention-element mention\" data-id=\"4187ff44-79db-4fbf-8d52-a7103693d4c7\" data-label=\"Covered Hole\" data-type=\"element\">covered_hole<\/span>)",
-            "output": "66277d7d-b221-49de-8d4f-141726d4100d"
+            "output": "66277d7d-b221-49de-8d4f-141726d4100d",
+            "script": "visits(<span class=\"mention-element mention\" data-id=\"9008fca8-a82b-4ead-9e2f-aaceea21c0dd\" data-label=\"Climbing Tree\" data-type=\"element\">climbing_tree<\/span>) &amp;&amp; visits(<span class=\"mention-element mention\" data-id=\"259b5682-66d5-4bd5-8746-66ce19f9e74c\" data-label=\"Toys\" data-type=\"element\">toys<\/span>) &amp;&amp; visits(<span class=\"mention-element mention\" data-id=\"4187ff44-79db-4fbf-8d52-a7103693d4c7\" data-label=\"Covered Hole\" data-type=\"element\">covered_hole<\/span>)"
         }
     },
     "variables": {
