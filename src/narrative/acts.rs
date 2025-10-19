@@ -429,6 +429,7 @@ fn get_map_path_from_id(act: &Value, id: &String) -> PathBuf {
 }
 
 // TODO: Refactor this function to take (&arcweave_act_json, &scene_id) or another one?
+// A: Make a new one that calls this
 fn parse_map_actions(map_cutscene_contents: String) -> Vec<MapAction> {
     let map_actions = Vec::<MapAction>::new();
 
@@ -436,61 +437,70 @@ fn parse_map_actions(map_cutscene_contents: String) -> Vec<MapAction> {
 }
 
 // TODO:
-// Refactor to parse multiple? or do it above?
-fn parse_map_instruction(single_map_instruction: String) -> MapInstruction {
-    // single_map_instruction example: Jay @ PlayerStart
+fn parse_map_instructions(map_instruction_batch: String) -> Vec<MapInstruction> {
+    let mut parsed_map_instructions: Vec<MapInstruction> = Vec::new();
 
-    let trimmed_map_instruction: Vec<&str> = single_map_instruction.split_whitespace().collect();
+    let split_map_instruction_batch: Vec<&str> = map_instruction_batch.split(',').collect();
 
-    let instruction_action = trimmed_map_instruction[1];
+    for single_map_instruction in split_map_instruction_batch {
+        let split_map_instruction: Vec<&str> = single_map_instruction.split_whitespace().collect();
 
-    match instruction_action {
-        "@" => {
-            return MapInstruction::Place(
-                Character {
-                    name: trimmed_map_instruction[0].to_string(),
-                },
-                MapLocation {
-                    name: trimmed_map_instruction[2].to_string(),
-                },
-            )
+        let instruction_action = split_map_instruction[1];
+
+        match instruction_action {
+            "@" => {
+                parsed_map_instructions.push(MapInstruction::Place(
+                    Character {
+                        name: split_map_instruction[0].to_string(),
+                    },
+                    MapLocation {
+                        name: split_map_instruction[2].to_string(),
+                    },
+                ));
+                continue;
+            }
+            ">" => {
+                parsed_map_instructions.push(MapInstruction::Move(
+                    Character {
+                        name: split_map_instruction[0].to_string(),
+                    },
+                    MapPath {
+                        name: split_map_instruction[2].to_string(),
+                    },
+                ));
+                continue;
+            }
+            "<->" => {
+                parsed_map_instructions.push(MapInstruction::Loop(
+                    Character {
+                        name: split_map_instruction[0].to_string(),
+                    },
+                    MapPath {
+                        name: split_map_instruction[2].to_string(),
+                    },
+                ));
+                continue;
+            }
+            _ => {}
         }
-        ">" => {
-            return MapInstruction::Move(
-                Character {
-                    name: trimmed_map_instruction[0].to_string(),
-                },
-                MapPath {
-                    name: trimmed_map_instruction[2].to_string(),
-                },
-            )
+
+        let special_instruction = split_map_instruction[0];
+        let instruction_duration = split_map_instruction[1];
+
+        match special_instruction {
+            "Wait" => {
+                let duration = str_to_duration(instruction_duration);
+                parsed_map_instructions.push(MapInstruction::Wait(duration));
+                continue;
+            }
+            _ => panic!(
+                "parse_map_instruction: Unrecognized instruction found: {}",
+                special_instruction
+            ),
         }
-        "<->" => {
-            return MapInstruction::Loop(
-                Character {
-                    name: trimmed_map_instruction[0].to_string(),
-                },
-                MapPath {
-                    name: trimmed_map_instruction[2].to_string(),
-                },
-            )
-        }
-        _ => {}
     }
 
-    let special_instruction = trimmed_map_instruction[0];
-    let instruction_duration = trimmed_map_instruction[1];
-
-    match special_instruction {
-        "Wait" => {
-            let duration = str_to_duration(instruction_duration);
-            return MapInstruction::Wait(duration);
-        }
-        _ => panic!(
-            "parse_map_instruction: Unrecognized instruction found: {}",
-            special_instruction
-        ),
-    }
+    parsed_map_instructions
 }
 
 /// Takes an str in the format of: [number]s and returns a duration in seconds
