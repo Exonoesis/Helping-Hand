@@ -135,7 +135,7 @@ impl SceneContents {
             }
             SceneType::MapCutscene => {
                 let map_path = get_map_path_from_id(&arcweave_act_json, &scene_id);
-                let map_actions = parse_map_actions(&arcweave_act_json, &scene_id);
+                let map_actions = get_map_actions_from_id(&arcweave_act_json, &scene_id);
 
                 SceneContents::MapCutscene(map_path, map_actions)
             }
@@ -428,16 +428,40 @@ fn get_map_path_from_id(act: &Value, id: &String) -> PathBuf {
     PathBuf::from(map_path_name)
 }
 
-// TODO: Refactor this function to take (&arcweave_act_json, &scene_id) or another one?
-// A: Make a new one that calls this
-fn parse_map_actions(map_cutscene_contents: String) -> Vec<MapAction> {
-    let map_actions = Vec::<MapAction>::new();
+// TODO:
+fn get_map_actions_from_id(act: &Value, id: &String) -> Vec<MapAction> {
+    // Get raw content
+    // Strip HTML + other noise
+    // Send cleaned content String to parse_map_actions
+    let cleaned_map_cutscene_content = "";
+
+    let map_actions = parse_map_actions(cleaned_map_cutscene_content);
 
     map_actions
 }
 
-// TODO:
-fn parse_map_instructions(map_instruction_batch: String) -> Vec<MapInstruction> {
+/// Takes a batch of map actions, each enclosed within brackets,
+/// and converts them into proper MapActions
+fn parse_map_actions(map_cutscene_contents: &str) -> Vec<MapAction> {
+    let mut collected_map_actions: Vec<MapAction> = Vec::new();
+
+    let trimmed_map_cutscene_contents = map_cutscene_contents.trim_matches(['[', ']']);
+    let split_map_cutscene_contents: Vec<&str> =
+        trimmed_map_cutscene_contents.split("][").collect();
+
+    for batch in split_map_cutscene_contents {
+        let map_action = MapAction {
+            map_instructions: parse_map_instructions(batch),
+        };
+        collected_map_actions.push(map_action);
+    }
+
+    collected_map_actions
+}
+
+/// Takes a batch of comma separated map instructions and
+/// converts them into their MapInstruction equivalent
+fn parse_map_instructions(map_instruction_batch: &str) -> Vec<MapInstruction> {
     let mut parsed_map_instructions: Vec<MapInstruction> = Vec::new();
 
     let split_map_instruction_batch: Vec<&str> = map_instruction_batch.split(',').collect();
@@ -494,7 +518,7 @@ fn parse_map_instructions(map_instruction_batch: String) -> Vec<MapInstruction> 
                 continue;
             }
             _ => panic!(
-                "parse_map_instruction: Unrecognized instruction found: {}",
+                "parse_map_instructions: Unrecognized instruction found: {}",
                 special_instruction
             ),
         }
