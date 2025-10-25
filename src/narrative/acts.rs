@@ -323,7 +323,7 @@ fn get_title_from_id(act: &Value, id: &String) -> String {
     let title = get_string_from_json_value(title_value);
 
     // These titles have html tags which need to be stripped
-    strip_html_tags(title)
+    strip_html_tags_simple(title)
 }
 
 /// Gets an Arcweave nodes image name | ex. Image1.png
@@ -432,7 +432,7 @@ fn get_map_path_from_id(act: &Value, id: &String) -> PathBuf {
 fn get_map_actions_from_id(act: &Value, id: &String) -> Vec<MapAction> {
     // Get raw content
     // Strip HTML + other noise
-    // Send cleaned content String to parse_map_actions
+    // Send cleaned content to parse_map_actions
     let cleaned_map_cutscene_content = "";
 
     let map_actions = parse_map_actions(cleaned_map_cutscene_content);
@@ -610,8 +610,8 @@ fn create_connected_scenes(
     connected_scenes
 }
 
-/// Removes html tags added by Arcweave | ex. <p>text<\/p>
-pub fn strip_html_tags(line: String) -> String {
+/// Removes HTML tags added by Arcweave | ex. <p>text<\/p>
+pub fn strip_html_tags_simple(line: String) -> String {
     // Create a regex to match HTML tags
     let regex = Regex::new(r"<[^>]*>").unwrap();
 
@@ -620,4 +620,120 @@ pub fn strip_html_tags(line: String) -> String {
 
     // Turn the line back into a String
     cleaned_line.to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    // Import/use any function outside of this test module.
+    use super::*;
+
+    // This is your brain on unit testing.
+    #[test]
+    fn str_to_duration_test() {
+        let duration_string = "10s";
+
+        let expected_duration = Duration::from_secs(10);
+        let actual_duration = str_to_duration(duration_string);
+
+        assert_eq!(expected_duration, actual_duration);
+    }
+
+    #[test]
+    fn parse_map_instructions_test() {
+        let instruction_string = "Player @ Place, OtherPlayer > OverThere";
+
+        let instruction_vector = parse_map_instructions(instruction_string);
+
+        let actual_first_instruction = instruction_vector[0].clone();
+        let actual_second_instruction = instruction_vector[1].clone();
+
+        let expected_first_instruction = MapInstruction::Place(
+            Character {
+                name: "Player".to_string(),
+            },
+            MapLocation {
+                name: "Place".to_string(),
+            },
+        );
+
+        let expected_second_instruction = MapInstruction::Move(
+            Character {
+                name: "OtherPlayer".to_string(),
+            },
+            MapPath {
+                name: "OverThere".to_string(),
+            },
+        );
+
+        assert_eq!(
+            expected_first_instruction, actual_first_instruction,
+            "First instruction mismatch"
+        );
+        assert_eq!(
+            expected_second_instruction, actual_second_instruction,
+            "Second instruction mismatch"
+        );
+    }
+
+    #[test]
+    fn parse_map_action_test() {
+        let map_action_string =
+            "[Player @ Place, OtherPlayer > OverThere][PlayerThree <-> CircleTime]";
+
+        let action_vector = parse_map_actions(map_action_string);
+
+        let actual_first_action = action_vector[0].clone();
+        let actual_second_action = action_vector[1].clone();
+
+        let mut first_action_instructions = Vec::new();
+        let first_map_action_first_instruction = MapInstruction::Place(
+            Character {
+                name: "Player".to_string(),
+            },
+            MapLocation {
+                name: "Place".to_string(),
+            },
+        );
+
+        let first_map_action_second_instruction = MapInstruction::Move(
+            Character {
+                name: "OtherPlayer".to_string(),
+            },
+            MapPath {
+                name: "OverThere".to_string(),
+            },
+        );
+
+        first_action_instructions.push(first_map_action_first_instruction);
+        first_action_instructions.push(first_map_action_second_instruction);
+
+        let mut second_action_instructions = Vec::new();
+        let second_map_action_first_instruction = MapInstruction::Loop(
+            Character {
+                name: "PlayerThree".to_string(),
+            },
+            MapPath {
+                name: "CircleTime".to_string(),
+            },
+        );
+
+        second_action_instructions.push(second_map_action_first_instruction);
+
+        let expected_first_action = MapAction {
+            map_instructions: first_action_instructions,
+        };
+
+        let expected_second_action = MapAction {
+            map_instructions: second_action_instructions,
+        };
+
+        assert_eq!(
+            expected_first_action, actual_first_action,
+            "First action mismatch"
+        );
+        assert_eq!(
+            expected_second_action, actual_second_action,
+            "Second action mismatch"
+        );
+    }
 }
