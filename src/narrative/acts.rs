@@ -79,14 +79,32 @@ pub struct Character {
     name: String,
 }
 
+impl Character {
+    pub fn new(name: String) -> Self {
+        Self { name }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct MapLocation {
     name: String,
 }
 
+impl MapLocation {
+    pub fn new(name: String) -> Self {
+        Self { name }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct MapPath {
     name: String,
+}
+
+impl MapPath {
+    pub fn new(name: String) -> Self {
+        Self { name }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -474,34 +492,22 @@ fn parse_map_instructions(map_instruction_batch: &str) -> Vec<MapInstruction> {
         match instruction_action {
             "@" => {
                 parsed_map_instructions.push(MapInstruction::Place(
-                    Character {
-                        name: split_map_instruction[0].to_string(),
-                    },
-                    MapLocation {
-                        name: split_map_instruction[2].to_string(),
-                    },
+                    Character::new(split_map_instruction[0].to_string()),
+                    MapLocation::new(split_map_instruction[2].to_string()),
                 ));
                 continue;
             }
             ">" => {
                 parsed_map_instructions.push(MapInstruction::Move(
-                    Character {
-                        name: split_map_instruction[0].to_string(),
-                    },
-                    MapPath {
-                        name: split_map_instruction[2].to_string(),
-                    },
+                    Character::new(split_map_instruction[0].to_string()),
+                    MapPath::new(split_map_instruction[2].to_string()),
                 ));
                 continue;
             }
             "<->" => {
                 parsed_map_instructions.push(MapInstruction::Loop(
-                    Character {
-                        name: split_map_instruction[0].to_string(),
-                    },
-                    MapPath {
-                        name: split_map_instruction[2].to_string(),
-                    },
+                    Character::new(split_map_instruction[0].to_string()),
+                    MapPath::new(split_map_instruction[2].to_string()),
                 ));
                 continue;
             }
@@ -648,21 +654,13 @@ mod tests {
         let actual_second_instruction = instruction_vector[1].clone();
 
         let expected_first_instruction = MapInstruction::Place(
-            Character {
-                name: "Player".to_string(),
-            },
-            MapLocation {
-                name: "Place".to_string(),
-            },
+            Character::new("Player".to_string()),
+            MapLocation::new("Place".to_string()),
         );
 
         let expected_second_instruction = MapInstruction::Move(
-            Character {
-                name: "OtherPlayer".to_string(),
-            },
-            MapPath {
-                name: "OverThere".to_string(),
-            },
+            Character::new("OtherPlayer".to_string()),
+            MapPath::new("OverThere".to_string()),
         );
 
         assert_eq!(
@@ -687,21 +685,13 @@ mod tests {
 
         let mut first_action_instructions = Vec::new();
         let first_map_action_first_instruction = MapInstruction::Place(
-            Character {
-                name: "Player".to_string(),
-            },
-            MapLocation {
-                name: "Place".to_string(),
-            },
+            Character::new("Player".to_string()),
+            MapLocation::new("Place".to_string()),
         );
 
         let first_map_action_second_instruction = MapInstruction::Move(
-            Character {
-                name: "OtherPlayer".to_string(),
-            },
-            MapPath {
-                name: "OverThere".to_string(),
-            },
+            Character::new("OtherPlayer".to_string()),
+            MapPath::new("OverThere".to_string()),
         );
 
         first_action_instructions.push(first_map_action_first_instruction);
@@ -709,12 +699,8 @@ mod tests {
 
         let mut second_action_instructions = Vec::new();
         let second_map_action_first_instruction = MapInstruction::Loop(
-            Character {
-                name: "PlayerThree".to_string(),
-            },
-            MapPath {
-                name: "CircleTime".to_string(),
-            },
+            Character::new("PlayerThree".to_string()),
+            MapPath::new("CircleTime".to_string()),
         );
 
         second_action_instructions.push(second_map_action_first_instruction);
