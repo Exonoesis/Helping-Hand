@@ -448,14 +448,48 @@ fn get_map_path_from_id(act: &Value, id: &String) -> PathBuf {
 
 // TODO:
 fn get_map_actions_from_id(act: &Value, id: &String) -> Vec<MapAction> {
-    // Get raw content
-    // Strip HTML + other noise
-    // Send cleaned content to parse_map_actions
-    let cleaned_map_cutscene_content = "";
+    let content_value = act
+        .get("elements")
+        .and_then(|elements| elements.get(&id))
+        .and_then(|content| content.get("content"))
+        .expect(&format!(
+            "get_map_actions_from_id: Unable to get content for item {}",
+            id
+        ));
 
-    let map_actions = parse_map_actions(cleaned_map_cutscene_content);
+    let content_string = get_string_from_json_value(content_value);
+
+    // Strip HTML + other noise
+    let cleaned_map_cutscene_content = strip_html_for_map_actions(content_string.as_str());
+
+    // Send cleaned content to parse_map_actions
+    let map_actions = parse_map_actions(cleaned_map_cutscene_content.as_str());
 
     map_actions
+}
+
+fn strip_html_for_map_actions(input: &str) -> String {
+    let remove_simple_tags = input
+        .replace("<p>", "")
+        .replace("</p>", "")
+        .replace("</span>", "");
+
+    let remove_span_tags = Regex::new(r#"<span[^>]*>"#)
+        .unwrap()
+        .replace_all(&remove_simple_tags, "")
+        .to_string();
+
+    let stripped_before_first_bracket = remove_span_tags
+        .split_once('[')
+        .map(|(_before, after)| format!("[{}", after))
+        .unwrap_or(remove_span_tags);
+
+    let remove_outer_whitespace = Regex::new(r"\]\s*\[")
+        .unwrap()
+        .replace_all(&stripped_before_first_bracket, "][")
+        .to_string();
+
+    remove_outer_whitespace
 }
 
 /// Takes a batch of map actions, each enclosed within brackets,
