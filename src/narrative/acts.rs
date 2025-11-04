@@ -65,9 +65,14 @@ pub enum SceneContents {
 pub struct MapAction {
     map_instructions: Vec<MapInstruction>,
 }
+impl MapAction {
+    pub fn get_instructions(&self) -> &Vec<MapInstruction> {
+        &self.map_instructions
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
-enum MapInstruction {
+pub enum MapInstruction {
     Wait(Duration),
     Place(Character, MapLocation),
     Move(Character, MapPath),
@@ -446,7 +451,6 @@ fn get_map_path_from_id(act: &Value, id: &String) -> PathBuf {
     PathBuf::from(map_path_name)
 }
 
-// TODO:
 fn get_map_actions_from_id(act: &Value, id: &String) -> Vec<MapAction> {
     let content_value = act
         .get("elements")
@@ -502,8 +506,9 @@ fn parse_map_actions(map_cutscene_contents: &str) -> Vec<MapAction> {
         trimmed_map_cutscene_contents.split("][").collect();
 
     for batch in split_map_cutscene_contents {
+        let cleaned_batch = batch.replace("[", "").replace("]", "");
         let map_action = MapAction {
-            map_instructions: parse_map_instructions(batch),
+            map_instructions: parse_map_instructions(cleaned_batch.as_str()),
         };
         collected_map_actions.push(map_action);
     }

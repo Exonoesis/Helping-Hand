@@ -1,6 +1,6 @@
 use cucumber::{given, then, when, World};
 use helping_hand::narrative::acts::*;
-use std::path::PathBuf;
+use std::{path::PathBuf, time::Duration};
 
 #[derive(Debug, World)]
 #[world(init = Self::new)]
@@ -132,6 +132,70 @@ fn verify_number_of_map_actions(game: &mut GameWorld, scene_title: String, num_m
     let expected_action_num = num_map_actions;
 
     assert_eq!(expected_action_num, actual_action_num);
+}
+
+#[then(regex = r"in Map Action ([0-9]+) of '(.+)', Map Instruction ([0-9]+) says to (.\w+) (.+)")]
+fn verify_map_action_contents(
+    game: &mut GameWorld,
+    map_action_index: usize,
+    map_cutscene_name: String,
+    map_instruction_index: usize,
+    instruction_type: String,
+    instruction_details: String,
+) {
+    let expected_instruction: MapInstruction;
+
+    let instruction_details_split: Vec<&str> = instruction_details.split_whitespace().collect();
+
+    match instruction_type.as_str() {
+        "place" => {
+            let character = Character::new(instruction_details_split[0].to_string());
+            let location = MapLocation::new(
+                instruction_details_split[instruction_details_split.len() - 2].to_string(),
+            );
+            expected_instruction = MapInstruction::Place(character, location);
+        }
+        "loop" => {
+            let character = Character::new(instruction_details_split[0].to_string());
+            let path = MapPath::new(
+                instruction_details_split[instruction_details_split.len() - 2].to_string(),
+            );
+            expected_instruction = MapInstruction::Loop(character, path);
+        }
+        "wait" => {
+            let duration_str: u64 = instruction_details_split[instruction_details_split.len() - 2]
+                .parse()
+                .expect(
+                    "verify_map_action_contents: Unable to convert instruction duration to number.",
+                );
+            let duration = Duration::from_secs(duration_str);
+            expected_instruction = MapInstruction::Wait(duration);
+        }
+        "move" => {
+            let character = Character::new(instruction_details_split[0].to_string());
+            let path = MapPath::new(
+                instruction_details_split[instruction_details_split.len() - 2].to_string(),
+            );
+            expected_instruction = MapInstruction::Move(character, path);
+        }
+        _ => {
+            panic!(
+                "verify_map_action_contents: Unrecognized instruction found: {}",
+                instruction_type
+            )
+        }
+    }
+
+    let act = &game.current_act;
+
+    let actual_scene = act.get_scene_by_title(&map_cutscene_name);
+    let actual_contents = actual_scene.get_scene_contents();
+    let actual_map_actions = actual_contents.get_map_actions();
+    let actual_map_action = actual_map_actions[map_action_index - 1].clone();
+    let actual_instructions = actual_map_action.get_instructions();
+    let actual_instruction = actual_instructions[map_instruction_index - 1].clone();
+
+    assert_eq!(expected_instruction, actual_instruction);
 }
 
 #[then(regex = r"scene '(.+)' should connect to scene '(.+)'.")]
