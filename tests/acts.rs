@@ -38,6 +38,50 @@ fn get_act_file_location(act_file_name: String) -> PathBuf {
     act_file_path
 }
 
+fn parse_map_instruction(
+    instruction_type: String,
+    instruction_details_split: Vec<&str>,
+) -> MapInstruction {
+    match instruction_type.as_str() {
+        "place" => {
+            let character = Character::new(instruction_details_split[0].to_string());
+            let location = MapLocation::new(
+                instruction_details_split[instruction_details_split.len() - 2].to_string(),
+            );
+            return MapInstruction::Place(character, location);
+        }
+        "loop" => {
+            let character = Character::new(instruction_details_split[0].to_string());
+            let path = MapPath::new(
+                instruction_details_split[instruction_details_split.len() - 2].to_string(),
+            );
+            return MapInstruction::Loop(character, path);
+        }
+        "wait" => {
+            let duration_str: u64 = instruction_details_split[instruction_details_split.len() - 2]
+                .parse()
+                .expect(
+                    "verify_map_action_contents: Unable to convert instruction duration to number.",
+                );
+            let duration = Duration::from_secs(duration_str);
+            return MapInstruction::Wait(duration);
+        }
+        "move" => {
+            let character = Character::new(instruction_details_split[0].to_string());
+            let path = MapPath::new(
+                instruction_details_split[instruction_details_split.len() - 2].to_string(),
+            );
+            return MapInstruction::Move(character, path);
+        }
+        _ => {
+            panic!(
+                "verify_map_action_contents: Unrecognized instruction found: {}",
+                instruction_type
+            )
+        }
+    }
+}
+
 #[given(regex = r"an act file called (.+\.json),")]
 fn given_some_act_file_name(game: &mut GameWorld, file_name: String) {
     let act_file_path = get_act_file_location(file_name);
@@ -143,48 +187,9 @@ fn verify_map_action_contents(
     instruction_type: String,
     instruction_details: String,
 ) {
-    let expected_instruction: MapInstruction;
-
     let instruction_details_split: Vec<&str> = instruction_details.split_whitespace().collect();
 
-    match instruction_type.as_str() {
-        "place" => {
-            let character = Character::new(instruction_details_split[0].to_string());
-            let location = MapLocation::new(
-                instruction_details_split[instruction_details_split.len() - 2].to_string(),
-            );
-            expected_instruction = MapInstruction::Place(character, location);
-        }
-        "loop" => {
-            let character = Character::new(instruction_details_split[0].to_string());
-            let path = MapPath::new(
-                instruction_details_split[instruction_details_split.len() - 2].to_string(),
-            );
-            expected_instruction = MapInstruction::Loop(character, path);
-        }
-        "wait" => {
-            let duration_str: u64 = instruction_details_split[instruction_details_split.len() - 2]
-                .parse()
-                .expect(
-                    "verify_map_action_contents: Unable to convert instruction duration to number.",
-                );
-            let duration = Duration::from_secs(duration_str);
-            expected_instruction = MapInstruction::Wait(duration);
-        }
-        "move" => {
-            let character = Character::new(instruction_details_split[0].to_string());
-            let path = MapPath::new(
-                instruction_details_split[instruction_details_split.len() - 2].to_string(),
-            );
-            expected_instruction = MapInstruction::Move(character, path);
-        }
-        _ => {
-            panic!(
-                "verify_map_action_contents: Unrecognized instruction found: {}",
-                instruction_type
-            )
-        }
-    }
+    let expected_instruction = parse_map_instruction(instruction_type, instruction_details_split);
 
     let act = &game.current_act;
 
