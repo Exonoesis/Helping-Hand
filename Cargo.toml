@@ -57,6 +57,10 @@ harness = false
 name = "scene_loading"
 harness = false
 
+[[test]]
+name = "map_instructions"
+harness = false
+
 # When measuring the performance of some feature, add a new Criterion benchmark below
 # following the format:
 [[bench]]
