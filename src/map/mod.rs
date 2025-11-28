@@ -5,7 +5,7 @@ pub mod render;
 
 use bevy::prelude::*;
 
-use tiled::Map;
+use tiled::{Map, Object};
 
 pub mod interactions;
 pub mod movement;
@@ -22,7 +22,10 @@ impl Tilemap {
         let num_layers = tiled_map.layers().len() as u32;
 
         let px_dimensions = Self::get_map_in_px(&tiled_map);
-        let tiled_tiles = get_map_tiles(&tiled_map);
+        let mut tiled_tiles = get_environment_tiles(&tiled_map);
+        let player = get_player(&tiled_map);
+
+        tiled_tiles.push(player);
 
         let num_rows = get_num_rows_from_map(&tiled_tiles);
         let num_columns = get_num_columns_from_map(&tiled_tiles);
@@ -199,7 +202,7 @@ impl PxDimensions {
     }
 }
 
-fn get_map_tiles(tiled_map: &Map) -> Vec<Tile> {
+fn get_environment_tiles(tiled_map: &Map) -> Vec<Tile> {
     let tile_width = tiled_map.tile_width;
     let tile_height = tiled_map.tile_height;
 
@@ -219,9 +222,9 @@ fn get_map_tiles(tiled_map: &Map) -> Vec<Tile> {
                 let tile_dimensions = PxDimensions::new(tile_width, tile_height);
                 let px_cords = XyzCords::new_u32(x * tile_width, y * tile_height, z);
                 let grid_cords = XyzCords::new_u32(x, y, z);
+                let tile_texture = get_environmental_tile_texture(&tiled_map, x, y, z);
                 //let layer_number = z;
-                let tile_texture = get_tile_texture(&tiled_map, x, y, z);
-                let tile_type = get_tile_type(&tiled_map, x, y, z);
+                let tile_type = get_environmental_tile_type(&tiled_map, x, y, z);
 
                 let tile = Tile::new(
                     tile_dimensions,
@@ -237,6 +240,50 @@ fn get_map_tiles(tiled_map: &Map) -> Vec<Tile> {
     }
 
     tiles
+}
+
+fn get_player(tiled_map: &Map) -> Tile {
+    let tile_width = tiled_map.tile_width;
+    let tile_height = tiled_map.tile_height;
+
+    let tile_dimensions = PxDimensions::new(tile_width, tile_height);
+
+    for z in 0..tiled_map.layers().len() {
+        let is_object_layer = is_object_layer(&tiled_map, z);
+        if !is_object_layer {
+            continue;
+        }
+
+        let layer = tiled_map.get_layer(z).unwrap();
+        if layer.name != "Traversal" {
+            continue;
+        }
+
+        let object_layer = tiled_map.get_layer(z).unwrap().as_object_layer().unwrap();
+
+        for object in object_layer.objects() {
+            if object.user_type == "Player" {
+                let x = object.x as u32;
+                let y = object.y as u32;
+                let px_cords = XyzCords::new_u32(x, y, z);
+                let grid_cords = XyzCords::new_u32(x / tile_width, y / tile_height, z);
+                let tile_texture = get_player_tile_texture(&object);
+                //let layer_number = z;
+                let tile_type = TileType::Player;
+
+                return Tile::new(
+                    tile_dimensions,
+                    px_cords,
+                    grid_cords,
+                    tile_texture,
+                    //layer_number,
+                    tile_type,
+                );
+            }
+        }
+    }
+
+    panic!("get_player: No player found on Traversal layer");
 }
 
 fn get_num_columns_from_map(tiles: &[Tile]) -> u32 {
@@ -319,7 +366,30 @@ fn is_tile_layer(tiled_map: &Map, idx: usize) -> bool {
     found_tile_layer.is_some()
 }
 
-fn get_tile_texture(
+fn is_object_layer(tiled_map: &Map, idx: usize) -> bool {
+    let found_object_layer = tiled_map.get_layer(idx).unwrap().as_object_layer();
+
+    found_object_layer.is_some()
+}
+
+fn get_player_tile_texture(object: &Object) -> Option<TileTexture> {
+    if let Some(tile) = object.get_tile() {
+        let sprite_index = tile.id() as usize;
+        let spritesheet = tile.get_tileset().image.clone().unwrap().source;
+        let spritesheet_px_width = tile.get_tileset().image.as_ref().unwrap().width as u32;
+        let spritesheet_px_height = tile.get_tileset().image.as_ref().unwrap().height as u32;
+
+        Some(TileTexture {
+            sprite_index,
+            spritesheet,
+            spritesheet_dimensions: PxDimensions::new(spritesheet_px_width, spritesheet_px_height),
+        })
+    } else {
+        None
+    }
+}
+
+fn get_environmental_tile_texture(
     tiled_map: &Map,
     x_grid_cord: u32,
     y_grid_cord: u32,
@@ -351,7 +421,7 @@ fn get_tile_texture(
     }
 }
 
-fn get_tile_type(
+fn get_environmental_tile_type(
     tiled_map: &Map,
     x_grid_cord: u32,
     y_grid_cord: u32,
@@ -379,7 +449,6 @@ fn get_tile_type(
     }
 
     match layer_name.as_str() {
-        "Player" => TileType::Player,
         "Collision" => TileType::Collision,
         _ => TileType::Normal,
     }
