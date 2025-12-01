@@ -23,9 +23,14 @@ impl Tilemap {
 
         let px_dimensions = Self::get_map_in_px(&tiled_map);
         let mut tiled_tiles = get_environment_tiles(&tiled_map);
-        let player = get_player(&tiled_map);
+        let found_player = get_player(&tiled_map);
 
-        tiled_tiles.push(player);
+        // There exist map cutscenes. Some map cutscenes can not have a
+        // player on it, such as showing something that happened in the past
+        // with unrelated characters.
+        if let Some(player) = found_player {
+            tiled_tiles.push(player);
+        }
 
         let num_rows = get_num_rows_from_map(&tiled_tiles);
         let num_columns = get_num_columns_from_map(&tiled_tiles);
@@ -242,7 +247,9 @@ fn get_environment_tiles(tiled_map: &Map) -> Vec<Tile> {
     tiles
 }
 
-fn get_player(tiled_map: &Map) -> Tile {
+/// Returns a player found on the map from the Traversal layer if it exists.
+/// Returns None otherwise.
+fn get_player(tiled_map: &Map) -> Option<Tile> {
     let tile_width = tiled_map.tile_width;
     let tile_height = tiled_map.tile_height;
 
@@ -267,23 +274,23 @@ fn get_player(tiled_map: &Map) -> Tile {
                 let y = object.y as u32;
                 let px_cords = XyzCords::new_u32(x, y, z);
                 let grid_cords = XyzCords::new_u32(x / tile_width, y / tile_height, z);
-                let tile_texture = get_player_tile_texture(&object);
+                let tile_texture = Some(get_player_tile_texture(&object));
                 //let layer_number = z;
                 let tile_type = TileType::Player;
 
-                return Tile::new(
+                return Some(Tile::new(
                     tile_dimensions,
                     px_cords,
                     grid_cords,
                     tile_texture,
                     //layer_number,
                     tile_type,
-                );
+                ));
             }
         }
     }
 
-    panic!("get_player: No player found on Traversal layer");
+    None
 }
 
 fn get_num_columns_from_map(tiles: &[Tile]) -> u32 {
@@ -372,20 +379,19 @@ fn is_object_layer(tiled_map: &Map, idx: usize) -> bool {
     found_object_layer.is_some()
 }
 
-fn get_player_tile_texture(object: &Object) -> Option<TileTexture> {
-    if let Some(tile) = object.get_tile() {
-        let sprite_index = tile.id() as usize;
-        let spritesheet = tile.get_tileset().image.clone().unwrap().source;
-        let spritesheet_px_width = tile.get_tileset().image.as_ref().unwrap().width as u32;
-        let spritesheet_px_height = tile.get_tileset().image.as_ref().unwrap().height as u32;
+fn get_player_tile_texture(object: &Object) -> TileTexture {
+    let tile = object
+        .get_tile()
+        .expect("get_player_tile_texture: Player does not have a tile.");
+    let sprite_index = tile.id() as usize;
+    let spritesheet = tile.get_tileset().image.clone().unwrap().source;
+    let spritesheet_px_width = tile.get_tileset().image.as_ref().unwrap().width as u32;
+    let spritesheet_px_height = tile.get_tileset().image.as_ref().unwrap().height as u32;
 
-        Some(TileTexture {
-            sprite_index,
-            spritesheet,
-            spritesheet_dimensions: PxDimensions::new(spritesheet_px_width, spritesheet_px_height),
-        })
-    } else {
-        None
+    TileTexture {
+        sprite_index,
+        spritesheet,
+        spritesheet_dimensions: PxDimensions::new(spritesheet_px_width, spritesheet_px_height),
     }
 }
 

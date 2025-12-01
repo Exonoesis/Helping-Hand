@@ -169,6 +169,24 @@ fn verify_tile_spritesheet(
     assert_eq!(expected_spritesheet, actual_spritesheet);
 }
 
+#[then(regex = r"the Player tile points to spritesheet (.+\.png).")]
+fn verify_player_tile_spritesheet(world: &mut GameWorld, spritesheet_name: String) {
+    let tiles = world.loaded_map.get_tiles();
+
+    let mut player_index = 0;
+    for i in 0..tiles.len() {
+        if *tiles[i].get_tile_type() == TileType::Player {
+            player_index = i;
+            break;
+        }
+    }
+
+    let actual_spritesheet =
+        world.loaded_map.get_tiles()[player_index].get_tile_spritesheet_filename();
+    let expected_spritesheet = OsString::from(spritesheet_name);
+    assert_eq!(expected_spritesheet, actual_spritesheet);
+}
+
 #[then(
     regex = r"tile ([0-9]+),([0-9]+),([0-9]+)'s spritesheet has dimensions ([0-9]+) x ([0-9]+)."
 )]
@@ -201,6 +219,23 @@ fn verify_spritesheet_tile_image(
     let tile_index = three_d_to_one_d_cords(&tile, world.loaded_map.get_grid_dimensions()) as usize;
 
     let actual_image = world.loaded_map.get_tiles()[tile_index].get_sprite_index();
+    let expected_image = image_index;
+    assert_eq!(expected_image, actual_image);
+}
+
+#[then(regex = r"the Player tile points to image number ([0-9]+).")]
+fn verify_player_tile_image(world: &mut GameWorld, image_index: usize) {
+    let tiles = world.loaded_map.get_tiles();
+
+    let mut player_index = 0;
+    for i in 0..tiles.len() {
+        if *tiles[i].get_tile_type() == TileType::Player {
+            player_index = i;
+            break;
+        }
+    }
+
+    let actual_image = world.loaded_map.get_tiles()[player_index].get_sprite_index();
     let expected_image = image_index;
     assert_eq!(expected_image, actual_image);
 }

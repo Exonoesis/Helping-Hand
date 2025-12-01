@@ -41,6 +41,12 @@ Feature: Load Tilemap from Tiled.
         And tile 0,1,0 points to image number 115.
         And tile 1,1,0 points to image number 164.
 
+    Scenario: Player texture loads correctly.
+        Given a Tiled map called player_2x3.tmx,
+        When the Tiled map is loaded,
+        Then the Player tile points to spritesheet duck-Sheet.png.
+        And the Player tile points to image number 72.
+
     Scenario: Map loads correctly when some tiles have no image.
         Given a Tiled map called one_blank.tmx,
         When the Tiled map is loaded,
