@@ -3,7 +3,9 @@ use std::{collections::HashMap, path::PathBuf};
 use bevy::prelude::*;
 use tiled::{Map, ObjectShape, PropertyValue};
 
-use crate::map::{flip_y_axis, player::PlayerInteraction, GridDimensions, PxDimensions, XyzCords};
+use crate::map::{
+    flip_y_axis, is_object_layer, player::PlayerInteraction, GridDimensions, PxDimensions, XyzCords,
+};
 
 #[derive(Component, Debug, Clone, Default)]
 pub struct InteractiveCollection {
@@ -160,32 +162,37 @@ pub fn get_interactives_from(tiled_map: &Map) -> Vec<InteractiveMarker> {
     let mut interactive_markers = Vec::new();
 
     for z in 0..tiled_map.layers().len() {
-        let found_object_layer = tiled_map.get_layer(z).unwrap().as_object_layer();
-
-        if found_object_layer.is_none() {
+        let is_object_layer = is_object_layer(&tiled_map, z);
+        if !is_object_layer {
             continue;
         }
 
-        let object_layer = found_object_layer.unwrap();
-        let objects = object_layer.objects();
+        let layer = tiled_map.get_layer(z).unwrap();
+        if layer.name != "Traversal" {
+            continue;
+        }
 
-        for object in objects {
-            let position = XyzCords::new(object.x as usize, object.y as usize, z);
+        let object_layer = tiled_map.get_layer(z).unwrap().as_object_layer().unwrap();
 
-            // Get properties and create interactive type from it
-            let properties = &object.properties;
-            let interactive_type = create_interactive_type(properties);
+        for object in object_layer.objects() {
+            if object.user_type == "Transition" {
+                let position = XyzCords::new(object.x as usize, object.y as usize, z);
 
-            // Get shape, check it's a Rect, get width and height
-            if let ObjectShape::Rect { width, height } = object.shape {
-                let object_width = width as u32;
-                let object_height = height as u32;
+                // Get properties and create interactive type from it
+                let properties = &object.properties;
+                let interactive_type = create_interactive_type(properties);
 
-                let dimensions = PxDimensions::new(object_width, object_height);
+                // Get shape, check it's a Rect, get width and height
+                if let ObjectShape::Rect { width, height } = object.shape {
+                    let object_width = width as u32;
+                    let object_height = height as u32;
 
-                let interactive_marker =
-                    InteractiveMarker::new(position, dimensions, interactive_type);
-                interactive_markers.push(interactive_marker);
+                    let dimensions = PxDimensions::new(object_width, object_height);
+
+                    let interactive_marker =
+                        InteractiveMarker::new(position, dimensions, interactive_type);
+                    interactive_markers.push(interactive_marker);
+                }
             }
         }
     }
@@ -194,8 +201,8 @@ pub fn get_interactives_from(tiled_map: &Map) -> Vec<InteractiveMarker> {
 }
 
 pub fn create_interactive_type(properties: &HashMap<String, PropertyValue>) -> InteractiveType {
-    let property_value = properties.get("Transition");
-    // We assume that there is only one property on a marker
+    let property_value = properties.get("Destination");
+    // We assume that there is only one destination property on a marker
     if let Some(PropertyValue::StringValue(property_string)) = property_value {
         InteractiveType::Transition(PathBuf::from(property_string))
     } else {

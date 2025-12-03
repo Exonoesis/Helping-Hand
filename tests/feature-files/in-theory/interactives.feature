@@ -4,9 +4,9 @@ Feature: Interactives
         When the Tiled map is loaded,
         And an Interactive Collection is extracted from the Tiled map,
         Then there are 2 interactive markers in the collection.
-        And marker 1 has a position of 0,0,2.
+        And marker 1 has a position of 0,0,1.
         And marker 1 has a size of 64x64.
-        And marker 2 has a position of 64,128,2.
+        And marker 2 has a position of 64,128,1.
         And marker 2 has a size of 128x64.
 
     Scenario: A position left of the marker reports as lower.
@@ -55,7 +55,7 @@ Feature: Interactives
         When the Tiled map is loaded,
         And an Interactive Collection is extracted from the Tiled map,
         And a marker is requested for the position,
-        Then the marker has a position of 64,0,2.
+        Then the marker has a position of 64,0,1.
         And the marker has a size of 64x64.
 
     Scenario: A marker is not found for a certain position.
@@ -72,7 +72,7 @@ Feature: Interactives
         When the Tiled map is loaded,
         And an Interactive Collection is extracted from the Tiled map,
         And a marker is requested for the position,
-        Then the marker has a position of 0,64,2.
+        Then the marker has a position of 0,64,1.
         And the marker has a size of 64x64.
 
     Scenario: A marker at the middle of the list is found.
@@ -81,7 +81,7 @@ Feature: Interactives
         When the Tiled map is loaded,
         And an Interactive Collection is extracted from the Tiled map,
         And a marker is requested for the position,
-        Then the marker has a position of 64,64,2.
+        Then the marker has a position of 64,64,1.
         And the marker has a size of 64x64.
 
     Scenario: A marker at the end of the list is found.
@@ -90,7 +90,7 @@ Feature: Interactives
         When the Tiled map is loaded,
         And an Interactive Collection is extracted from the Tiled map,
         And a marker is requested for the position,
-        Then the marker has a position of 128,128,2.
+        Then the marker has a position of 128,128,1.
         And the marker has a size of 64x64.
 
     Scenario: A marker has a given interactive type

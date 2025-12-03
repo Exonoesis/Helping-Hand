@@ -272,8 +272,8 @@ fn get_player(tiled_map: &Map) -> Option<Tile> {
             if object.user_type == "Player" {
                 let x = object.x as u32;
                 let y = object.y as u32;
-                let px_cords = XyzCords::new_u32(x, y, z);
-                let grid_cords = XyzCords::new_u32(x / tile_width, y / tile_height, z);
+                let px_cords = XyzCords::new_u32(x, y - tile_height, z);
+                let grid_cords = XyzCords::new_u32(x / tile_width, (y / tile_height) - 1, z);
                 let tile_texture = Some(get_player_tile_texture(&object));
                 //let layer_number = z;
                 let tile_type = TileType::Player;
