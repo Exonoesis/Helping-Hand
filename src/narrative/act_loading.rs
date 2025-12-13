@@ -111,6 +111,7 @@ pub fn render_current_scene(
 
     let node = create_full_screen_node();
 
+    // TODO: See notes in 'load_next_scene'.
     let current_scene = found_loaded_act.unwrap().get_current_scene();
     let scene_contents = current_scene.get_scene_contents();
     let scene_image = scene_contents.get_image_path().to_str().unwrap();
@@ -146,6 +147,12 @@ pub fn load_next_scene(
 
     let node = create_full_screen_node();
 
+    // TODO: This whole function should be able to load
+    // - Image cutscenes (it currently does), AND
+    // - Map cutscenes (it does not do this right now.)
+    //
+    // Both of these should be sub-functions. Otherwise, this will be a _very_ long and ugly
+    // scene.
     let current_scene = current_act.get_current_scene();
     let scene_contents = current_scene.get_scene_contents();
     let scene_image_path = scene_contents.get_image_path();

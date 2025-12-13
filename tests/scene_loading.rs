@@ -5,6 +5,7 @@ use bevy::color::Alpha;
 use cucumber::{given, then, when, World};
 
 use bevy::prelude::ImageNode;
+use helping_hand::map::GridCords;
 use helping_hand::narrative::act_loading::*;
 use helping_hand::narrative::acts::*;
 use helping_hand::plugins::acts::CoreActsPlugin;
@@ -85,6 +86,31 @@ fn verify_image_opacity(game: &mut Game) {
 
     // Value is normalized | [1.0 = 100%]
     assert_eq!(1.0, opacity);
+}
+
+#[then(
+    regex = r"there is a line path called '(.+)' at tile (\d+), (\d+) with a path length of (\d+) tiles."
+)]
+fn verify_line_path_exists(
+    game: &mut Game,
+    expected_line_path_name: String,
+    line_path_x: usize,
+    line_path_y: usize,
+    expected_path_length: usize,
+) {
+    let line_path = game.get_line_path(expected_line_path_name);
+
+    let expected_line_path_pos = GridCords::new(line_path_x, line_path_y, 0);
+    let actual_line_path_pos = line_path.get_starting_position();
+    assert_eq!(expected_line_path_pos, actual_line_path_pos);
+
+    let actual_path_length = line_path.get_length();
+    assert_eq!(expected_path_length, actual_path_length);
+
+    // TODO: for the then step 'the line path 'GoToPlayer' contains the tile 1, 16.' and similar,
+    // let tile_position = GridCords::new(x, y, z);
+    // let path_contains_tile = line_path.contains_tile(tile_position);
+    // assert!(path_contains_tile);
 }
 
 // This runs before everything else, so you can setup things here.
