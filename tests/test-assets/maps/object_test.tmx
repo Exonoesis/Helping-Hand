@@ -13,7 +13,7 @@
 82,82,82
 </data>
  </layer>
- <objectgroup id="4" name="Traversal">
+ <objectgroup id="4" name="Interaction">
   <object id="12" name="Jay" type="Player" gid="1241" x="64" y="128" width="64" height="64"/>
   <object id="13" type="Transition" x="64" y="128" width="128" height="64">
    <properties>

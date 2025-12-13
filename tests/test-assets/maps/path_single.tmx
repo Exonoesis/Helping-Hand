@@ -12,7 +12,7 @@
 42,42,42,42,42
 </data>
  </layer>
- <objectgroup id="14" name="Traversal">
+ <objectgroup id="14" name="Interaction">
   <object id="9" name="Jay" type="Player" gid="1241" x="0" y="128" width="64" height="64"/>
  </objectgroup>
  <objectgroup id="8" name="GoToPlayer">

@@ -13,7 +13,7 @@
 17,97,16
 </data>
  </layer>
- <objectgroup id="4" name="Traversal">
+ <objectgroup id="4" name="Interaction">
   <object id="1" name="Jay" type="Player" gid="1241" x="64" y="128" width="64" height="64"/>
  </objectgroup>
  <layer id="3" name="Collision" width="3" height="3">

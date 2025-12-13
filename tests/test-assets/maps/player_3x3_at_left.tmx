@@ -41,7 +41,7 @@
 0,0,0
 </data>
  </layer>
- <objectgroup id="7" name="Traversal">
+ <objectgroup id="7" name="Interaction">
   <object id="1" name="Jay" type="Player" gid="1241" x="0" y="128" width="64" height="64"/>
  </objectgroup>
 </map>

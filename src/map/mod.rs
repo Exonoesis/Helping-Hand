@@ -247,7 +247,7 @@ fn get_environment_tiles(tiled_map: &Map) -> Vec<Tile> {
     tiles
 }
 
-/// Returns a player found on the map from the Traversal layer if it exists.
+/// Returns a player found on the map from the Interaction layer if it exists.
 /// Returns None otherwise.
 fn get_player(tiled_map: &Map) -> Option<Tile> {
     let tile_width = tiled_map.tile_width;
@@ -262,7 +262,7 @@ fn get_player(tiled_map: &Map) -> Option<Tile> {
         }
 
         let layer = tiled_map.get_layer(z).unwrap();
-        if layer.name != "Traversal" {
+        if layer.name != "Interaction" {
             continue;
         }
 

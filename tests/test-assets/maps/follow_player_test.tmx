@@ -25,7 +25,7 @@
 42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42
 </data>
  </layer>
- <objectgroup id="3" name="Traversal">
+ <objectgroup id="3" name="Interaction">
   <object id="1" name="Jay" type="Player" gid="1241" x="704" y="512" width="64" height="64"/>
  </objectgroup>
 </map>

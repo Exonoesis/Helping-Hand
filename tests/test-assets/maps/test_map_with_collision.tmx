@@ -131,7 +131,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,762,762,762
 </data>
  </layer>
- <objectgroup id="13" name="Traversal">
+ <objectgroup id="13" name="Interaction">
   <object id="12" name="Jay" type="Player" gid="1241" x="704" y="1024" width="64" height="64"/>
  </objectgroup>
  <objectgroup id="12" name="Object Layer 1">

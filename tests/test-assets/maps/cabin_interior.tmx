@@ -84,7 +84,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="10" name="Traversal">
+ <objectgroup id="10" name="Interaction">
   <object id="2" name="Jay" type="Player" gid="2009" x="448" y="640" width="64" height="64"/>
  </objectgroup>
  <layer id="6" name="Decorations_5" width="16" height="11">

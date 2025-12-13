@@ -168,7 +168,7 @@ pub fn get_interactives_from(tiled_map: &Map) -> Vec<InteractiveMarker> {
         }
 
         let layer = tiled_map.get_layer(z).unwrap();
-        if layer.name != "Traversal" {
+        if layer.name != "Interaction" {
             continue;
         }
 
