@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use tiled::{Map, ObjectShape, PropertyValue};
 
 use crate::map::{
-    flip_y_axis, is_object_layer, player::PlayerInteraction, GridDimensions, PxDimensions, XyzCords,
+    flip_y_axis, is_object_layer, player::PlayerInteraction, GridDimensions, PxCords, PxDimensions,
 };
 
 #[derive(Component, Debug, Clone, Default)]
@@ -37,7 +37,7 @@ impl InteractiveCollection {
         &self.interactive_markers[index]
     }
 
-    pub fn get_marker_from_position(&self, position: &XyzCords) -> Option<&InteractiveMarker> {
+    pub fn get_marker_from_position(&self, position: &PxCords) -> Option<&InteractiveMarker> {
         if self.len() == 0 {
             return None;
         }
@@ -67,14 +67,14 @@ impl InteractiveCollection {
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Ord, Eq)]
 pub struct InteractiveMarker {
-    position: XyzCords,
+    position: PxCords,
     dimensions: PxDimensions,
     interaction_type: InteractiveType,
 }
 
 impl InteractiveMarker {
     pub fn new(
-        position: XyzCords,
+        position: PxCords,
         dimensions: PxDimensions,
         interaction_type: InteractiveType,
     ) -> Self {
@@ -85,7 +85,7 @@ impl InteractiveMarker {
         }
     }
 
-    pub fn containing(&self, position: &XyzCords) -> Proximity {
+    pub fn containing(&self, position: &PxCords) -> Proximity {
         let marker_min_x = self.position.get_x();
         let marker_max_x = marker_min_x + (self.dimensions.get_width());
         let marker_x_range = marker_min_x..marker_max_x;
@@ -111,7 +111,7 @@ impl InteractiveMarker {
         }
     }
 
-    pub fn get_position(&self) -> XyzCords {
+    pub fn get_position(&self) -> PxCords {
         self.position
     }
 
@@ -176,7 +176,7 @@ pub fn get_interactives_from(tiled_map: &Map) -> Vec<InteractiveMarker> {
 
         for object in object_layer.objects() {
             if object.user_type == "Transition" {
-                let position = XyzCords::new(object.x as usize, object.y as usize, z);
+                let position = PxCords::new(object.x as usize, object.y as usize, z);
 
                 // Get properties and create interactive type from it
                 let properties = &object.properties;
@@ -222,7 +222,7 @@ pub fn flip_interactives_on_y_axis(
     for marker in markers {
         let marker_xyzcords = marker.get_position();
 
-        let flipped_ycord = XyzCords::new(
+        let flipped_ycord = PxCords::new(
             marker_xyzcords.get_x(),
             flip_y_axis(map_height, marker_xyzcords.get_y() as f32, tile_height) as usize,
             marker_xyzcords.get_z(),

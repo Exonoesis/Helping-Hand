@@ -12,10 +12,10 @@ fn create_interactive_collection_from_dimensions(
     for x in 1..=width {
         for y in 1..=height {
             let dimensions = PxDimensions::new(64, 64);
-            let grid_coordinate = XyzCords::new(x, y, 0);
+            let pixel_coordinate = PxCords::new(x, y, 0);
             let interactive_type = InteractiveType::Transition(PathBuf::from(""));
             let interactive_marker =
-                InteractiveMarker::new(grid_coordinate, dimensions, interactive_type);
+                InteractiveMarker::new(pixel_coordinate, dimensions, interactive_type);
 
             interactive_markers.push(interactive_marker);
         }
@@ -32,7 +32,7 @@ fn benchmark_interactives_on_small_map(c: &mut Criterion) {
         // This runs the function 100 times to generate performance numbers
         // averaged based on all of these cases.
         benchmarker
-            .iter(|| interactives.get_marker_from_position(black_box(&XyzCords::new(5, 5, 0))))
+            .iter(|| interactives.get_marker_from_position(black_box(&PxCords::new(5, 5, 0))))
     });
 }
 
@@ -45,9 +45,8 @@ fn benchmark_interactives_on_medium_map(c: &mut Criterion) {
         |benchmarker| {
             // This runs the function 100 times to generate performance numbers
             // averaged based on all of these cases.
-            benchmarker.iter(|| {
-                interactives.get_marker_from_position(black_box(&XyzCords::new(20, 20, 0)))
-            })
+            benchmarker
+                .iter(|| interactives.get_marker_from_position(black_box(&PxCords::new(20, 20, 0))))
         },
     );
 }
@@ -61,9 +60,8 @@ fn benchmark_interactives_on_large_map(c: &mut Criterion) {
         |benchmarker| {
             // This runs the function 100 times to generate performance numbers
             // averaged based on all of these cases.
-            benchmarker.iter(|| {
-                interactives.get_marker_from_position(black_box(&XyzCords::new(50, 50, 0)))
-            })
+            benchmarker
+                .iter(|| interactives.get_marker_from_position(black_box(&PxCords::new(50, 50, 0))))
         },
     );
 }
@@ -78,7 +76,7 @@ fn benchmark_interactives_on_jumbo_map(c: &mut Criterion) {
             // This runs the function 100 times to generate performance numbers
             // averaged based on all of these cases.
             benchmarker.iter(|| {
-                interactives.get_marker_from_position(black_box(&XyzCords::new(1280, 1280, 0)))
+                interactives.get_marker_from_position(black_box(&PxCords::new(1280, 1280, 0)))
             })
         },
     );

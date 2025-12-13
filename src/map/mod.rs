@@ -96,8 +96,8 @@ impl Default for Tilemap {
 #[derive(Debug)]
 pub struct Tile {
     tile_dimensions: PxDimensions,
-    px_cords: XyzCords,
-    grid_cords: XyzCords,
+    px_cords: PxCords,
+    grid_cords: GridCords,
     tile_texture: Option<TileTexture>,
     //layer_number: usize,
     tile_type: TileType,
@@ -106,8 +106,8 @@ pub struct Tile {
 impl Tile {
     pub fn new(
         tile_dimensions: PxDimensions,
-        px_cords: XyzCords,
-        grid_cords: XyzCords,
+        px_cords: PxCords,
+        grid_cords: GridCords,
         tile_texture: Option<TileTexture>,
         //layer_number: usize,
         tile_type: TileType,
@@ -138,7 +138,7 @@ impl Tile {
         &self.tile_dimensions
     }
 
-    pub fn get_grid_coordinates(&self) -> &XyzCords {
+    pub fn get_grid_coordinates(&self) -> &GridCords {
         &self.grid_cords
     }
 
@@ -225,8 +225,8 @@ fn get_environment_tiles(tiled_map: &Map) -> Vec<Tile> {
         for y in 0..map_height {
             for x in 0..map_width {
                 let tile_dimensions = PxDimensions::new(tile_width, tile_height);
-                let px_cords = XyzCords::new_u32(x * tile_width, y * tile_height, z);
-                let grid_cords = XyzCords::new_u32(x, y, z);
+                let px_cords = PxCords::new_u32(x * tile_width, y * tile_height, z);
+                let grid_cords = GridCords::new_u32(x, y, z);
                 let tile_texture = get_environmental_tile_texture(&tiled_map, x, y, z);
                 //let layer_number = z;
                 let tile_type = get_environmental_tile_type(&tiled_map, x, y, z);
@@ -272,8 +272,8 @@ fn get_player(tiled_map: &Map) -> Option<Tile> {
             if object.user_type == "Player" {
                 let x = object.x as u32;
                 let y = object.y as u32;
-                let px_cords = XyzCords::new_u32(x, y - tile_height, z);
-                let grid_cords = XyzCords::new_u32(x / tile_width, (y / tile_height) - 1, z);
+                let px_cords = PxCords::new_u32(x, y - tile_height, z);
+                let grid_cords = GridCords::new_u32(x / tile_width, (y / tile_height) - 1, z);
                 let tile_texture = Some(get_player_tile_texture(&object));
                 //let layer_number = z;
                 let tile_type = TileType::Player;
@@ -331,16 +331,16 @@ pub enum TileType {
     Collision,
 }
 
-#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
-pub struct XyzCords {
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+pub struct PxCords {
     px_x: usize,
     px_y: usize,
     px_z: usize,
 }
 
-impl XyzCords {
+impl PxCords {
     pub fn new(px_x: usize, px_y: usize, px_z: usize) -> Self {
-        XyzCords { px_x, px_y, px_z }
+        PxCords { px_x, px_y, px_z }
     }
 
     pub fn new_u32(px_x: u32, px_y: u32, px_z: usize) -> Self {
@@ -357,6 +357,39 @@ impl XyzCords {
 
     pub fn get_z(&self) -> usize {
         self.px_z
+    }
+}
+
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+pub struct GridCords {
+    grid_x: usize,
+    grid_y: usize,
+    grid_z: usize,
+}
+
+impl GridCords {
+    pub fn new(grid_x: usize, grid_y: usize, grid_z: usize) -> Self {
+        GridCords {
+            grid_x,
+            grid_y,
+            grid_z,
+        }
+    }
+
+    pub fn new_u32(grid_x: u32, grid_y: u32, grid_z: usize) -> Self {
+        Self::new(grid_x as usize, grid_y as usize, grid_z)
+    }
+
+    pub fn get_x(&self) -> usize {
+        self.grid_x
+    }
+
+    pub fn get_y(&self) -> usize {
+        self.grid_y
+    }
+
+    pub fn get_z(&self) -> usize {
+        self.grid_z
     }
 }
 

@@ -5,7 +5,9 @@ use std::{
 
 use bevy::prelude::*;
 
-use super::{flip_y_axis, GridDimensions, PxDimensions, Tile, TileType, Tilemap, XyzCords};
+use crate::map::GridCords;
+
+use super::{flip_y_axis, GridDimensions, PxDimensions, Tile, TileType, Tilemap};
 
 #[derive(Bundle, Clone)]
 pub struct SpriteBundle {
@@ -32,7 +34,7 @@ impl Default for SpriteBundle {
 
 #[derive(Bundle, Clone)]
 pub struct RenderTile {
-    grid_coordinate: XyzCords,
+    grid_coordinate: GridCords,
     tile_type: TileType,
     tile_dimensions: PxDimensions,
     sprite_bundle: SpriteBundle,
@@ -40,7 +42,7 @@ pub struct RenderTile {
 
 impl RenderTile {
     pub fn new(
-        grid_coordinate: XyzCords,
+        grid_coordinate: GridCords,
         tile_type: TileType,
         tile_dimensions: PxDimensions,
         sprite_bundle: SpriteBundle,
@@ -63,7 +65,7 @@ impl RenderTile {
         is_invisible
     }
 
-    pub fn get_grid_coordinates(&self) -> &XyzCords {
+    pub fn get_grid_coordinates(&self) -> &GridCords {
         &self.grid_coordinate
     }
 

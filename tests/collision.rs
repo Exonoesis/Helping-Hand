@@ -139,32 +139,40 @@ fn verify_number_of_collision_tiles_on_rendered_map(
     assert_eq!(expected_collision_tile_amount, actual_collision_tile_amount);
 }
 
+#[then(regex = r"there are (\d+) layers in the rendered map.")]
+fn verify_num_layers_in_rendered_map(world: &mut GameWorld, expected_num_layers: usize) {
+    let actual_num_layers = world.bevy_map.get_grid_dimensions().get_layers() as usize;
+    assert_eq!(expected_num_layers, actual_num_layers);
+}
+
 #[then(regex = r"rendered tile ([0-9]+),([0-9]+),([0-9]+) is invisible.")]
 fn verify_tile_is_invisible(
     world: &mut GameWorld,
-    tile_x_cord: u32,
-    tile_y_cord: u32,
-    tile_z_cord: u32,
+    tile_x_cord: usize,
+    tile_y_cord: usize,
+    tile_z_cord: usize,
 ) {
-    let tile = GridDimensions::new(tile_x_cord, tile_y_cord, tile_z_cord);
-    let tile_index = three_d_to_one_d_cords(&tile, world.loaded_map.get_grid_dimensions()) as usize;
+    let expected_tile_coordinates = GridCords::new(tile_x_cord, tile_y_cord, tile_z_cord);
 
-    let tile_is_invisible = world.bevy_map.get_bevy_tiles()[tile_index].is_invisible();
+    let tile_is_invisible = world.bevy_map.get_bevy_tiles().iter().any(|tile| {
+        tile.get_grid_coordinates() == &expected_tile_coordinates && tile.is_invisible()
+    });
     assert!(tile_is_invisible);
 }
 
 #[then(regex = r"rendered tile ([0-9]+),([0-9]+),([0-9]+) is labeled as a collision tile.")]
 fn verify_tile_is_labeled_collision_tile(
     world: &mut GameWorld,
-    tile_x_cord: u32,
-    tile_y_cord: u32,
-    tile_z_cord: u32,
+    tile_x_cord: usize,
+    tile_y_cord: usize,
+    tile_z_cord: usize,
 ) {
-    let tile = GridDimensions::new(tile_x_cord, tile_y_cord, tile_z_cord);
-    let tile_index = three_d_to_one_d_cords(&tile, world.loaded_map.get_grid_dimensions()) as usize;
+    let expected_tile_coordinates = GridCords::new(tile_x_cord, tile_y_cord, tile_z_cord);
 
-    let tile_is_collision =
-        world.bevy_map.get_bevy_tiles()[tile_index].get_tile_type() == &TileType::Collision;
+    let tile_is_collision = world.bevy_map.get_bevy_tiles().iter().any(|tile| {
+        tile.get_tile_type() == &TileType::Collision
+            && tile.get_grid_coordinates() == &expected_tile_coordinates
+    });
     assert!(tile_is_collision);
 }
 
@@ -175,7 +183,7 @@ fn verify_tile_is_in_collision_collection(
     tile_y_cord: u32,
     tile_z_cord: usize,
 ) {
-    let tile_xyz_coords = XyzCords::new_u32(tile_x_cord, tile_y_cord, tile_z_cord);
+    let tile_xyz_coords = GridCords::new_u32(tile_x_cord, tile_y_cord, tile_z_cord);
     let tile_is_in_collision_collection = world.collision_collection.has(&tile_xyz_coords);
     assert!(tile_is_in_collision_collection);
 }

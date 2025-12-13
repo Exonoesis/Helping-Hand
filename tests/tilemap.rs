@@ -367,15 +367,16 @@ fn verify_number_of_players_on_rendered_map(world: &mut GameWorld, expected_play
 #[then(regex = r"that player is at tile ([0-9]+),([0-9]+),([0-9]+).")]
 fn verify_player_location(
     world: &mut GameWorld,
-    tile_x_cord: u32,
-    tile_y_cord: u32,
-    tile_z_cord: u32,
+    tile_x_cord: usize,
+    tile_y_cord: usize,
+    tile_z_cord: usize,
 ) {
-    let tile = GridDimensions::new(tile_x_cord, tile_y_cord, tile_z_cord);
-    let tile_index = three_d_to_one_d_cords(&tile, world.loaded_map.get_grid_dimensions()) as usize;
+    let expected_tile_grid_coordinates = GridCords::new(tile_x_cord, tile_y_cord, tile_z_cord);
 
-    let player_tile = &world.loaded_map.get_tiles()[tile_index];
-    let player_at_tile = *player_tile.get_tile_type() == TileType::Player;
+    let player_at_tile = world.loaded_map.get_tiles().iter().any(|tile| {
+        tile.get_grid_coordinates() == &expected_tile_grid_coordinates
+            && tile.get_tile_type() == &TileType::Player
+    });
 
     assert!(player_at_tile);
 }
@@ -383,15 +384,16 @@ fn verify_player_location(
 #[then(regex = r"that player on the Rendered map is at tile ([0-9]+),([0-9]+),([0-9]+).")]
 fn verify_player_location_on_render_map(
     world: &mut GameWorld,
-    tile_x_cord: u32,
-    tile_y_cord: u32,
-    tile_z_cord: u32,
+    tile_x_cord: usize,
+    tile_y_cord: usize,
+    tile_z_cord: usize,
 ) {
-    let tile = GridDimensions::new(tile_x_cord, tile_y_cord, tile_z_cord);
-    let tile_index = three_d_to_one_d_cords(&tile, world.loaded_map.get_grid_dimensions()) as usize;
+    let expected_tile_grid_coordinates = GridCords::new(tile_x_cord, tile_y_cord, tile_z_cord);
 
-    let player_tile = &world.bevy_map.get_bevy_tiles()[tile_index];
-    let player_at_tile = *player_tile.get_tile_type() == TileType::Player;
+    let player_at_tile = world.bevy_map.get_bevy_tiles().iter().any(|tile| {
+        tile.get_grid_coordinates() == &expected_tile_grid_coordinates
+            && tile.get_tile_type() == &TileType::Player
+    });
 
     assert!(player_at_tile);
 }

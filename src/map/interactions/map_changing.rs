@@ -10,7 +10,7 @@ use crate::map::{
     },
     player::*,
     render::RenderedMap,
-    GridDimensions, PxDimensions, TileType, Tilemap, XyzCords,
+    GridCords, GridDimensions, PxCords, PxDimensions, TileType, Tilemap,
 };
 
 use super::interactives::{
@@ -126,7 +126,7 @@ pub fn load_map(
 pub fn change_to_new_level(
     mut change_level_requests: EventReader<ChangeLevel>,
     mut load_level_broadcaster: EventWriter<LoadLevel>,
-    loaded_level_tiles: Query<(Entity, &XyzCords, &TileType, &PxDimensions)>,
+    loaded_level_tiles: Query<(Entity, &GridCords, &TileType, &PxDimensions)>,
     map_properties: Query<
         Entity,
         (
@@ -250,8 +250,8 @@ pub fn change_level_from_marker(
 }
 
 // This function loses floating point accuracy
-pub fn transform_to_xyzcord(transform: Transform) -> XyzCords {
-    XyzCords::new(
+pub fn transform_to_xyzcord(transform: Transform) -> PxCords {
+    PxCords::new(
         transform.translation.x as usize,
         transform.translation.y as usize,
         transform.translation.z as usize,

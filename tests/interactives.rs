@@ -10,7 +10,7 @@ struct GameWorld {
     pub map_location: PathBuf,
     pub loaded_map: Option<Map>,
     pub interactive_collection: InteractiveCollection,
-    pub point_of_interest: XyzCords,
+    pub point_of_interest: PxCords,
     pub found_marker: Option<InteractiveMarker>,
 }
 
@@ -19,7 +19,7 @@ impl GameWorld {
         let map_location = PathBuf::new();
         let loaded_map = None;
         let interactive_collection = InteractiveCollection::default();
-        let point_of_interest = XyzCords::new(0, 0, 0);
+        let point_of_interest = PxCords::new(0, 0, 0);
         let found_marker = None;
 
         Self {
@@ -81,7 +81,7 @@ fn verify_test_map_exists(world: &mut GameWorld, map_name: String) {
 
 #[given(regex = r"a position of ([0-9]+),([0-9]+),")]
 fn set_point_of_interest(world: &mut GameWorld, x_cord: usize, y_cord: usize) {
-    world.point_of_interest = XyzCords::new(x_cord, y_cord, 0);
+    world.point_of_interest = PxCords::new(x_cord, y_cord, 0);
 }
 
 #[when("the Tiled map is loaded,")]
@@ -130,7 +130,7 @@ fn verify_marker_position(
 ) {
     let marker = world.interactive_collection.get_marker_at_index(index - 1);
     let actual_position = marker.get_position();
-    let expected_position = XyzCords::new(x_cord, y_cord, z_cord);
+    let expected_position = PxCords::new(x_cord, y_cord, z_cord);
     assert_eq!(expected_position, actual_position);
 }
 
@@ -155,7 +155,7 @@ fn verify_marker_contains_position(world: &mut GameWorld, proximity: String) {
 #[then(regex = r"the marker has a position of ([0-9]+),([0-9]+),([0-9]+).")]
 fn verify_found_marker_positon(world: &mut GameWorld, x_cord: usize, y_cord: usize, z_cord: usize) {
     let actual_position = world.found_marker.as_ref().unwrap().get_position();
-    let expected_position = XyzCords::new(x_cord, y_cord, z_cord);
+    let expected_position = PxCords::new(x_cord, y_cord, z_cord);
     assert_eq!(expected_position, actual_position);
 }
 
