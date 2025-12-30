@@ -1,10 +1,11 @@
+// Masking our Scene type as ActScene due to Bevy conflict
+use crate::narrative::acts::{Act, Scene as ActScene, SceneContents};
 use crate::plugins::acts::FadeDuration;
 use crate::{map::interactions::map_changing::CameraBundle, ui::menus::ImageNodeBundle};
 use bevy::prelude::*;
 use std::path::{Path, PathBuf};
 
 use super::acts::read_act_from;
-use crate::narrative::acts::*;
 
 /// Identifies components created for a single scene
 #[derive(Component)]
@@ -61,7 +62,7 @@ impl LoadNextScene {
     }
 }
 
-/// Loads initial Act of the game
+/// Loads initial act of the game
 pub fn load_starting_act(mut load_act_broadcaster: EventWriter<LoadAct>) {
     let starting_act = LoadAct::new("assets/acts/introductory_act.json");
     load_act_broadcaster.write(starting_act);
@@ -93,9 +94,56 @@ pub fn load_act(
     commands.spawn(the_camera);
 }
 
-pub fn render_current_scene(
+struct BevyRenderHelper<'w, 's> {
+    asset_server: AssetServer,
+    commands: Commands<'w, 's>,
+    fade_duration: FadeDuration,
+    is_next_scene: bool,
+}
+
+impl<'w, 's> BevyRenderHelper<'w, 's> {
+    pub fn new(
+        asset_server: AssetServer,
+        commands: Commands<'w, 's>,
+        fade_duration: FadeDuration,
+    ) -> Self {
+        Self {
+            asset_server,
+            commands,
+            fade_duration,
+            is_next_scene: true,
+        }
+    }
+
+    pub fn make_fade_timer(&self) -> FadeTimer {
+        let duration = self.fade_duration.get_duration();
+        let timer = Timer::new(duration, TimerMode::Once);
+
+        FadeTimer::new(timer)
+    }
+
+    pub fn toggle_is_next_scene(&mut self) {
+        self.is_next_scene = !self.is_next_scene
+    }
+
+    pub fn calculate_z_index(&self) -> ZIndex {
+        ZIndex(self.is_next_scene as i32)
+    }
+
+    pub fn get_asset_server(&self) -> &AssetServer {
+        &self.asset_server
+    }
+
+    pub fn get_commands(&mut self) -> &mut Commands<'w, 's> {
+        &mut self.commands
+    }
+}
+
+/// Loads initial scene of the game
+pub fn load_starting_scene(
     asset_server: Res<AssetServer>,
-    mut commands: Commands,
+    fade_duration: Res<FadeDuration>,
+    commands: Commands,
     current_act: Query<&Act>,
     scene_ui: Query<Entity, With<SceneUI>>,
 ) {
@@ -109,28 +157,54 @@ pub fn render_current_scene(
         return;
     }
 
-    let node = create_full_screen_node();
-
-    // TODO: See notes in 'load_next_scene'.
     let current_scene = found_loaded_act.unwrap().get_current_scene();
-    let scene_contents = current_scene.get_scene_contents();
-    let scene_image = scene_contents.get_image_path().to_str().unwrap();
+    let mut bevy_render_helper =
+        BevyRenderHelper::new(asset_server.clone(), commands, fade_duration.clone());
+    bevy_render_helper.toggle_is_next_scene();
+    render_scene(current_scene, bevy_render_helper);
+}
 
-    let image = asset_server
-        .load(format!("acts/images/{}", scene_image))
-        .into();
+/// Renders some scene depending on its type.
+fn render_scene(current_scene: &ActScene, bevy_render_helper: BevyRenderHelper) {
+    match current_scene.get_scene_contents() {
+        SceneContents::ImageCutscene(path_buf) => {
+            render_image_cutscene(path_buf, bevy_render_helper)
+        }
+        SceneContents::MapCutscene(path_buf, map_actions) => todo!(),
+    }
+}
+
+/// Render an Image Cutscene into the game.
+fn render_image_cutscene(image_path: &PathBuf, mut bevy_render_helper: BevyRenderHelper) {
+    let node = create_full_screen_node();
+    let scene_image = image_path.to_str().unwrap();
+
+    // Check image path is correct
+    let mut image = check_image_path(bevy_render_helper.get_asset_server(), scene_image);
+
+    // Set image to be invisible
+    image.color.set_alpha(0.0);
 
     let ui_container = (ImageNodeBundle::from_nodes(node, image), SceneUI);
 
-    commands.spawn(ui_container).insert(ZIndex(0));
+    // Create Timer Component
+    let fade_timer = bevy_render_helper.make_fade_timer();
+
+    let z_index = bevy_render_helper.calculate_z_index();
+    let commands = bevy_render_helper.get_commands();
+    commands
+        .spawn(ui_container)
+        .insert(z_index)
+        .insert(fade_timer);
 }
 
+/// Renders the next scene into the game from the current act.
 pub fn load_next_scene(
     mut load_next_scene_requests: EventReader<LoadNextScene>,
     mut current_act_query: Query<&mut Act>,
     asset_server: Res<AssetServer>,
     fade_duration: Res<FadeDuration>,
-    mut commands: Commands,
+    commands: Commands,
 ) {
     if load_next_scene_requests.is_empty() {
         return;
@@ -145,38 +219,10 @@ pub fn load_next_scene(
 
     current_act.move_to_next_scene();
 
-    let node = create_full_screen_node();
-
-    // TODO: This whole function should be able to load
-    // - Image cutscenes (it currently does), AND
-    // - Map cutscenes (it does not do this right now.)
-    //
-    // Both of these should be sub-functions. Otherwise, this will be a _very_ long and ugly
-    // scene.
     let current_scene = current_act.get_current_scene();
-    let scene_contents = current_scene.get_scene_contents();
-    let scene_image_path = scene_contents.get_image_path();
-    let scene_image = scene_image_path.to_str().unwrap();
-
-    // Check image path is correct
-    let image = check_image_path(asset_server, scene_image);
-
-    // Set image to be invisible
-    let mut image_node = ImageNode::default();
-    image_node.image = image;
-    image_node.color.set_alpha(0.0);
-
-    let ui_container = (ImageNodeBundle::from_nodes(node, image_node), SceneUI);
-
-    // Create Timer Component
-    let duration = fade_duration.get_duration();
-    let timer = Timer::new(duration, TimerMode::Once);
-    let fade_timer = FadeTimer::new(timer);
-
-    commands
-        .spawn(ui_container)
-        .insert(ZIndex(1))
-        .insert(fade_timer);
+    let bevy_render_helper =
+        BevyRenderHelper::new(asset_server.clone(), commands, fade_duration.clone());
+    render_scene(current_scene, bevy_render_helper);
 }
 
 pub fn fade_into(
@@ -262,8 +308,7 @@ pub fn load_next_scene_on_player_input(
     }
 }
 
-// So this always panics, even though the path is fine
-pub fn check_image_path(asset_server: Res<AssetServer>, scene_image: &str) -> Handle<Image> {
+pub fn check_image_path(asset_server: &AssetServer, scene_image: &str) -> ImageNode {
     let image: Handle<Image> = asset_server
         .load(format!("acts/images/{}", scene_image))
         .into();
@@ -286,5 +331,5 @@ pub fn check_image_path(asset_server: Res<AssetServer>, scene_image: &str) -> Ha
         )
     }
 
-    image
+    image.into()
 }

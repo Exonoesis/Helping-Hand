@@ -57,7 +57,7 @@ impl Plugin for CoreActsPlugin {
                 Update,
                 (
                     load_act,
-                    render_current_scene,
+                    load_starting_scene,
                     load_next_scene,
                     fade_into,
                     despawn_image,
