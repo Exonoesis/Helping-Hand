@@ -79,7 +79,7 @@ impl Game {
     }
 
     /// Returns the pixel coordinates for some tile found at some grid coordinates loaded in the game.
-    pub fn get_position_from_tile(&mut self, tile_grid_coordinates: &GridCords) -> Transform {
+    pub fn get_position_from_tile(&mut self, tile_grid_coordinates: &GridCords3D) -> Transform {
         let tile_position = self
             .find_containing(tile_grid_coordinates)
             .expect("get_position_from_tile: Could not get Transform from given tile.");
@@ -205,7 +205,7 @@ impl Game {
     }
 
     /// Returns the grid coordinates for the player in the game.
-    pub fn find_coordinates_of_player(&mut self) -> GridCords {
+    pub fn find_coordinates_of_player(&mut self) -> GridCords3D {
         let player_tile_coordinate = self
             .find_containing(&TileType::Player)
             .expect("find_coordinates_of_player: Could not find XyzCords from player.");

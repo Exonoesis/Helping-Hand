@@ -4,7 +4,7 @@ use crate::mock_game::Game;
 use cucumber::{given, then, when, World};
 
 use helping_hand::{
-    map::{interactions::map_changing::LoadLevel, player::*, GridCords},
+    map::{interactions::map_changing::LoadLevel, player::*, GridCords3D},
     plugins::levels::CoreLevelsPlugin,
 };
 
@@ -29,7 +29,7 @@ fn given_some_map_size(game: &mut Game, expected_map_width: u32, expected_map_he
 
 #[given(regex = r"the Player is at ([0-9]+),([0-9]+),")]
 fn verify_player_spawned_at_tile_pos(game: &mut Game, tile_x: u32, tile_y: u32) {
-    let expected_player_tile_coordinate = GridCords::new_u32(tile_x, tile_y, 0);
+    let expected_player_tile_coordinate = GridCords3D::new_u32(tile_x, tile_y, 0);
     let actual_player_tile_coordinate = game.find_coordinates_of_player();
 
     let expected_player_tile_x = expected_player_tile_coordinate.get_x();
@@ -54,7 +54,7 @@ fn trigger_player_interaction(game: &mut Game) {
 
 #[then(regex = r"the Player should be at ([0-9]+),([0-9]+).")]
 fn verify_player_at_tile_pos(game: &mut Game, tile_x: u32, tile_y: u32) {
-    let expected_player_tile_coordinate = GridCords::new_u32(tile_x, tile_y, 0);
+    let expected_player_tile_coordinate = GridCords3D::new_u32(tile_x, tile_y, 0);
     let actual_player_tile_coordinate = game.find_coordinates_of_player();
 
     let expected_player_tile_x = expected_player_tile_coordinate.get_x();

@@ -2,11 +2,11 @@ use std::collections::HashSet;
 
 use bevy::prelude::*;
 
-use crate::map::{render::RenderedMap, GridCords, TileType};
+use crate::map::{render::RenderedMap, GridCords3D, TileType};
 
 #[derive(Component, Debug, Default)]
 pub struct CollisionCollection {
-    collision_tiles: HashSet<GridCords>,
+    collision_tiles: HashSet<GridCords3D>,
 }
 
 impl CollisionCollection {
@@ -16,15 +16,15 @@ impl CollisionCollection {
         Self { collision_tiles }
     }
 
-    pub fn has(&self, xyz_coord: &GridCords) -> bool {
+    pub fn has(&self, xyz_coord: &GridCords3D) -> bool {
         // NOTE: Collision should apply to all layers, thus the z value does
         // not make sense, hence it being zeroed out.
-        let xy_coord = GridCords::new(xyz_coord.get_x(), xyz_coord.get_y(), 0);
+        let xy_coord = GridCords3D::new(xyz_coord.get_x(), xyz_coord.get_y(), 0);
         self.collision_tiles.contains(&xy_coord)
     }
 
-    pub fn add(&mut self, xyz_coord: &GridCords) {
-        let xy_coord = GridCords::new(xyz_coord.get_x(), xyz_coord.get_y(), 0);
+    pub fn add(&mut self, xyz_coord: &GridCords3D) {
+        let xy_coord = GridCords3D::new(xyz_coord.get_x(), xyz_coord.get_y(), 0);
         self.collision_tiles.insert(xy_coord);
     }
 }

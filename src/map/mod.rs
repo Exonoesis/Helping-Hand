@@ -97,7 +97,7 @@ impl Default for Tilemap {
 pub struct Tile {
     tile_dimensions: PxDimensions,
     px_cords: PxCords,
-    grid_cords: GridCords,
+    grid_cords: GridCords3D,
     tile_texture: Option<TileTexture>,
     //layer_number: usize,
     tile_type: TileType,
@@ -107,7 +107,7 @@ impl Tile {
     pub fn new(
         tile_dimensions: PxDimensions,
         px_cords: PxCords,
-        grid_cords: GridCords,
+        grid_cords: GridCords3D,
         tile_texture: Option<TileTexture>,
         //layer_number: usize,
         tile_type: TileType,
@@ -138,7 +138,7 @@ impl Tile {
         &self.tile_dimensions
     }
 
-    pub fn get_grid_coordinates(&self) -> &GridCords {
+    pub fn get_grid_coordinates(&self) -> &GridCords3D {
         &self.grid_cords
     }
 
@@ -226,7 +226,7 @@ fn get_environment_tiles(tiled_map: &Map) -> Vec<Tile> {
             for x in 0..map_width {
                 let tile_dimensions = PxDimensions::new(tile_width, tile_height);
                 let px_cords = PxCords::new_u32(x * tile_width, y * tile_height, z);
-                let grid_cords = GridCords::new_u32(x, y, z);
+                let grid_cords = GridCords3D::new_u32(x, y, z);
                 let tile_texture = get_environmental_tile_texture(&tiled_map, x, y, z);
                 //let layer_number = z;
                 let tile_type = get_environmental_tile_type(&tiled_map, x, y, z);
@@ -273,7 +273,7 @@ fn get_player(tiled_map: &Map) -> Option<Tile> {
                 let x = object.x as u32;
                 let y = object.y as u32;
                 let px_cords = PxCords::new_u32(x, y - tile_height, z);
-                let grid_cords = GridCords::new_u32(x / tile_width, (y / tile_height) - 1, z);
+                let grid_cords = GridCords3D::new_u32(x / tile_width, (y / tile_height) - 1, z);
                 let tile_texture = Some(get_player_tile_texture(&object));
                 //let layer_number = z;
                 let tile_type = TileType::Player;
@@ -360,16 +360,36 @@ impl PxCords {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct GridCords2D {
+    grid_x: usize,
+    grid_y: usize,
+}
+
+impl GridCords2D {
+    pub fn new(grid_x: usize, grid_y: usize) -> Self {
+        GridCords2D { grid_x, grid_y }
+    }
+
+    pub fn get_x(&self) -> usize {
+        self.grid_x
+    }
+
+    pub fn get_y(&self) -> usize {
+        self.grid_y
+    }
+}
+
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
-pub struct GridCords {
+pub struct GridCords3D {
     grid_x: usize,
     grid_y: usize,
     grid_z: usize,
 }
 
-impl GridCords {
+impl GridCords3D {
     pub fn new(grid_x: usize, grid_y: usize, grid_z: usize) -> Self {
-        GridCords {
+        GridCords3D {
             grid_x,
             grid_y,
             grid_z,

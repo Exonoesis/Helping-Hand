@@ -7,7 +7,7 @@ use cucumber::{given, then, when, World};
 use helping_hand::{
     map::{
         interactions::map_changing::LoadLevel, movement::grid_based_movement::*, player::Player,
-        GridCords,
+        GridCords3D,
     },
     plugins::levels::CoreLevelsPlugin,
 };
@@ -38,7 +38,7 @@ fn given_some_tiled_map(game: &mut Game, tiled_map_name: String) {
 
 #[given(regex = r"the Player is at ([0-9]+),([0-9]+),([0-9]+),")]
 fn verify_player_spawned_at_tile_pos(game: &mut Game, tile_x: u32, tile_y: u32, tile_z: usize) {
-    let expected_player_tile_coordinate = GridCords::new_u32(tile_x, tile_y, tile_z);
+    let expected_player_tile_coordinate = GridCords3D::new_u32(tile_x, tile_y, tile_z);
     let actual_player_tile_coordinate = game.find_coordinates_of_player();
     assert_eq!(
         expected_player_tile_coordinate,
@@ -75,7 +75,7 @@ fn verify_player_at_tile_pixel_coordinates(
     tile_y: u32,
     tile_z: usize,
 ) {
-    let tile_grid_coordinates = GridCords::new_u32(tile_x, tile_y, tile_z);
+    let tile_grid_coordinates = GridCords3D::new_u32(tile_x, tile_y, tile_z);
 
     let expected_player_position = game.get_position_from_tile(&tile_grid_coordinates);
     let actual_player_position = game.get_player_position();
@@ -89,7 +89,7 @@ fn verify_player_at_tile_grid_coordinates(
     tile_y: u32,
     tile_z: usize,
 ) {
-    let expected_player_tile_grid_coordinate = GridCords::new_u32(tile_x, tile_y, tile_z);
+    let expected_player_tile_grid_coordinate = GridCords3D::new_u32(tile_x, tile_y, tile_z);
     let actual_player_tile_grid_coordinate = game.find_coordinates_of_player();
 
     assert_eq!(

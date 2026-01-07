@@ -7,6 +7,8 @@ use std::io::BufReader;
 use std::path::PathBuf;
 use std::time::Duration;
 
+use crate::map::GridCords2D;
+
 #[derive(Clone)]
 pub struct SceneNode {
     id: String,
@@ -69,6 +71,13 @@ impl MapAction {
     pub fn get_instructions(&self) -> &Vec<MapInstruction> {
         &self.map_instructions
     }
+
+    pub fn get_location_by_name(&self, name: String) -> &MapLocation {
+        //only need to look at Place instructions
+        //look through map instructions using name
+        //once we have correct instruction, get location
+        //return location
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -93,11 +102,16 @@ impl Character {
 #[derive(Debug, Clone, PartialEq)]
 pub struct MapLocation {
     name: String,
+    cords: GridCords2D,
 }
 
 impl MapLocation {
-    pub fn new(name: String) -> Self {
-        Self { name }
+    pub fn new(name: String, cords: GridCords2D) -> Self {
+        Self { name, cords }
+    }
+
+    pub fn get_cords(&self) -> &GridCords2D {
+        &self.cords
     }
 }
 
@@ -158,8 +172,10 @@ impl SceneContents {
             }
             SceneType::MapCutscene => {
                 let map_path = get_map_path_from_id(&arcweave_act_json, &scene_id);
+                // TODO: Rename this to reflect it being an intermediary function
                 let map_actions = get_map_actions_from_id(&arcweave_act_json, &scene_id);
-
+                // TODO: Write function that would use the above to extract final map actions from Tiled
+                // For example; this would add location (2D grid cordinate) to Place Instruction
                 SceneContents::MapCutscene(map_path, map_actions)
             }
         }

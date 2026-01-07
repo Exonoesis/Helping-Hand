@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use crate::map::{player::*, GridCords, GridDimensions, PxDimensions};
+use crate::map::{player::*, GridCords3D, GridDimensions, PxDimensions};
 
 use super::collision::CollisionCollection;
 
@@ -17,11 +17,11 @@ pub enum MovementDirection {
 #[derive(Component)]
 pub struct Target {
     position: Transform,
-    grid_coordinate: GridCords,
+    grid_coordinate: GridCords3D,
 }
 
 impl Target {
-    pub fn new(px_position: Transform, grid_coordinate: GridCords) -> Self {
+    pub fn new(px_position: Transform, grid_coordinate: GridCords3D) -> Self {
         Self {
             position: px_position,
             grid_coordinate,
@@ -32,7 +32,7 @@ impl Target {
         &self.position
     }
 
-    pub fn get_grid_coordinate(&self) -> &GridCords {
+    pub fn get_grid_coordinate(&self) -> &GridCords3D {
         &self.grid_coordinate
     }
 }
@@ -47,7 +47,7 @@ pub fn set_player_target(
             Entity,
             &PxDimensions,
             &Transform,
-            &GridCords,
+            &GridCords3D,
             &mut MovementDirection,
         ),
         (With<Player>, Without<Target>, Without<ArrivalTimer>),
@@ -213,10 +213,10 @@ pub fn set_physical_destination(
 /// Returns a new grid coordinate shifted away from a starting coordinate in a given direction,
 /// or None if the grid coordinate would be out of bounds
 pub fn set_logical_destination(
-    current_grid_coordinate: &GridCords,
+    current_grid_coordinate: &GridCords3D,
     map_grid_dimensions: &GridDimensions,
     direction: &MovementDirection,
-) -> Option<GridCords> {
+) -> Option<GridCords3D> {
     let mut current_x = current_grid_coordinate.get_x();
     let mut current_y = current_grid_coordinate.get_y();
     let current_z = current_grid_coordinate.get_z();
@@ -251,7 +251,7 @@ pub fn set_logical_destination(
         }
     }
 
-    Some(GridCords::new(current_x, current_y, current_z))
+    Some(GridCords3D::new(current_x, current_y, current_z))
 }
 
 #[derive(Component)]
@@ -276,7 +276,7 @@ pub fn move_entity_to_target(
     mut movable_entities: Query<(
         Entity,
         &mut Transform,
-        &mut GridCords,
+        &mut GridCords3D,
         &StartingPosition,
         &PxDimensions,
         &Target,

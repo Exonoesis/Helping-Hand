@@ -5,7 +5,8 @@ use bevy::color::Alpha;
 use cucumber::{given, then, when, World};
 
 use bevy::prelude::ImageNode;
-use helping_hand::map::GridCords;
+use helping_hand::map::GridCords2D;
+use helping_hand::map::GridCords3D;
 use helping_hand::narrative::act_loading::*;
 use helping_hand::narrative::acts::*;
 use helping_hand::plugins::acts::CoreActsPlugin;
@@ -88,29 +89,18 @@ fn verify_image_opacity(game: &mut Game) {
     assert_eq!(1.0, opacity);
 }
 
-#[then(
-    regex = r"there is a line path called '(.+)' at tile (\d+), (\d+) with a path length of (\d+) tiles."
-)]
-fn verify_line_path_exists(
-    game: &mut Game,
-    expected_line_path_name: String,
-    line_path_x: usize,
-    line_path_y: usize,
-    expected_path_length: usize,
-) {
-    let line_path = game.get_line_path(expected_line_path_name);
+#[then(regex = r"there is a location called '(.+)' at tile ([0-9]+), ([0-9]+).")]
+fn verify_location_at_tile(game: &mut Game, location_name: String, tile_x: usize, tile_y: usize) {
+    let current_act = game.get_mut::<Act>();
+    let current_scene = current_act.get_current_scene();
+    let actual_tile_cords = current_scene
+        .get_scene_contents()
+        .get_location_by_name(location_name)
+        .get_cords();
 
-    let expected_line_path_pos = GridCords::new(line_path_x, line_path_y, 0);
-    let actual_line_path_pos = line_path.get_starting_position();
-    assert_eq!(expected_line_path_pos, actual_line_path_pos);
+    let expected_tile_cords = GridCords2D::new(tile_x, tile_y);
 
-    let actual_path_length = line_path.get_length();
-    assert_eq!(expected_path_length, actual_path_length);
-
-    // TODO: for the then step 'the line path 'GoToPlayer' contains the tile 1, 16.' and similar,
-    // let tile_position = GridCords::new(x, y, z);
-    // let path_contains_tile = line_path.contains_tile(tile_position);
-    // assert!(path_contains_tile);
+    assert_eq!(expected_tile_cords, actual_tile_cords);
 }
 
 // This runs before everything else, so you can setup things here.

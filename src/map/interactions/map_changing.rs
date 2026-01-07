@@ -10,7 +10,7 @@ use crate::map::{
     },
     player::*,
     render::RenderedMap,
-    GridCords, GridDimensions, PxCords, PxDimensions, TileType, Tilemap,
+    GridCords3D, GridDimensions, PxCords, PxDimensions, TileType, Tilemap,
 };
 
 use super::interactives::{
@@ -126,7 +126,7 @@ pub fn load_map(
 pub fn change_to_new_level(
     mut change_level_requests: EventReader<ChangeLevel>,
     mut load_level_broadcaster: EventWriter<LoadLevel>,
-    loaded_level_tiles: Query<(Entity, &GridCords, &TileType, &PxDimensions)>,
+    loaded_level_tiles: Query<(Entity, &GridCords3D, &TileType, &PxDimensions)>,
     map_properties: Query<
         Entity,
         (

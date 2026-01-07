@@ -371,7 +371,7 @@ fn verify_player_location(
     tile_y_cord: usize,
     tile_z_cord: usize,
 ) {
-    let expected_tile_grid_coordinates = GridCords::new(tile_x_cord, tile_y_cord, tile_z_cord);
+    let expected_tile_grid_coordinates = GridCords3D::new(tile_x_cord, tile_y_cord, tile_z_cord);
 
     let player_at_tile = world.loaded_map.get_tiles().iter().any(|tile| {
         tile.get_grid_coordinates() == &expected_tile_grid_coordinates
@@ -388,7 +388,7 @@ fn verify_player_location_on_render_map(
     tile_y_cord: usize,
     tile_z_cord: usize,
 ) {
-    let expected_tile_grid_coordinates = GridCords::new(tile_x_cord, tile_y_cord, tile_z_cord);
+    let expected_tile_grid_coordinates = GridCords3D::new(tile_x_cord, tile_y_cord, tile_z_cord);
 
     let player_at_tile = world.bevy_map.get_bevy_tiles().iter().any(|tile| {
         tile.get_grid_coordinates() == &expected_tile_grid_coordinates

@@ -1,5 +1,5 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use helping_hand::map::{movement::collision::CollisionCollection, GridCords};
+use helping_hand::map::{movement::collision::CollisionCollection, GridCords3D};
 use std::hint::black_box;
 
 fn create_collision_collection_from_dimensions(width: usize, height: usize) -> CollisionCollection {
@@ -7,7 +7,7 @@ fn create_collision_collection_from_dimensions(width: usize, height: usize) -> C
 
     for x in 1..=width {
         for y in 1..=height {
-            let grid_coordinate = GridCords::new(x, y, 0);
+            let grid_coordinate = GridCords3D::new(x, y, 0);
 
             collision_collection.add(&grid_coordinate);
         }
@@ -23,7 +23,7 @@ fn benchmark_collisions_on_small_map(c: &mut Criterion) {
     c.bench_function("Look for Tile 5, 5 in Small sized map", |benchmarker| {
         // This runs the function 100 times to generate performance numbers
         // averaged based on all of these cases.
-        benchmarker.iter(|| collision_checker.has(black_box(&GridCords::new(5, 5, 0))))
+        benchmarker.iter(|| collision_checker.has(black_box(&GridCords3D::new(5, 5, 0))))
     });
 }
 
@@ -37,7 +37,7 @@ fn benchmark_collisions_on_medium_map(c: &mut Criterion) {
         //
         // NOTE: We're calling black_box because we don't want any optimizations to be
         // done from Rust. Without the optimizations, that makes the run as "fair" as possible.
-        benchmarker.iter(|| collision_checker.has(black_box(&GridCords::new(20, 20, 0))))
+        benchmarker.iter(|| collision_checker.has(black_box(&GridCords3D::new(20, 20, 0))))
     });
 }
 
@@ -51,7 +51,7 @@ fn benchmark_collisions_on_large_map(c: &mut Criterion) {
         //
         // NOTE: We're calling black_box because we don't want any optimizations to be
         // done from Rust. Without the optimizations, that makes the run as "fair" as possible.
-        benchmarker.iter(|| collision_checker.has(black_box(&GridCords::new(50, 50, 0))))
+        benchmarker.iter(|| collision_checker.has(black_box(&GridCords3D::new(50, 50, 0))))
     });
 }
 
@@ -67,7 +67,7 @@ fn benchmark_collisions_on_jumbo_map(c: &mut Criterion) {
             //
             // NOTE: We're calling black_box because we don't want any optimizations to be
             // done from Rust. Without the optimizations, that makes the run as "fair" as possible.
-            benchmarker.iter(|| collision_checker.has(black_box(&GridCords::new(1280, 1280, 0))))
+            benchmarker.iter(|| collision_checker.has(black_box(&GridCords3D::new(1280, 1280, 0))))
         },
     );
 }
