@@ -7,6 +7,7 @@ use std::io::BufReader;
 use std::path::PathBuf;
 use std::time::Duration;
 
+use crate::map::interactions::map_changing::load_tiled_map;
 use crate::map::GridCords2D;
 
 #[derive(Clone)]
@@ -73,10 +74,15 @@ impl MapAction {
     }
 
     pub fn get_location_by_name(&self, name: String) -> &MapLocation {
-        //only need to look at Place instructions
-        //look through map instructions using name
-        //once we have correct instruction, get location
-        //return location
+        for instruction in &self.map_instructions {
+            if let MapInstruction::Place(_, found_location) = instruction {
+                if found_location.name == name {
+                    return found_location;
+                }
+            }
+        }
+
+        panic!("get_location_by_name: No location {} found", name);
     }
 }
 
@@ -106,12 +112,23 @@ pub struct MapLocation {
 }
 
 impl MapLocation {
-    pub fn new(name: String, cords: GridCords2D) -> Self {
-        Self { name, cords }
+    pub fn new(name: String) -> Self {
+        // MapLocation's coordinates are set by another source
+        // this default should be replaced using the setter
+        let default_cords = GridCords2D::new(0, 0);
+
+        Self {
+            name,
+            cords: default_cords,
+        }
     }
 
     pub fn get_cords(&self) -> &GridCords2D {
         &self.cords
+    }
+
+    pub fn set_cords(&mut self, new_cords: GridCords2D) {
+        self.cords = new_cords
     }
 }
 
@@ -172,11 +189,18 @@ impl SceneContents {
             }
             SceneType::MapCutscene => {
                 let map_path = get_map_path_from_id(&arcweave_act_json, &scene_id);
-                // TODO: Rename this to reflect it being an intermediary function
-                let map_actions = get_map_actions_from_id(&arcweave_act_json, &scene_id);
+
+                let incomplete_map_actions = get_map_actions_from_id(&arcweave_act_json, &scene_id);
+
+                let tiled_map = load_tiled_map(map_path.clone());
+                let scene_name = get_title_from_id(&arcweave_act_json, scene_id);
+
                 // TODO: Write function that would use the above to extract final map actions from Tiled
                 // For example; this would add location (2D grid cordinate) to Place Instruction
-                SceneContents::MapCutscene(map_path, map_actions)
+                let finalized_map_actions =
+                    get_map_actions_from_map(incomplete_map_actions, tiled_map, scene_name);
+
+                SceneContents::MapCutscene(map_path, finalized_map_actions)
             }
         }
     }
@@ -467,6 +491,8 @@ fn get_map_path_from_id(act: &Value, id: &String) -> PathBuf {
     PathBuf::from(map_path_name)
 }
 
+/// This is called first and extracts all map actions from an Arcweave File
+/// without information from the map such as coordinates
 fn get_map_actions_from_id(act: &Value, id: &String) -> Vec<MapAction> {
     let content_value = act
         .get("elements")
@@ -486,6 +512,27 @@ fn get_map_actions_from_id(act: &Value, id: &String) -> Vec<MapAction> {
     let map_actions = parse_map_actions(cleaned_map_cutscene_content.as_str());
 
     map_actions
+}
+
+/// This is called second and extracts all map information from a Tiled Map
+/// such as coordinates, returning a finalized collection of MapActions
+fn get_map_actions_from_map(
+    incomplete_map_actions: Vec<MapAction>,
+    tiled_map: tiled::Map,
+    scene_name: String,
+) -> Vec<MapAction> {
+    todo!() // This keeps the function from yelling before we're done (remember this for later)
+
+    // Using scene_name, get tiled layer where all objects for the scene are
+    // Make new MapAction vector
+    //
+    // Loop through list of incomplete_map_actions
+    // For each action, find the coresponding object in tiled (name & type)
+    // Set MapAction cords to the objects cords
+    // Add to new vector
+    // If not found then panic!
+    //
+    // Return the now populated vector
 }
 
 fn strip_html_for_map_actions(input: &str) -> String {
