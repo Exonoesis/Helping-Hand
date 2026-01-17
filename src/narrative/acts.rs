@@ -64,6 +64,26 @@ pub enum SceneContents {
     MapCutscene(PathBuf, Vec<MapAction>),
 }
 
+impl SceneContents {
+    pub fn get_location_by_name(&self, name: String) -> &MapLocation {
+        let actions = self.get_map_actions();
+
+        for action in actions {
+            let instructions = action.get_instructions();
+
+            for instruction in instructions {
+                if let MapInstruction::Place(_, found_location) = instruction {
+                    if found_location.name == name {
+                        return found_location;
+                    }
+                }
+            }
+        }
+
+        panic!("get_location_by_name: No location {} found", name);
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct MapAction {
     map_instructions: Vec<MapInstruction>,
@@ -71,18 +91,6 @@ pub struct MapAction {
 impl MapAction {
     pub fn get_instructions(&self) -> &Vec<MapInstruction> {
         &self.map_instructions
-    }
-
-    pub fn get_location_by_name(&self, name: String) -> &MapLocation {
-        for instruction in &self.map_instructions {
-            if let MapInstruction::Place(_, found_location) = instruction {
-                if found_location.name == name {
-                    return found_location;
-                }
-            }
-        }
-
-        panic!("get_location_by_name: No location {} found", name);
     }
 }
 
@@ -488,7 +496,11 @@ fn get_map_path_from_id(act: &Value, id: &String) -> PathBuf {
 
     let map_path_name = get_string_from_json_value(map_path_value);
 
-    PathBuf::from(map_path_name)
+    // Need to prefix folder path
+    let folder_path = PathBuf::from("assets/map/");
+    let full_path = folder_path.join(map_path_name);
+
+    PathBuf::from(full_path)
 }
 
 /// This is called first and extracts all map actions from an Arcweave File
@@ -521,18 +533,19 @@ fn get_map_actions_from_map(
     tiled_map: tiled::Map,
     scene_name: String,
 ) -> Vec<MapAction> {
-    todo!() // This keeps the function from yelling before we're done (remember this for later)
-
-    // Using scene_name, get tiled layer where all objects for the scene are
+    // Using scene_name, get Tiled layer where all objects for the scene are
     // Make new MapAction vector
     //
     // Loop through list of incomplete_map_actions
-    // For each action, find the coresponding object in tiled (name & type)
+    // For each action, find the coresponding object in Tiled (name & type)
     // Set MapAction cords to the objects cords
     // Add to new vector
     // If not found then panic!
     //
     // Return the now populated vector
+
+    // Returning unchanged map actions for initial test failing state
+    incomplete_map_actions
 }
 
 fn strip_html_for_map_actions(input: &str) -> String {

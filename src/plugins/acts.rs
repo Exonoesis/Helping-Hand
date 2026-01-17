@@ -57,10 +57,10 @@ impl Plugin for CoreActsPlugin {
                 Update,
                 (
                     load_act,
-                    load_starting_scene,
-                    load_next_scene,
-                    fade_into,
-                    despawn_image,
+                    load_starting_scene.after(load_act),
+                    fade_into.after(load_starting_scene),
+                    despawn_image.after(fade_into),
+                    load_next_scene.after(despawn_image),
                 )
                     .run_if(in_state(AppState::InGame)),
             );

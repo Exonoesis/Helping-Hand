@@ -235,7 +235,7 @@ impl Game {
         C: Event,
     {
         self.app.world_mut().send_event(event_to_send);
-        self.app.update();
+        self.tick();
     }
 
     /// Sets the window dimensions of the game to the specified width and height.

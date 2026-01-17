@@ -158,7 +158,8 @@ fn verify_map_cutscene(game: &mut GameWorld, scene_title: String, map_file_path:
     let actual_map_path = actual_contents.get_map_path();
 
     let expected_scene_type = SceneType::MapCutscene;
-    let expected_map_path = PathBuf::from(map_file_path);
+    let folder_path = PathBuf::from("assets/map/");
+    let expected_map_path = folder_path.join(map_file_path);
 
     assert_eq!(*actual_scene_type, expected_scene_type);
     assert_eq!(*actual_map_path, expected_map_path);

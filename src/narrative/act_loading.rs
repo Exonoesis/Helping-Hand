@@ -144,16 +144,11 @@ pub fn load_starting_scene(
     asset_server: Res<AssetServer>,
     fade_duration: Res<FadeDuration>,
     commands: Commands,
-    current_act: Query<&Act>,
-    scene_ui: Query<Entity, With<SceneUI>>,
+    current_act: Query<&Act, Added<Act>>,
 ) {
     let found_loaded_act = current_act.iter().next();
 
     if found_loaded_act.is_none() {
-        return;
-    }
-
-    if !scene_ui.is_empty() {
         return;
     }
 
@@ -249,10 +244,7 @@ pub fn despawn_image(
     mut current_scene_query: Query<Entity, (With<SceneUI>, With<FadeTimer>)>,
     mut commands: Commands,
 ) {
-    if despawn_image_requests.is_empty()
-        || scene_to_remove_query.is_empty()
-        || current_scene_query.is_empty()
-    {
+    if despawn_image_requests.is_empty() {
         return;
     }
 

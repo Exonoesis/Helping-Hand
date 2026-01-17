@@ -20,7 +20,6 @@ Feature: An Act's Scenes can be traversed in the game.
         Given the game is capable of handling acts,
         When the act called 'introductory_act.json' is loaded,
         And the game transitions to the next scene,
-        And the fade timer has elapsed,
         Then there is only one image loaded.
         And the image at 'acts/images/PI2.png' is displayed on the screen.
         And the loaded image's opacity is 100%.

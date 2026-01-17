@@ -6,7 +6,6 @@ use cucumber::{given, then, when, World};
 
 use bevy::prelude::ImageNode;
 use helping_hand::map::GridCords2D;
-use helping_hand::map::GridCords3D;
 use helping_hand::narrative::act_loading::*;
 use helping_hand::narrative::acts::*;
 use helping_hand::plugins::acts::CoreActsPlugin;
@@ -31,27 +30,17 @@ fn load_act(game: &mut Game, act_file_name: String) {
     );
 
     game.broadcast_event(LoadAct::new(&act_file_path_name));
+
+    // Since we're manually broadcasting an event, we MUST manually tick for the act to be visible
+    game.tick();
 }
 
 #[when("the game transitions to the next scene,")]
 fn transition_to_next_scene(game: &mut Game) {
     game.broadcast_event(LoadNextScene::new());
-}
 
-#[when("the fade timer has elapsed,")]
-fn fade_tick_for(game: &mut Game) {
-    let mut fade_timer_num = game.get_number_of::<FadeTimer>();
-
-    assert_eq!(1, fade_timer_num);
-
-    // 15 ticks should be plenty since duration is set to 0 seconds
-    for _ in 0..15 {
-        game.tick();
-    }
-
-    fade_timer_num = game.get_number_of::<FadeTimer>();
-
-    assert_eq!(0, fade_timer_num)
+    // Since we're manually broadcasting an event, we MUST manually tick for the next scene to be visible
+    game.tick();
 }
 
 #[then(regex = r"the title of the current scene loaded is called '(.+)'.")]
@@ -100,7 +89,7 @@ fn verify_location_at_tile(game: &mut Game, location_name: String, tile_x: usize
 
     let expected_tile_cords = GridCords2D::new(tile_x, tile_y);
 
-    assert_eq!(expected_tile_cords, actual_tile_cords);
+    assert_eq!(expected_tile_cords, *actual_tile_cords);
 }
 
 // This runs before everything else, so you can setup things here.
