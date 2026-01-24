@@ -27,7 +27,6 @@ Feature: An Act's Scenes can be traversed in the game.
     Scenario: A map cutscene is loaded into the game.
         Given the game is capable of handling acts,
         When the act called 'introductory_act.json' is loaded,
-        # TODO: This is 'and the game transitions to the next scene', but called n times.
         And the game transitions to scene 4,
         # TODO: This step comes form 'map_changing.feature'. Steal that from 'map_changing.rs'
         Then the map size should be 19 x 20 tiles.

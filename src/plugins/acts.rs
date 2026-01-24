@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use crate::map::interactions::map_changing::ChangeLevel;
 use crate::narrative::act_loading::*;
 use crate::AppState;
 use bevy::prelude::*;
@@ -53,14 +54,16 @@ impl Plugin for CoreActsPlugin {
         app.add_event::<LoadAct>()
             .add_event::<LoadNextScene>()
             .add_event::<ImageDespawn>()
+            .add_event::<ChangeLevel>()
             .add_systems(
                 Update,
                 (
                     load_act,
-                    load_starting_scene.after(load_act),
-                    fade_into.after(load_starting_scene),
+                    fade_into,
                     despawn_image.after(fade_into),
                     load_next_scene.after(despawn_image),
+                    render_image_cutscene.after(load_next_scene),
+                    render_map_cutscene.after(load_next_scene),
                 )
                     .run_if(in_state(AppState::InGame)),
             );

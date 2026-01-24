@@ -148,11 +148,13 @@ pub fn change_to_new_level(
         commands.entity(loaded_tile_entity).despawn();
     }
 
-    let camera_entity = camera.single().unwrap();
-    commands.entity(camera_entity).despawn();
+    for camera_entity in &camera {
+        commands.entity(camera_entity).despawn();
+    }
 
-    let map_properties_entity = map_properties.single().unwrap();
-    commands.entity(map_properties_entity).despawn();
+    for map_properties_entity in &map_properties {
+        commands.entity(map_properties_entity).despawn();
+    }
 
     let change_level_request = change_level_requests.read().next().unwrap();
     let load_level_request = LoadLevel::from(change_level_request);

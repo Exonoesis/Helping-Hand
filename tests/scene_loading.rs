@@ -43,6 +43,15 @@ fn transition_to_next_scene(game: &mut Game) {
     game.tick();
 }
 
+#[when(regex = r"the game transitions to scene ([0-9]+),")]
+fn transition_to_given_scene(game: &mut Game, given_scene_num: usize) {
+    for _ in 0..(given_scene_num - 1) {
+        game.broadcast_event(LoadNextScene::new());
+        // Since we're manually broadcasting an event, we MUST manually tick each time for the next scene to be visible
+        game.tick();
+    }
+}
+
 #[then(regex = r"the title of the current scene loaded is called '(.+)'.")]
 fn verify_current_scene_title(game: &mut Game, expected_scene_title: String) {
     let current_act = game.get_mut::<Act>();
@@ -76,6 +85,17 @@ fn verify_image_opacity(game: &mut Game) {
 
     // Value is normalized | [1.0 = 100%]
     assert_eq!(1.0, opacity);
+}
+
+#[then(regex = r"the map size should be ([0-9]+) x ([0-9]+) tiles.")]
+fn verify_map_size(game: &mut Game, expected_map_width: u32, expected_map_height: u32) {
+    let map_dimensions = game.get_map_size();
+
+    let actual_map_height = map_dimensions.get_rows();
+    let actual_map_width = map_dimensions.get_columns();
+
+    assert_eq!(expected_map_height, actual_map_height);
+    assert_eq!(expected_map_width, actual_map_width);
 }
 
 #[then(regex = r"there is a location called '(.+)' at tile ([0-9]+), ([0-9]+).")]
