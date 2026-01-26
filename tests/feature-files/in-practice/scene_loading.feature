@@ -28,8 +28,9 @@ Feature: An Act's Scenes can be traversed in the game.
         Given the game is capable of handling acts,
         When the act called 'introductory_act.json' is loaded,
         And the game transitions to scene 4,
+        Then the title of the current scene loaded is called 'Map Cutscene 1'.
         # TODO: This step comes form 'map_changing.feature'. Steal that from 'map_changing.rs'
-        Then the map size should be 19 x 20 tiles.
+        And the map size should be 19 x 20 tiles.
         And there is a location called 'PlayerStart' at tile 5, 17.
         And the character 'Jay' is at tile 5, 17.
         # Confirm each tile was found properly in the line path.

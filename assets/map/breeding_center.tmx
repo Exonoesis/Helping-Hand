@@ -159,7 +159,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="14" name="MapCutscene1">
+ <objectgroup id="14" name="Map Cutscene 1">
   <object id="9" name="RunInCircles" type="Loop" x="226.667" y="753.333">
    <polygon points="-12.5381,-6.74483 -11.5752,189.526 182.355,188.88 183.339,-6.29202"/>
   </object>

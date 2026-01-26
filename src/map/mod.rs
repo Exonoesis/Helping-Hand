@@ -266,13 +266,15 @@ fn get_player(tiled_map: &Map) -> Option<Tile> {
             continue;
         }
 
-        let object_layer = tiled_map.get_layer(z).unwrap().as_object_layer().unwrap();
+        let object_layer = layer.as_object_layer().unwrap();
 
         for object in object_layer.objects() {
             if object.user_type == "Player" {
                 let x = object.x as u32;
                 let y = object.y as u32;
                 let px_cords = PxCords::new_u32(x, y - tile_height, z);
+                // We have to subtract 1 from the y due to the y position tiled reports for image
+                // tiles being the bottom of the tile, while we consider it the top of the tile
                 let grid_cords = GridCords3D::new_u32(x / tile_width, (y / tile_height) - 1, z);
                 let tile_texture = Some(get_player_tile_texture(&object));
                 //let layer_number = z;
@@ -426,7 +428,7 @@ fn is_tile_layer(tiled_map: &Map, idx: usize) -> bool {
     found_tile_layer.is_some()
 }
 
-fn is_object_layer(tiled_map: &Map, idx: usize) -> bool {
+pub fn is_object_layer(tiled_map: &Map, idx: usize) -> bool {
     let found_object_layer = tiled_map.get_layer(idx).unwrap().as_object_layer();
 
     found_object_layer.is_some()

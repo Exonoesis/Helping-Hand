@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use crate::map::interactions::map_changing::load_tiled_map;
-use crate::map::GridCords2D;
+use crate::map::{is_object_layer, GridCords2D};
 
 #[derive(Clone)]
 pub struct SceneNode {
@@ -533,19 +533,71 @@ fn get_map_actions_from_map(
     tiled_map: tiled::Map,
     scene_name: String,
 ) -> Vec<MapAction> {
-    // Using scene_name, get Tiled layer where all objects for the scene are
-    // Make new MapAction vector
-    //
-    // Loop through list of incomplete_map_actions
-    // For each action, find the coresponding object in Tiled (name & type)
-    // Set MapAction cords to the objects cords
-    // Add to new vector
-    // If not found then panic!
-    //
-    // Return the now populated vector
+    let tile_width = tiled_map.tile_width;
+    let tile_height = tiled_map.tile_height;
+    let mut complete_map_actions = Vec::new();
 
-    // Returning unchanged map actions for initial test failing state
-    incomplete_map_actions
+    for z in 0..tiled_map.layers().len() {
+        let is_object_layer = is_object_layer(&tiled_map, z);
+        if !is_object_layer {
+            continue;
+        }
+
+        let layer = tiled_map
+            .get_layer(z)
+            .expect("get_map_actions_from_map: Failed to unwrap layer.");
+        if layer.name != scene_name {
+            continue;
+        }
+
+        let object_layer = layer
+            .as_object_layer()
+            .expect("get_map_actions_from_map: Failed to unwrap layer as object layer.");
+
+        let actions_list = incomplete_map_actions.clone();
+
+        for action in actions_list {
+            let mut new_instructions = Vec::new();
+            for instruction in action.get_instructions() {
+                match instruction {
+                    MapInstruction::Place(character, map_location) => {
+                        let placement_object = object_layer
+                            .objects()
+                            .find(|object| {
+                                object.user_type == "Placement" && object.name == map_location.name
+                            })
+                            .expect(&format!(
+                                "get_map_actions_from_map: No placement object with name {} found",
+                                map_location.name,
+                            ));
+
+                        let new_x = (placement_object.x as u32 / tile_width) as usize;
+                        let new_y = (placement_object.y as u32 / tile_height) as usize;
+
+                        let new_cords = GridCords2D::new(new_x, new_y);
+
+                        let new_map_location = MapLocation {
+                            name: map_location.name.clone(),
+                            cords: new_cords,
+                        };
+                        new_instructions
+                            .push(MapInstruction::Place(character.clone(), new_map_location));
+                    }
+                    MapInstruction::Move(character, map_path) => {
+                        //TODO
+                    }
+                    MapInstruction::Loop(character, map_path) => {
+                        //TODO
+                    }
+                    MapInstruction::Wait(_) => {}
+                }
+            }
+            complete_map_actions.push(MapAction {
+                map_instructions: new_instructions,
+            });
+        }
+    }
+    complete_map_actions
 }
 
 fn strip_html_for_map_actions(input: &str) -> String {

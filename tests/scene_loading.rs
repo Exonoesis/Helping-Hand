@@ -9,6 +9,7 @@ use helping_hand::map::GridCords2D;
 use helping_hand::narrative::act_loading::*;
 use helping_hand::narrative::acts::*;
 use helping_hand::plugins::acts::CoreActsPlugin;
+use helping_hand::plugins::levels::CoreLevelsPlugin;
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -16,6 +17,7 @@ use std::time::Duration;
 fn add_acts_plugin(game: &mut Game) {
     let fade_duration = Duration::from_secs(0);
     game.add_plugin(CoreActsPlugin::new(fade_duration));
+    game.add_plugin(CoreLevelsPlugin);
 }
 
 #[when(regex = r"the act called '(.+)' is loaded,")]
@@ -89,6 +91,8 @@ fn verify_image_opacity(game: &mut Game) {
 
 #[then(regex = r"the map size should be ([0-9]+) x ([0-9]+) tiles.")]
 fn verify_map_size(game: &mut Game, expected_map_width: u32, expected_map_height: u32) {
+    game.tick();
+
     let map_dimensions = game.get_map_size();
 
     let actual_map_height = map_dimensions.get_rows();
