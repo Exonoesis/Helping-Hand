@@ -64,26 +64,6 @@ pub enum SceneContents {
     MapCutscene(PathBuf, Vec<MapAction>),
 }
 
-impl SceneContents {
-    pub fn get_location_by_name(&self, name: String) -> &MapLocation {
-        let actions = self.get_map_actions();
-
-        for action in actions {
-            let instructions = action.get_instructions();
-
-            for instruction in instructions {
-                if let MapInstruction::Place(_, found_location) = instruction {
-                    if found_location.name == name {
-                        return found_location;
-                    }
-                }
-            }
-        }
-
-        panic!("get_location_by_name: No location {} found", name);
-    }
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct MapAction {
     map_instructions: Vec<MapInstruction>,
@@ -111,6 +91,10 @@ impl Character {
     pub fn new(name: String) -> Self {
         Self { name }
     }
+
+    pub fn get_name(&self) -> &String {
+        &self.name
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -129,6 +113,10 @@ impl MapLocation {
             name,
             cords: default_cords,
         }
+    }
+
+    pub fn get_name(&self) -> &String {
+        &self.name
     }
 
     pub fn get_cords(&self) -> &GridCords2D {

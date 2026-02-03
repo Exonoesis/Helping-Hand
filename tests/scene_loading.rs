@@ -102,18 +102,68 @@ fn verify_map_size(game: &mut Game, expected_map_width: u32, expected_map_height
     assert_eq!(expected_map_width, actual_map_width);
 }
 
-#[then(regex = r"there is a location called '(.+)' at tile ([0-9]+), ([0-9]+).")]
+#[then(regex = r"the character '(.+)' will be placed at location '(.+)'.")]
+fn verify_placement_instruction(
+    game: &mut Game,
+    expected_character_name: String,
+    expected_location_name: String,
+) {
+    let current_act = game.get_mut::<Act>();
+    let current_scene = current_act.get_current_scene();
+    let scene_contents = current_scene.get_scene_contents();
+
+    let mut placement_with_character_and_location_found = false;
+
+    //We can use a helper function to "flatten" the instructions list so to avoid
+    //the constant unpacking via for loops
+    // pub fn get_all_instructions(&self) -> Vec<MapInstruction>
+
+    let map_actions = scene_contents.get_map_actions();
+    for action in map_actions {
+        let instructions = action.get_instructions();
+
+        for instruction in instructions {
+            if let MapInstruction::Place(character, found_location) = instruction {
+                if *character.get_name() == expected_character_name
+                    && *found_location.get_name() == expected_location_name
+                {
+                    placement_with_character_and_location_found = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    // We cannot directly compare MapInstructions as there is data
+    // outside the scope of this test needed to create one
+    assert!(placement_with_character_and_location_found);
+}
+
+#[then(regex = r"the location '(.+)' is at tile ([0-9]+), ([0-9]+).")]
 fn verify_location_at_tile(game: &mut Game, location_name: String, tile_x: usize, tile_y: usize) {
     let current_act = game.get_mut::<Act>();
     let current_scene = current_act.get_current_scene();
-    let actual_tile_cords = current_scene
-        .get_scene_contents()
-        .get_location_by_name(location_name)
-        .get_cords();
+    let scene_contents = current_scene.get_scene_contents();
+
+    let mut actual_tile_cords = GridCords2D::new(0, 0);
+    let map_actions = scene_contents.get_map_actions();
+
+    for action in map_actions {
+        let instructions = action.get_instructions();
+
+        for instruction in instructions {
+            if let MapInstruction::Place(_, found_location) = instruction {
+                if *found_location.get_name() == location_name {
+                    actual_tile_cords = found_location.get_cords().clone();
+                    break;
+                }
+            }
+        }
+    }
 
     let expected_tile_cords = GridCords2D::new(tile_x, tile_y);
 
-    assert_eq!(expected_tile_cords, *actual_tile_cords);
+    assert_eq!(expected_tile_cords, actual_tile_cords);
 }
 
 // This runs before everything else, so you can setup things here.
