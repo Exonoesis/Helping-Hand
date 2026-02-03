@@ -13,6 +13,20 @@ use helping_hand::plugins::levels::CoreLevelsPlugin;
 use std::path::PathBuf;
 use std::time::Duration;
 
+fn get_all_instructions(scene_contents: &SceneContents) -> Vec<MapInstruction> {
+    let mut all_instructions = Vec::new();
+
+    let map_actions = scene_contents.get_map_actions();
+    for action in map_actions {
+        let instructions = action.get_instructions();
+        for instruction in instructions {
+            all_instructions.push(instruction.clone())
+        }
+    }
+
+    all_instructions
+}
+
 #[given("the game is capable of handling acts,")]
 fn add_acts_plugin(game: &mut Game) {
     let fade_duration = Duration::from_secs(0);
@@ -114,22 +128,15 @@ fn verify_placement_instruction(
 
     let mut placement_with_character_and_location_found = false;
 
-    //We can use a helper function to "flatten" the instructions list so to avoid
-    //the constant unpacking via for loops
-    // pub fn get_all_instructions(&self) -> Vec<MapInstruction>
+    let instructions = get_all_instructions(scene_contents);
 
-    let map_actions = scene_contents.get_map_actions();
-    for action in map_actions {
-        let instructions = action.get_instructions();
-
-        for instruction in instructions {
-            if let MapInstruction::Place(character, found_location) = instruction {
-                if *character.get_name() == expected_character_name
-                    && *found_location.get_name() == expected_location_name
-                {
-                    placement_with_character_and_location_found = true;
-                    break;
-                }
+    for instruction in instructions {
+        if let MapInstruction::Place(character, found_location) = instruction {
+            if *character.get_name() == expected_character_name
+                && *found_location.get_name() == expected_location_name
+            {
+                placement_with_character_and_location_found = true;
+                break;
             }
         }
     }
@@ -146,17 +153,14 @@ fn verify_location_at_tile(game: &mut Game, location_name: String, tile_x: usize
     let scene_contents = current_scene.get_scene_contents();
 
     let mut actual_tile_cords = GridCords2D::new(0, 0);
-    let map_actions = scene_contents.get_map_actions();
 
-    for action in map_actions {
-        let instructions = action.get_instructions();
+    let instructions = get_all_instructions(scene_contents);
 
-        for instruction in instructions {
-            if let MapInstruction::Place(_, found_location) = instruction {
-                if *found_location.get_name() == location_name {
-                    actual_tile_cords = found_location.get_cords().clone();
-                    break;
-                }
+    for instruction in instructions {
+        if let MapInstruction::Place(_, found_location) = instruction {
+            if *found_location.get_name() == location_name {
+                actual_tile_cords = found_location.get_cords().clone();
+                break;
             }
         }
     }
