@@ -137,6 +137,10 @@ impl MapPath {
     pub fn new(name: String) -> Self {
         Self { name }
     }
+
+    pub fn get_name(&self) -> &String {
+        &self.name
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -191,8 +195,6 @@ impl SceneContents {
                 let tiled_map = load_tiled_map(map_path.clone());
                 let scene_name = get_title_from_id(&arcweave_act_json, scene_id);
 
-                // TODO: Write function that would use the above to extract final map actions from Tiled
-                // For example; this would add location (2D grid cordinate) to Place Instruction
                 let finalized_map_actions =
                     get_map_actions_from_map(incomplete_map_actions, tiled_map, scene_name);
 
@@ -559,6 +561,9 @@ fn get_map_actions_from_map(
                                 map_location.name,
                             ));
 
+                        // Converting an f32 to a u32 results in a floor operation
+                        // This could cause rounding errors in cases where the marker
+                        // is placed too close to an edge between two tiles
                         let new_x = (placement_object.x as u32 / tile_width) as usize;
                         let new_y = (placement_object.y as u32 / tile_height) as usize;
 
@@ -572,10 +577,19 @@ fn get_map_actions_from_map(
                             .push(MapInstruction::Place(character.clone(), new_map_location));
                     }
                     MapInstruction::Move(character, map_path) => {
-                        //TODO
+                        // TODO
+                        // Mostly the same as Place
+                        // Will need to calcuate tile span
+                        //
+                        // x,y = path location
+                        //
+                        // (these are relative to path location)
+                        // polyline point first = line start
+                        // polyline point ... = line waypoint
+                        // polyline point last = line end
                     }
                     MapInstruction::Loop(character, map_path) => {
-                        //TODO
+                        // TODO
                     }
                     MapInstruction::Wait(_) => {}
                 }

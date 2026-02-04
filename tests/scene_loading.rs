@@ -116,34 +116,70 @@ fn verify_map_size(game: &mut Game, expected_map_width: u32, expected_map_height
     assert_eq!(expected_map_width, actual_map_width);
 }
 
-#[then(regex = r"the character '(.+)' will be placed at location '(.+)'.")]
-fn verify_placement_instruction(
+#[then(regex = r"the character '(.+)' will be (.+) '(.+)'.")]
+fn verify_instruction_data(
     game: &mut Game,
     expected_character_name: String,
-    expected_location_name: String,
+    type_of_path: String,
+    path_or_location_name: String,
 ) {
     let current_act = game.get_mut::<Act>();
     let current_scene = current_act.get_current_scene();
     let scene_contents = current_scene.get_scene_contents();
 
-    let mut placement_with_character_and_location_found = false;
+    let mut character_and_location_or_path_found = false;
 
     let instructions = get_all_instructions(scene_contents);
 
-    for instruction in instructions {
-        if let MapInstruction::Place(character, found_location) = instruction {
-            if *character.get_name() == expected_character_name
-                && *found_location.get_name() == expected_location_name
-            {
-                placement_with_character_and_location_found = true;
-                break;
+    match type_of_path.as_str() {
+        "placed at location" => {
+            for instruction in instructions {
+                match instruction {
+                    MapInstruction::Place(character, found_location)
+                        if *character.get_name() == expected_character_name
+                            && *found_location.get_name() == path_or_location_name =>
+                    {
+                        character_and_location_or_path_found = true;
+                        break;
+                    }
+                    _ => {}
+                }
             }
         }
+        "moved along the line path" => {
+            for instruction in instructions {
+                match instruction {
+                    MapInstruction::Move(found_character, found_map_path)
+                        if *found_character.get_name() == expected_character_name
+                            && *found_map_path.get_name() == path_or_location_name =>
+                    {
+                        character_and_location_or_path_found = true;
+                        break;
+                    }
+                    _ => {}
+                }
+            }
+        }
+        "moved along the looping path" => {
+            for instruction in instructions {
+                match instruction {
+                    MapInstruction::Loop(found_character, found_map_path)
+                        if *found_character.get_name() == expected_character_name
+                            && *found_map_path.get_name() == path_or_location_name =>
+                    {
+                        character_and_location_or_path_found = true;
+                        break;
+                    }
+                    _ => {}
+                }
+            }
+        }
+        _ => {}
     }
 
     // We cannot directly compare MapInstructions as there is data
     // outside the scope of this test needed to create one
-    assert!(placement_with_character_and_location_found);
+    assert!(character_and_location_or_path_found);
 }
 
 #[then(regex = r"the location '(.+)' is at tile ([0-9]+), ([0-9]+).")]
