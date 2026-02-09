@@ -27,6 +27,66 @@ fn get_all_instructions(scene_contents: &SceneContents) -> Vec<MapInstruction> {
     all_instructions
 }
 
+fn check_placement_data(
+    instructions: Vec<MapInstruction>,
+    expected_character_name: String,
+    path_or_location_name: String,
+) -> bool {
+    for instruction in instructions {
+        match instruction {
+            MapInstruction::Place(character, found_location)
+                if *character.get_name() == expected_character_name
+                    && *found_location.get_name() == path_or_location_name =>
+            {
+                return true
+            }
+            _ => {}
+        }
+    }
+
+    false
+}
+
+fn check_line_path_data(
+    instructions: Vec<MapInstruction>,
+    expected_character_name: String,
+    path_or_location_name: String,
+) -> bool {
+    for instruction in instructions {
+        match instruction {
+            MapInstruction::Move(found_character, found_map_path)
+                if *found_character.get_name() == expected_character_name
+                    && *found_map_path.get_name() == path_or_location_name =>
+            {
+                return true
+            }
+            _ => {}
+        }
+    }
+
+    false
+}
+
+fn check_looping_path_data(
+    instructions: Vec<MapInstruction>,
+    expected_character_name: String,
+    path_or_location_name: String,
+) -> bool {
+    for instruction in instructions {
+        match instruction {
+            MapInstruction::Loop(found_character, found_map_path)
+                if *found_character.get_name() == expected_character_name
+                    && *found_map_path.get_name() == path_or_location_name =>
+            {
+                return true
+            }
+            _ => {}
+        }
+    }
+
+    false
+}
+
 #[given("the game is capable of handling acts,")]
 fn add_acts_plugin(game: &mut Game) {
     let fade_duration = Duration::from_secs(0);
@@ -133,46 +193,19 @@ fn verify_instruction_data(
 
     match type_of_path.as_str() {
         "placed at location" => {
-            for instruction in instructions {
-                match instruction {
-                    MapInstruction::Place(character, found_location)
-                        if *character.get_name() == expected_character_name
-                            && *found_location.get_name() == path_or_location_name =>
-                    {
-                        character_and_location_or_path_found = true;
-                        break;
-                    }
-                    _ => {}
-                }
-            }
+            character_and_location_or_path_found =
+                check_placement_data(instructions, expected_character_name, path_or_location_name)
         }
         "moved along the line path" => {
-            for instruction in instructions {
-                match instruction {
-                    MapInstruction::Move(found_character, found_map_path)
-                        if *found_character.get_name() == expected_character_name
-                            && *found_map_path.get_name() == path_or_location_name =>
-                    {
-                        character_and_location_or_path_found = true;
-                        break;
-                    }
-                    _ => {}
-                }
-            }
+            character_and_location_or_path_found =
+                check_line_path_data(instructions, expected_character_name, path_or_location_name)
         }
         "moved along the looping path" => {
-            for instruction in instructions {
-                match instruction {
-                    MapInstruction::Loop(found_character, found_map_path)
-                        if *found_character.get_name() == expected_character_name
-                            && *found_map_path.get_name() == path_or_location_name =>
-                    {
-                        character_and_location_or_path_found = true;
-                        break;
-                    }
-                    _ => {}
-                }
-            }
+            character_and_location_or_path_found = check_looping_path_data(
+                instructions,
+                expected_character_name,
+                path_or_location_name,
+            )
         }
         _ => {}
     }
