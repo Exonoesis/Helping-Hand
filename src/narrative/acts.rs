@@ -6,6 +6,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
 use std::time::Duration;
+use tiled::ObjectShape;
 
 use crate::map::interactions::map_changing::load_tiled_map;
 use crate::map::{is_object_layer, GridCords2D};
@@ -131,15 +132,27 @@ impl MapLocation {
 #[derive(Debug, Clone, PartialEq)]
 pub struct MapPath {
     name: String,
+    map_path: Vec<GridCords2D>,
 }
 
 impl MapPath {
     pub fn new(name: String) -> Self {
-        Self { name }
+        // MapPath's map_path is set by another source
+        // this default should be replaced using the setter
+        let default_map_path: Vec<GridCords2D> = Vec::new();
+
+        Self {
+            name,
+            map_path: default_map_path,
+        }
     }
 
     pub fn get_name(&self) -> &String {
         &self.name
+    }
+
+    pub fn get_path(&self) -> &Vec<GridCords2D> {
+        &self.map_path
     }
 }
 
@@ -554,39 +567,47 @@ fn get_map_actions_from_map(
                         let placement_object = object_layer
                             .objects()
                             .find(|object| {
-                                object.user_type == "Placement" && object.name == map_location.name
+                                object.user_type == "Placement"
+                                    && object.name == *map_location.get_name()
                             })
                             .expect(&format!(
                                 "get_map_actions_from_map: No placement object with name {} found",
-                                map_location.name,
+                                map_location.get_name(),
                             ));
 
-                        // Converting an f32 to a u32 results in a floor operation
-                        // This could cause rounding errors in cases where the marker
-                        // is placed too close to an edge between two tiles
                         let new_x = (placement_object.x as u32 / tile_width) as usize;
                         let new_y = (placement_object.y as u32 / tile_height) as usize;
 
                         let new_cords = GridCords2D::new(new_x, new_y);
 
                         let new_map_location = MapLocation {
-                            name: map_location.name.clone(),
+                            name: map_location.get_name().clone(),
                             cords: new_cords,
                         };
                         new_instructions
                             .push(MapInstruction::Place(character.clone(), new_map_location));
                     }
                     MapInstruction::Move(character, map_path) => {
-                        // TODO
-                        // Mostly the same as Place
-                        // Will need to calcuate tile span
-                        //
-                        // x,y = path location
-                        //
-                        // (these are relative to path location)
-                        // polyline point first = line start
-                        // polyline point ... = line waypoint
-                        // polyline point last = line end
+                        let move_path_object = object_layer
+                            .objects()
+                            .find(|object| {
+                                object.user_type == "Path" && object.name == *map_path.get_name()
+                            })
+                            .expect(&format!(
+                                "get_map_actions_from_map: No placement object with name {} found",
+                                map_path.get_name(),
+                            ));
+
+                        if let ObjectShape::Polyline { points } = &move_path_object.shape {
+                            let new_map_path = get_path_from_points(move_path_object, points);
+
+                            let new_map_path = MapPath {
+                                name: map_path.get_name().clone(),
+                                map_path: new_map_path,
+                            };
+                            new_instructions
+                                .push(MapInstruction::Move(character.clone(), new_map_path));
+                        }
                     }
                     MapInstruction::Loop(character, map_path) => {
                         // TODO
@@ -600,6 +621,61 @@ fn get_map_actions_from_map(
         }
     }
     complete_map_actions
+}
+
+// TODO: [Math Helper: get_path_from_points]
+// [Number of line segments to calculate is -1 the number of polyline points]
+// [ex. <1,2,3,4,5>]
+//
+// line_seg_num = 0;
+// for line_seg_num < polyline points
+// {
+// point 1 = segnum
+// point 2 = segnum + 1
+//
+// grid point 1 = ((origin x + point 1 x), (origin y + point 1 y)) trunc both
+// grid point 2 = ((origin x + point 2 x), (origin y + poiunt 2 y)) trunc both
+//
+// Determine direction
+// [Handle x-axis movements (up, down)]
+// [Handle y-axis movements (left, right)]
+// [We have a direction enum? Can reuse?]
+//
+// [Match on direction and have math loops in each branch]
+// {
+// Add first tile into path_tile Vec
+// Loop the difference by going in direction (mathematically)
+// Place tiles in path_tile Vec
+// Add last tile into path_tile Vec
+// }
+//
+// segnum++
+// }
+fn get_path_from_points(
+    move_path_object: tiled::Object<'_>,
+    points: &[(f32, f32)],
+) -> Vec<GridCords2D> {
+    let origin_x = move_path_object.x;
+    let origin_y = move_path_object.y;
+    let mut final_path = Vec::new();
+
+    let from_point = GridCords2D::new(
+        (origin_x + points[0].0) as usize,
+        (origin_y + points[0].1) as usize,
+    );
+
+    let to_point = GridCords2D::new(
+        (origin_x + points[1].0) as usize,
+        (origin_y + points[1].1) as usize,
+    );
+
+    // calculate distance between two
+    // make a compare fn in GridCords2D?
+    // returns X or Y and pos or neg num?
+
+    final_path.push(from_point);
+
+    final_path
 }
 
 fn strip_html_for_map_actions(input: &str) -> String {

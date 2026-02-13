@@ -87,6 +87,28 @@ fn check_looping_path_data(
     false
 }
 
+fn get_location_by_name(instructions: Vec<MapInstruction>, location_name: String) -> GridCords2D {
+    for instruction in instructions {
+        if let MapInstruction::Place(_, found_location) = instruction {
+            if found_location.get_name() == &location_name {
+                return found_location.get_cords().clone();
+            }
+        }
+    }
+    panic!("Location {} not found", location_name)
+}
+
+fn get_path_by_name(instructions: Vec<MapInstruction>, path_name: String) -> Vec<GridCords2D> {
+    for instruction in instructions {
+        if let MapInstruction::Move(_, found_path) = instruction {
+            if found_path.get_name() == &path_name {
+                return found_path.get_path().clone();
+            }
+        }
+    }
+    panic!("Path {} not found", path_name)
+}
+
 #[given("the game is capable of handling acts,")]
 fn add_acts_plugin(game: &mut Game) {
     let fade_duration = Duration::from_secs(0);
@@ -97,6 +119,23 @@ fn add_acts_plugin(game: &mut Game) {
 #[when(regex = r"the act called '(.+)' is loaded,")]
 fn load_act(game: &mut Game, act_file_name: String) {
     let act_file_path_name = format!("assets/acts/{}", act_file_name);
+    let act_file_path = PathBuf::from(&act_file_path_name);
+
+    assert!(
+        act_file_path.exists(),
+        "Act file does not exist at location {:?}",
+        act_file_path.canonicalize().unwrap()
+    );
+
+    game.broadcast_event(LoadAct::new(&act_file_path_name));
+
+    // Since we're manually broadcasting an event, we MUST manually tick for the act to be visible
+    game.tick();
+}
+
+#[when(regex = r"the testing act called '(.+)' is loaded,")]
+fn load_testing_act(game: &mut Game, act_file_name: String) {
+    let act_file_path_name = format!("tests/test-assets/acts/{}", act_file_name);
     let act_file_path = PathBuf::from(&act_file_path_name);
 
     assert!(
@@ -221,22 +260,25 @@ fn verify_location_at_tile(game: &mut Game, location_name: String, tile_x: usize
     let current_scene = current_act.get_current_scene();
     let scene_contents = current_scene.get_scene_contents();
 
-    let mut actual_tile_cords = GridCords2D::new(0, 0);
-
     let instructions = get_all_instructions(scene_contents);
 
-    for instruction in instructions {
-        if let MapInstruction::Place(_, found_location) = instruction {
-            if *found_location.get_name() == location_name {
-                actual_tile_cords = found_location.get_cords().clone();
-                break;
-            }
-        }
-    }
-
+    let actual_tile_cords = get_location_by_name(instructions, location_name);
     let expected_tile_cords = GridCords2D::new(tile_x, tile_y);
 
     assert_eq!(expected_tile_cords, actual_tile_cords);
+}
+
+#[then(regex = r"the line path '(.+)' has a path length of ([0-9]+) tiles.")]
+fn verify_path_length(game: &mut Game, path_name: String, expected_path_length: usize) {
+    let current_act = game.get_mut::<Act>();
+    let current_scene = current_act.get_current_scene();
+    let scene_contents = current_scene.get_scene_contents();
+
+    let instructions = get_all_instructions(scene_contents);
+
+    let actual_path_length = get_path_by_name(instructions, path_name).len();
+
+    assert_eq!(expected_path_length, actual_path_length);
 }
 
 // This runs before everything else, so you can setup things here.
