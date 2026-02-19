@@ -599,7 +599,12 @@ fn get_map_actions_from_map(
                             ));
 
                         if let ObjectShape::Polyline { points } = &move_path_object.shape {
-                            let new_map_path = get_path_from_points(move_path_object, points);
+                            let new_map_path = get_path_from_points(
+                                move_path_object,
+                                points,
+                                tile_height,
+                                tile_width,
+                            );
 
                             let new_map_path = MapPath {
                                 name: map_path.get_name().clone(),
@@ -627,53 +632,72 @@ fn get_map_actions_from_map(
 // [Number of line segments to calculate is -1 the number of polyline points]
 // [ex. <1,2,3,4,5>]
 //
-// line_seg_num = 0;
-// for line_seg_num < polyline points
+// for i in 0..polyline points - 1
 // {
-// point 1 = segnum
-// point 2 = segnum + 1
-//
-// grid point 1 = ((origin x + point 1 x), (origin y + point 1 y)) trunc both
-// grid point 2 = ((origin x + point 2 x), (origin y + poiunt 2 y)) trunc both
-//
-// Determine direction
-// [Handle x-axis movements (up, down)]
-// [Handle y-axis movements (left, right)]
-// [We have a direction enum? Can reuse?]
-//
-// [Match on direction and have math loops in each branch]
-// {
-// Add first tile into path_tile Vec
-// Loop the difference by going in direction (mathematically)
-// Place tiles in path_tile Vec
-// Add last tile into path_tile Vec
-// }
-//
-// segnum++
+// point 1 = i
+// point 2 = i + 1
 // }
 fn get_path_from_points(
     move_path_object: tiled::Object<'_>,
     points: &[(f32, f32)],
+    tile_height: u32,
+    tile_width: u32,
 ) -> Vec<GridCords2D> {
     let origin_x = move_path_object.x;
     let origin_y = move_path_object.y;
     let mut final_path = Vec::new();
 
-    let from_point = GridCords2D::new(
-        (origin_x + points[0].0) as usize,
-        (origin_y + points[0].1) as usize,
-    );
+    // The origin is added by default
+    let origin_point_x = origin_x as usize / tile_width as usize;
+    let origin_point_y = origin_y as usize / tile_height as usize;
+    let origin_point = GridCords2D::new(origin_point_x, origin_point_y);
+    final_path.push(origin_point);
 
-    let to_point = GridCords2D::new(
-        (origin_x + points[1].0) as usize,
-        (origin_y + points[1].1) as usize,
-    );
+    // TODO: Outer loop here to cover all pairs of points
 
-    // calculate distance between two
-    // make a compare fn in GridCords2D?
-    // returns X or Y and pos or neg num?
+    let from_point_x = (origin_x + points[0].0) as usize / tile_width as usize;
+    let from_point_y = (origin_y + points[0].1) as usize / tile_height as usize;
+    let from_point = GridCords2D::new(from_point_x, from_point_y);
 
-    final_path.push(from_point);
+    let to_point_x = (origin_x + points[1].0) as usize / tile_width as usize;
+    let to_point_y = (origin_y + points[1].1) as usize / tile_height as usize;
+    let to_point = GridCords2D::new(to_point_x, to_point_y);
+
+    let x_diff = (to_point.get_x() - from_point.get_x()) as isize;
+    let y_diff = (to_point.get_y() - from_point.get_y()) as isize;
+
+    let absolute_x_diff = x_diff.abs();
+    let absolute_y_diff = y_diff.abs();
+
+    if absolute_x_diff.abs() > 0 {
+        if x_diff > 0 {
+            // pos x movement
+            for i in 1..=absolute_x_diff {
+                let tile = GridCords2D::new(from_point.get_x() + i as usize, from_point.get_y());
+                final_path.push(tile);
+            }
+        } else {
+            // neg x movement
+            for i in 1..=absolute_x_diff {
+                let tile = GridCords2D::new(from_point.get_x() - i as usize, from_point.get_y());
+                final_path.push(tile);
+            }
+        }
+    } else if absolute_y_diff.abs() > 0 {
+        if y_diff > 0 {
+            // pos y movement
+            for i in 1..=absolute_y_diff {
+                let tile = GridCords2D::new(from_point.get_x(), from_point.get_y() + i as usize);
+                final_path.push(tile);
+            }
+        } else {
+            // neg y movement
+            for i in 1..=absolute_y_diff {
+                let tile = GridCords2D::new(from_point.get_x(), from_point.get_y() - i as usize);
+                final_path.push(tile);
+            }
+        }
+    }
 
     final_path
 }

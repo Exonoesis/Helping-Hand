@@ -281,6 +281,28 @@ fn verify_path_length(game: &mut Game, path_name: String, expected_path_length: 
     assert_eq!(expected_path_length, actual_path_length);
 }
 
+#[then(regex = r"tile ([0-9]+) of line path '(.+)' is tile ([0-9]+), ([0-9]+).")]
+fn verify_path_tile_cords(
+    game: &mut Game,
+    tile_index: usize,
+    path_name: String,
+    expected_x: usize,
+    expected_y: usize,
+) {
+    let current_act = game.get_mut::<Act>();
+    let current_scene = current_act.get_current_scene();
+    let scene_contents = current_scene.get_scene_contents();
+
+    let instructions = get_all_instructions(scene_contents);
+
+    let actual_path_tile = get_path_by_name(instructions, path_name);
+    let actual_path_tile_cords = actual_path_tile[tile_index - 1].clone();
+
+    let expected_path_tile_cords = GridCords2D::new(expected_x, expected_y);
+
+    assert_eq!(expected_path_tile_cords, actual_path_tile_cords);
+}
+
 // This runs before everything else, so you can setup things here.
 fn main() {
     futures::executor::block_on(Game::run(
