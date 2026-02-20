@@ -154,6 +154,10 @@ impl MapPath {
     pub fn get_path(&self) -> &Vec<GridCords2D> {
         &self.map_path
     }
+
+    pub fn set_path(&mut self, new_map_path: Vec<GridCords2D>) {
+        self.map_path = new_map_path;
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -580,10 +584,9 @@ fn get_map_actions_from_map(
 
                         let new_cords = GridCords2D::new(new_x, new_y);
 
-                        let new_map_location = MapLocation {
-                            name: map_location.get_name().clone(),
-                            cords: new_cords,
-                        };
+                        let mut new_map_location = map_location.clone();
+                        new_map_location.set_cords(new_cords);
+
                         new_instructions
                             .push(MapInstruction::Place(character.clone(), new_map_location));
                     }
@@ -599,17 +602,16 @@ fn get_map_actions_from_map(
                             ));
 
                         if let ObjectShape::Polyline { points } = &move_path_object.shape {
-                            let new_map_path = get_path_from_points(
+                            let new_map_path_vec = get_path_from_points(
                                 move_path_object,
                                 points,
                                 tile_height,
                                 tile_width,
                             );
 
-                            let new_map_path = MapPath {
-                                name: map_path.get_name().clone(),
-                                map_path: new_map_path,
-                            };
+                            let mut new_map_path = map_path.clone();
+                            new_map_path.set_path(new_map_path_vec);
+
                             new_instructions
                                 .push(MapInstruction::Move(character.clone(), new_map_path));
                         }
@@ -628,15 +630,6 @@ fn get_map_actions_from_map(
     complete_map_actions
 }
 
-// TODO: [Math Helper: get_path_from_points]
-// [Number of line segments to calculate is -1 the number of polyline points]
-// [ex. <1,2,3,4,5>]
-//
-// for i in 0..polyline points - 1
-// {
-// point 1 = i
-// point 2 = i + 1
-// }
 fn get_path_from_points(
     move_path_object: tiled::Object<'_>,
     points: &[(f32, f32)],
@@ -645,60 +638,66 @@ fn get_path_from_points(
 ) -> Vec<GridCords2D> {
     let origin_x = move_path_object.x;
     let origin_y = move_path_object.y;
+    let tile_width_float = tile_width as f32;
+    let tile_height_float = tile_height as f32;
     let mut final_path = Vec::new();
 
-    // The origin is added by default
-    let origin_point_x = origin_x as usize / tile_width as usize;
-    let origin_point_y = origin_y as usize / tile_height as usize;
-    let origin_point = GridCords2D::new(origin_point_x, origin_point_y);
+    // The origin point is added by default
+    let origin_point_x = origin_x / tile_width_float;
+    let origin_point_y = origin_y / tile_height_float;
+    let origin_point = GridCords2D::new(origin_point_x as usize, origin_point_y as usize);
     final_path.push(origin_point);
 
-    // TODO: Outer loop here to cover all pairs of points
+    let line_segments = points.len() - 1;
+    for i in 0..line_segments {
+        let from_point_x = (origin_x + points[i].0) / tile_width_float;
+        let from_point_y = (origin_y + points[i].1) / tile_height_float;
+        let from_point = GridCords2D::new(from_point_x as usize, from_point_y as usize);
 
-    let from_point_x = (origin_x + points[0].0) as usize / tile_width as usize;
-    let from_point_y = (origin_y + points[0].1) as usize / tile_height as usize;
-    let from_point = GridCords2D::new(from_point_x, from_point_y);
+        let to_point_x = (origin_x + points[i + 1].0) / tile_width_float;
+        let to_point_y = (origin_y + points[i + 1].1) / tile_height_float;
+        let to_point = GridCords2D::new(to_point_x as usize, to_point_y as usize);
 
-    let to_point_x = (origin_x + points[1].0) as usize / tile_width as usize;
-    let to_point_y = (origin_y + points[1].1) as usize / tile_height as usize;
-    let to_point = GridCords2D::new(to_point_x, to_point_y);
+        let x_diff = to_point.get_x() as isize - from_point.get_x() as isize;
+        let y_diff = to_point.get_y() as isize - from_point.get_y() as isize;
 
-    let x_diff = (to_point.get_x() - from_point.get_x()) as isize;
-    let y_diff = (to_point.get_y() - from_point.get_y()) as isize;
+        let absolute_x_diff = x_diff.abs();
+        let absolute_y_diff = y_diff.abs();
 
-    let absolute_x_diff = x_diff.abs();
-    let absolute_y_diff = y_diff.abs();
-
-    if absolute_x_diff.abs() > 0 {
-        if x_diff > 0 {
-            // pos x movement
-            for i in 1..=absolute_x_diff {
-                let tile = GridCords2D::new(from_point.get_x() + i as usize, from_point.get_y());
-                final_path.push(tile);
+        if absolute_x_diff > 0 {
+            if x_diff > 0 {
+                // pos x movement
+                for i in 1..=absolute_x_diff {
+                    let tile =
+                        GridCords2D::new(from_point.get_x() + i as usize, from_point.get_y());
+                    final_path.push(tile);
+                }
+            } else if x_diff < 0 {
+                // neg x movement
+                for i in 1..=absolute_x_diff {
+                    let tile =
+                        GridCords2D::new(from_point.get_x() - i as usize, from_point.get_y());
+                    final_path.push(tile);
+                }
             }
-        } else {
-            // neg x movement
-            for i in 1..=absolute_x_diff {
-                let tile = GridCords2D::new(from_point.get_x() - i as usize, from_point.get_y());
-                final_path.push(tile);
-            }
-        }
-    } else if absolute_y_diff.abs() > 0 {
-        if y_diff > 0 {
-            // pos y movement
-            for i in 1..=absolute_y_diff {
-                let tile = GridCords2D::new(from_point.get_x(), from_point.get_y() + i as usize);
-                final_path.push(tile);
-            }
-        } else {
-            // neg y movement
-            for i in 1..=absolute_y_diff {
-                let tile = GridCords2D::new(from_point.get_x(), from_point.get_y() - i as usize);
-                final_path.push(tile);
+        } else if absolute_y_diff > 0 {
+            if y_diff > 0 {
+                // pos y movement
+                for i in 1..=absolute_y_diff {
+                    let tile =
+                        GridCords2D::new(from_point.get_x(), from_point.get_y() + i as usize);
+                    final_path.push(tile);
+                }
+            } else if y_diff < 0 {
+                // neg y movement
+                for i in 1..=absolute_y_diff {
+                    let tile =
+                        GridCords2D::new(from_point.get_x(), from_point.get_y() - i as usize);
+                    final_path.push(tile);
+                }
             }
         }
     }
-
     final_path
 }
 
