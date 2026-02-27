@@ -98,7 +98,8 @@ fn given_some_act_file_name(game: &mut GameWorld, file_name: String) {
 #[when("the act is read from the act file,")]
 fn read_act_file(game: &mut GameWorld) {
     let act_file = game.act_file.clone();
-    game.current_act = read_act_from(act_file);
+    let act_loader = ActLoader::new(act_file);
+    game.current_act = act_loader.read_act_from();
 }
 
 #[when("we move to the next scene,")]

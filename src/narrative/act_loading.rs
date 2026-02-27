@@ -6,7 +6,7 @@ use crate::{map::interactions::map_changing::CameraBundle, ui::menus::ImageNodeB
 use bevy::prelude::*;
 use std::path::{Path, PathBuf};
 
-use super::acts::read_act_from;
+use super::acts::ActLoader;
 
 /// Identifies components created for a single scene
 #[derive(Component)]
@@ -89,7 +89,9 @@ pub fn load_act(
     let load_act_request = load_act_requests.read().next().unwrap();
 
     let act_file_path = PathBuf::from(load_act_request.get_act_file_path());
-    let loaded_act = read_act_from(act_file_path);
+
+    let act_loader = ActLoader::new(act_file_path);
+    let loaded_act = act_loader.read_act_from();
 
     commands.spawn(loaded_act);
 

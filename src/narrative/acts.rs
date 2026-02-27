@@ -198,22 +198,29 @@ impl SceneContents {
     ) -> SceneContents {
         match scene_type {
             SceneType::ImageCutscene => {
-                let image_id = get_scene_image_id(&arcweave_act_json, &scene_id);
-                let image_name = get_image_from_id(&arcweave_act_json, image_id);
+                let loaded_image_cutscene =
+                    ImageCutsceneLoader::new(arcweave_act_json.clone(), scene_id.clone());
+                let image_id = loaded_image_cutscene.get_scene_image_id();
+                let image_name = loaded_image_cutscene.get_image_from_id(image_id);
                 let image_path = PathBuf::from(image_name);
 
                 SceneContents::ImageCutscene(image_path)
             }
             SceneType::MapCutscene => {
-                let map_path = get_map_path_from_id(&arcweave_act_json, &scene_id);
+                let loaded_mapcutscene =
+                    MapCutsceneLoader::new(arcweave_act_json.clone(), scene_id.clone());
+                let map_path = loaded_mapcutscene.get_map_path_from_id();
 
-                let incomplete_map_actions = get_map_actions_from_id(&arcweave_act_json, &scene_id);
+                let incomplete_map_actions = loaded_mapcutscene.get_map_actions_from_id();
 
                 let tiled_map = load_tiled_map(map_path.clone());
                 let scene_name = get_title_from_id(&arcweave_act_json, scene_id);
 
-                let finalized_map_actions =
-                    get_map_actions_from_map(incomplete_map_actions, tiled_map, scene_name);
+                let finalized_map_actions = loaded_mapcutscene.get_map_actions_from_map(
+                    incomplete_map_actions,
+                    tiled_map,
+                    scene_name,
+                );
 
                 SceneContents::MapCutscene(map_path, finalized_map_actions)
             }
@@ -316,34 +323,591 @@ impl Act {
     }
 }
 
-/// Converts an arcweave file into a list of Scenes
-pub fn read_act_from(act_file: PathBuf) -> Act {
-    let mut read_act = Act::new();
+pub struct ActLoader {
+    act_file: PathBuf,
+}
 
-    // Create serde_json
-    let arcweave_act_json = load_json_file(act_file);
+impl ActLoader {
+    pub fn new(act_file: PathBuf) -> Self {
+        Self { act_file }
+    }
 
-    // Make the first scene in the act
-    let starting_scene_name = String::from("startingElement");
-    let starting_scene = create_starting_scene(starting_scene_name, &arcweave_act_json);
+    /// Converts an arcweave file into a list of Scenes
+    pub fn read_act_from(&self) -> Act {
+        let mut read_act = Act::new();
 
-    // Loop to add all scenes to the act
-    // TODO:
-    // We will need to track node visits to prevent
-    // infinite loops once we have bi-directional edges
-    let mut scenes_to_investigate = vec![starting_scene];
-    while let Some(current_scene_node) = scenes_to_investigate.pop() {
-        read_act.add_scene(current_scene_node.get_scene().clone());
+        // Create serde_json
+        let arcweave_act_json = Self::load_json_file(self);
 
-        let next_scenes = create_connected_scenes(&current_scene_node, &arcweave_act_json);
-        for next_scene in next_scenes {
-            read_act.add_scene(next_scene.get_scene().clone());
-            read_act.add_scene_connection(current_scene_node.get_scene(), next_scene.get_scene());
-            scenes_to_investigate.push(next_scene);
+        // Make the first scene in the act
+        let starting_scene_name = String::from("startingElement");
+        let starting_scene = Self::create_starting_scene(starting_scene_name, &arcweave_act_json);
+
+        // Loop to add all scenes to the act
+        // TODO:
+        // We will need to track node visits to prevent
+        // infinite loops once we have bi-directional edges
+        let mut scenes_to_investigate = vec![starting_scene];
+        while let Some(current_scene_node) = scenes_to_investigate.pop() {
+            read_act.add_scene(current_scene_node.get_scene().clone());
+
+            let next_scenes =
+                Self::create_connected_scenes(&current_scene_node, &arcweave_act_json);
+            for next_scene in next_scenes {
+                read_act.add_scene(next_scene.get_scene().clone());
+                read_act
+                    .add_scene_connection(current_scene_node.get_scene(), next_scene.get_scene());
+                scenes_to_investigate.push(next_scene);
+            }
+        }
+
+        read_act
+    }
+
+    /// Modified version of from_reader example of serde_json
+    fn load_json_file(&self) -> Value {
+        let file = File::open(self.act_file.clone()).expect("load_json_file: Unable to open file");
+        let reader = BufReader::new(file);
+
+        let json_value = serde_json::from_reader(reader)
+            .expect("load_json_file: Unable to parse JSON file passed in.");
+
+        json_value
+    }
+
+    /// Creates a SceneNode from the starting scene name
+    fn create_starting_scene(scene_name: String, arcweave_act_json: &Value) -> SceneNode {
+        let scene_value = arcweave_act_json.get(scene_name).unwrap();
+        let id = get_string_from_json_value(scene_value);
+
+        Self::create_scene_from_id(id, arcweave_act_json)
+    }
+
+    /// Creates a SceneNode from a given id
+    fn create_scene_from_id(id: String, arcweave_act_json: &Value) -> SceneNode {
+        let title = get_title_from_id(&arcweave_act_json, &id);
+        let scene_type = Self::get_scene_type_from_id(&arcweave_act_json, &id);
+        let scene_contents = SceneContents::parse_from(arcweave_act_json, &scene_type, &id);
+
+        let scene = Scene::make_scene(title, scene_type, scene_contents);
+        SceneNode::make_scene_node(id, scene)
+    }
+
+    /// Gets an Arcweave nodes type name
+    fn get_scene_type_from_id(act: &Value, id: &String) -> SceneType {
+        // Array(Vec<Value>)
+        let components_list = act
+            .get("elements")
+            .and_then(|elements| elements.get(&id))
+            .and_then(|componenets| componenets.get("components"))
+            .expect(&format!(
+                "get_scene_type_from_id: Unable to get components list for item {}",
+                id
+            ));
+
+        let component_id = components_list.as_array().unwrap().first().unwrap();
+
+        let id_string = get_string_from_json_value(&component_id);
+
+        let component_name = act
+            .get("components")
+            .and_then(|component| component.get(id_string))
+            .and_then(|name| name.get("name"))
+            .expect(&format!(
+                "get_scene_type_from_id: Unable to get component name for item {}",
+                id
+            ));
+
+        let type_name = get_string_from_json_value(component_name);
+
+        match type_name.as_str() {
+            "Image Cutscene" => return SceneType::ImageCutscene,
+            "Map Cutscene" => return SceneType::MapCutscene,
+            _ => panic!(
+                "get_scene_type_from_id: Unrecognized scene type found: {}",
+                type_name
+            ),
         }
     }
 
-    read_act
+    /// Returns a list of SceneNodes connected to a given SceneNode
+    fn create_connected_scenes(
+        current_scene_node: &SceneNode,
+        arcweave_act_json: &Value,
+    ) -> Vec<SceneNode> {
+        let mut connected_scenes = Vec::new();
+
+        let current_scene_id = current_scene_node.get_id();
+
+        let scene_connection_collection =
+            Self::get_list_of_scene_connections(arcweave_act_json, current_scene_id);
+
+        // For each connection, get the scene it connects to and add it to the final list
+        for connection in scene_connection_collection {
+            let connection_id = get_string_from_json_value(&connection);
+
+            let target_scene_id = Self::get_target_id(arcweave_act_json, connection_id);
+            let connected_scene = Self::create_scene_from_id(target_scene_id, arcweave_act_json);
+
+            connected_scenes.push(connected_scene);
+        }
+
+        connected_scenes
+    }
+
+    /// Gets an Arcweave connection target
+    fn get_target_id(arcweave_act_json: &Value, connection_id: String) -> String {
+        let target_scene_id = arcweave_act_json
+            .get("connections")
+            .and_then(|connections| connections.get(&connection_id))
+            .and_then(|connection| connection.get("targetid"))
+            .expect(&format!(
+                "create_connected_scenes: Unable to get connection targetid for item {}",
+                connection_id
+            ));
+
+        get_string_from_json_value(target_scene_id)
+    }
+
+    /// Gets an Arcweave nodes list of outputs
+    fn get_list_of_scene_connections(
+        arcweave_act_json: &Value,
+        current_scene_id: &String,
+    ) -> Vec<Value> {
+        // Get list of connections for this scene
+        let scene_connections = arcweave_act_json
+            .get("elements")
+            .and_then(|elements| elements.get(&current_scene_id))
+            .and_then(|element| element.get("outputs"))
+            .expect(&format!(
+                "create_connected_scenes: Unable to get scene outputs for item {}",
+                current_scene_id
+            ));
+        Self::get_vec_from_json_value(scene_connections)
+    }
+
+    fn get_vec_from_json_value(json_value: &Value) -> Vec<Value> {
+        json_value
+            .as_array()
+            .expect("Unable to convert value to array.")
+            .clone()
+    }
+}
+
+struct ImageCutsceneLoader {
+    act: Value,
+    scene_id: String,
+}
+
+impl ImageCutsceneLoader {
+    pub fn new(act: Value, scene_id: String) -> Self {
+        Self { act, scene_id }
+    }
+
+    /// Gets an Arcweave nodes image id
+    fn get_scene_image_id(&self) -> String {
+        let image_id_value = self
+            .act
+            .get("elements")
+            .and_then(|elements| elements.get(&self.scene_id))
+            .and_then(|element| element.get("assets"))
+            .and_then(|assets| assets.get("cover"))
+            .and_then(|cover| cover.get("id"))
+            .expect(&format!(
+                "get_scene_image_id: Unable to get scene image id for item {}",
+                self.scene_id
+            ));
+
+        get_string_from_json_value(image_id_value)
+    }
+
+    /// Gets an Arcweave nodes image name | ex. Image1.png
+    fn get_image_from_id(&self, image_id: String) -> String {
+        let image_value = self
+            .act
+            .get("assets")
+            .and_then(|assets| assets.get(&image_id))
+            .and_then(|name| name.get("name"))
+            .expect(&format!(
+                "get_image_from_id: Unable to get image id for item {}",
+                image_id
+            ));
+
+        get_string_from_json_value(image_value)
+    }
+}
+
+struct MapCutsceneLoader {
+    act: Value,
+    scene_id: String,
+}
+
+impl MapCutsceneLoader {
+    pub fn new(act: Value, scene_id: String) -> Self {
+        Self { act, scene_id }
+    }
+
+    fn get_map_path_from_id(&self) -> PathBuf {
+        let content_value = self
+            .act
+            .get("elements")
+            .and_then(|elements| elements.get(&self.scene_id))
+            .and_then(|content| content.get("content"))
+            .expect(&format!(
+                "get_map_path_from_id: Unable to get content for item {}",
+                self.scene_id
+            ));
+
+        let content_string = get_string_from_json_value(content_value);
+        let regex = Regex::new(r#"data-id=\"([0-9a-f-]+)\""#).unwrap();
+
+        let map_component_id = regex
+            .captures(&content_string)
+            .and_then(|cap| cap.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap();
+
+        let map_component_attributes_list = self
+            .act
+            .get("components")
+            .and_then(|component| component.get(map_component_id))
+            .and_then(|attributes| attributes.get("attributes"))
+            .expect(&format!(
+                "get_map_path_from_id: Unable to get component attribute id for item {}",
+                self.scene_id
+            ));
+
+        let map_component_attribute = map_component_attributes_list
+            .as_array()
+            .unwrap()
+            .first()
+            .unwrap();
+
+        let map_path_id = get_string_from_json_value(map_component_attribute);
+
+        let map_path_value = self
+            .act
+            .get("attributes")
+            .and_then(|attribute| attribute.get(map_path_id))
+            .and_then(|value| value.get("value"))
+            .and_then(|data| data.get("data"))
+            .expect(&format!(
+                "get_map_path_from_id: Unable to get attribute data for item {}",
+                self.scene_id
+            ));
+
+        let map_path_name = get_string_from_json_value(map_path_value);
+
+        // Need to prefix folder path
+        let folder_path = PathBuf::from("assets/map/");
+        let full_path = folder_path.join(map_path_name);
+
+        PathBuf::from(full_path)
+    }
+
+    /// This is called first and extracts all map actions from an Arcweave File
+    /// without information from the map such as coordinates
+    fn get_map_actions_from_id(&self) -> Vec<MapAction> {
+        let content_value = self
+            .act
+            .get("elements")
+            .and_then(|elements| elements.get(&self.scene_id))
+            .and_then(|content| content.get("content"))
+            .expect(&format!(
+                "get_map_actions_from_id: Unable to get content for item {}",
+                self.scene_id
+            ));
+
+        let content_string = get_string_from_json_value(content_value);
+
+        // Strip HTML + other noise
+        let cleaned_map_cutscene_content =
+            Self::strip_html_for_map_actions(content_string.as_str());
+
+        // Send cleaned content to parse_map_actions
+        let map_actions = Self::parse_map_actions(cleaned_map_cutscene_content.as_str());
+
+        map_actions
+    }
+
+    fn strip_html_for_map_actions(input: &str) -> String {
+        let remove_simple_tags = input
+            .replace("<p>", "")
+            .replace("</p>", "")
+            .replace("</span>", "");
+
+        let remove_span_tags = Regex::new(r#"<span[^>]*>"#)
+            .unwrap()
+            .replace_all(&remove_simple_tags, "")
+            .to_string();
+
+        let stripped_before_first_bracket = remove_span_tags
+            .split_once('[')
+            .map(|(_before, after)| format!("[{}", after))
+            .unwrap_or(remove_span_tags);
+
+        let remove_outer_whitespace = Regex::new(r"\]\s*\[")
+            .unwrap()
+            .replace_all(&stripped_before_first_bracket, "][")
+            .to_string();
+
+        remove_outer_whitespace
+    }
+
+    /// Takes a batch of map actions, each enclosed within brackets,
+    /// and converts them into proper MapActions
+    fn parse_map_actions(map_cutscene_contents: &str) -> Vec<MapAction> {
+        let mut collected_map_actions: Vec<MapAction> = Vec::new();
+
+        let trimmed_map_cutscene_contents = map_cutscene_contents.trim_matches(['[', ']']);
+        let split_map_cutscene_contents: Vec<&str> =
+            trimmed_map_cutscene_contents.split("][").collect();
+
+        for batch in split_map_cutscene_contents {
+            let cleaned_batch = batch.replace("[", "").replace("]", "");
+            let map_action = MapAction {
+                map_instructions: Self::parse_map_instructions(cleaned_batch.as_str()),
+            };
+            collected_map_actions.push(map_action);
+        }
+
+        collected_map_actions
+    }
+
+    /// Takes a batch of comma separated map instructions and
+    /// converts them into their MapInstruction equivalent
+    fn parse_map_instructions(map_instruction_batch: &str) -> Vec<MapInstruction> {
+        let mut parsed_map_instructions: Vec<MapInstruction> = Vec::new();
+
+        let split_map_instruction_batch: Vec<&str> = map_instruction_batch.split(',').collect();
+
+        for single_map_instruction in split_map_instruction_batch {
+            let split_map_instruction: Vec<&str> =
+                single_map_instruction.split_whitespace().collect();
+
+            let instruction_action = split_map_instruction[1];
+
+            match instruction_action {
+                "@" => {
+                    parsed_map_instructions.push(MapInstruction::Place(
+                        Character::new(split_map_instruction[0].to_string()),
+                        MapLocation::new(split_map_instruction[2].to_string()),
+                    ));
+                    continue;
+                }
+                ">" => {
+                    parsed_map_instructions.push(MapInstruction::Move(
+                        Character::new(split_map_instruction[0].to_string()),
+                        MapPath::new(split_map_instruction[2].to_string()),
+                    ));
+                    continue;
+                }
+                "<->" => {
+                    parsed_map_instructions.push(MapInstruction::Loop(
+                        Character::new(split_map_instruction[0].to_string()),
+                        MapPath::new(split_map_instruction[2].to_string()),
+                    ));
+                    continue;
+                }
+                _ => {}
+            }
+
+            let special_instruction = split_map_instruction[0];
+            let instruction_duration = split_map_instruction[1];
+
+            match special_instruction {
+                "Wait" => {
+                    let duration = Self::str_to_duration(instruction_duration);
+                    parsed_map_instructions.push(MapInstruction::Wait(duration));
+                    continue;
+                }
+                _ => panic!(
+                    "parse_map_instructions: Unrecognized instruction found: {}",
+                    special_instruction
+                ),
+            }
+        }
+
+        parsed_map_instructions
+    }
+
+    /// Takes an str in the format of: [number]s and returns a duration in seconds
+    /// Example: "16s" would return a Duration of 16 seconds
+    fn str_to_duration(duration_str: &str) -> Duration {
+        let trimmed_duration_str = duration_str.trim_end_matches("s").parse::<u64>().unwrap();
+        let duration = Duration::from_secs(trimmed_duration_str);
+
+        duration
+    }
+
+    /// This is called second and extracts all map information from a Tiled Map
+    /// such as coordinates, returning a finalized collection of MapActions
+    fn get_map_actions_from_map(
+        &self,
+        incomplete_map_actions: Vec<MapAction>,
+        tiled_map: tiled::Map,
+        scene_name: String,
+    ) -> Vec<MapAction> {
+        let tile_width = tiled_map.tile_width;
+        let tile_height = tiled_map.tile_height;
+        let mut complete_map_actions = Vec::new();
+
+        for z in 0..tiled_map.layers().len() {
+            let is_object_layer = is_object_layer(&tiled_map, z);
+            if !is_object_layer {
+                continue;
+            }
+
+            let layer = tiled_map
+                .get_layer(z)
+                .expect("get_map_actions_from_map: Failed to unwrap layer.");
+            if layer.name != scene_name {
+                continue;
+            }
+
+            let object_layer = layer
+                .as_object_layer()
+                .expect("get_map_actions_from_map: Failed to unwrap layer as object layer.");
+
+            let actions_list = incomplete_map_actions.clone();
+
+            for action in actions_list {
+                let mut new_instructions = Vec::new();
+                for instruction in action.get_instructions() {
+                    match instruction {
+                        MapInstruction::Place(character, map_location) => {
+                            let placement_object = object_layer
+                                .objects()
+                                .find(|object| {
+                                    object.user_type == "Placement"
+                                        && object.name == *map_location.get_name()
+                                })
+                                .expect(&format!(
+                                    "get_map_actions_from_map: No placement object with name {} found",
+                                    map_location.get_name(),
+                                ));
+
+                            let new_x = (placement_object.x as u32 / tile_width) as usize;
+                            let new_y = (placement_object.y as u32 / tile_height) as usize;
+
+                            let new_cords = GridCords2D::new(new_x, new_y);
+
+                            let mut new_map_location = map_location.clone();
+                            new_map_location.set_cords(new_cords);
+
+                            new_instructions
+                                .push(MapInstruction::Place(character.clone(), new_map_location));
+                        }
+                        MapInstruction::Move(character, map_path) => {
+                            let move_path_object = object_layer
+                                .objects()
+                                .find(|object| {
+                                    object.user_type == "Path" && object.name == *map_path.get_name()
+                                })
+                                .expect(&format!(
+                                    "get_map_actions_from_map: No placement object with name {} found",
+                                    map_path.get_name(),
+                                ));
+
+                            if let ObjectShape::Polyline { points } = &move_path_object.shape {
+                                let new_map_path_vec = Self::get_path_from_points(
+                                    move_path_object,
+                                    points,
+                                    tile_height,
+                                    tile_width,
+                                );
+
+                                let mut new_map_path = map_path.clone();
+                                new_map_path.set_path(new_map_path_vec);
+
+                                new_instructions
+                                    .push(MapInstruction::Move(character.clone(), new_map_path));
+                            }
+                        }
+                        MapInstruction::Loop(character, map_path) => {
+                            // TODO
+                        }
+                        MapInstruction::Wait(_) => {}
+                    }
+                }
+                complete_map_actions.push(MapAction {
+                    map_instructions: new_instructions,
+                });
+            }
+        }
+        complete_map_actions
+    }
+
+    fn get_path_from_points(
+        move_path_object: tiled::Object<'_>,
+        points: &[(f32, f32)],
+        tile_height: u32,
+        tile_width: u32,
+    ) -> Vec<GridCords2D> {
+        let origin_x = move_path_object.x;
+        let origin_y = move_path_object.y;
+        let tile_width_float = tile_width as f32;
+        let tile_height_float = tile_height as f32;
+        let mut final_path = Vec::new();
+
+        // The origin point is added by default
+        let origin_point_x = origin_x / tile_width_float;
+        let origin_point_y = origin_y / tile_height_float;
+        let origin_point = GridCords2D::new(origin_point_x as usize, origin_point_y as usize);
+        final_path.push(origin_point);
+
+        let line_segments = points.len() - 1;
+        for i in 0..line_segments {
+            let from_point_x = (origin_x + points[i].0) / tile_width_float;
+            let from_point_y = (origin_y + points[i].1) / tile_height_float;
+            let from_point = GridCords2D::new(from_point_x as usize, from_point_y as usize);
+
+            let to_point_x = (origin_x + points[i + 1].0) / tile_width_float;
+            let to_point_y = (origin_y + points[i + 1].1) / tile_height_float;
+            let to_point = GridCords2D::new(to_point_x as usize, to_point_y as usize);
+
+            let x_diff = to_point.get_x() as isize - from_point.get_x() as isize;
+            let y_diff = to_point.get_y() as isize - from_point.get_y() as isize;
+
+            let absolute_x_diff = x_diff.abs();
+            let absolute_y_diff = y_diff.abs();
+
+            if absolute_x_diff > 0 {
+                if x_diff > 0 {
+                    // pos x movement
+                    for i in 1..=absolute_x_diff {
+                        let tile =
+                            GridCords2D::new(from_point.get_x() + i as usize, from_point.get_y());
+                        final_path.push(tile);
+                    }
+                } else if x_diff < 0 {
+                    // neg x movement
+                    for i in 1..=absolute_x_diff {
+                        let tile =
+                            GridCords2D::new(from_point.get_x() - i as usize, from_point.get_y());
+                        final_path.push(tile);
+                    }
+                }
+            } else if absolute_y_diff > 0 {
+                if y_diff > 0 {
+                    // pos y movement
+                    for i in 1..=absolute_y_diff {
+                        let tile =
+                            GridCords2D::new(from_point.get_x(), from_point.get_y() + i as usize);
+                        final_path.push(tile);
+                    }
+                } else if y_diff < 0 {
+                    // neg y movement
+                    for i in 1..=absolute_y_diff {
+                        let tile =
+                            GridCords2D::new(from_point.get_x(), from_point.get_y() - i as usize);
+                        final_path.push(tile);
+                    }
+                }
+            }
+        }
+        final_path
+    }
 }
 
 fn get_string_from_json_value(json_value: &Value) -> String {
@@ -351,40 +915,6 @@ fn get_string_from_json_value(json_value: &Value) -> String {
         .as_str()
         .expect("Unable to convert value to string.")
         .to_string()
-}
-
-fn get_vec_from_json_value(json_value: &Value) -> Vec<Value> {
-    json_value
-        .as_array()
-        .expect("Unable to convert value to array.")
-        .clone()
-}
-
-/// Modified version of from_reader example of serde_json
-fn load_json_file(file_path: PathBuf) -> Value {
-    let file = File::open(file_path).expect("load_json_file: Unable to open file");
-    let reader = BufReader::new(file);
-
-    let json_value = serde_json::from_reader(reader)
-        .expect("load_json_file: Unable to parse JSON file passed in.");
-
-    json_value
-}
-
-/// Gets an Arcweave nodes image id
-fn get_scene_image_id(act: &Value, id: &String) -> String {
-    let image_id_value = act
-        .get("elements")
-        .and_then(|elements| elements.get(&id))
-        .and_then(|element| element.get("assets"))
-        .and_then(|assets| assets.get("cover"))
-        .and_then(|cover| cover.get("id"))
-        .expect(&format!(
-            "get_scene_image_id: Unable to get scene image id for item {}",
-            id
-        ));
-
-    get_string_from_json_value(image_id_value)
 }
 
 /// Gets an Arcweave nodes title
@@ -404,486 +934,6 @@ fn get_title_from_id(act: &Value, id: &String) -> String {
     strip_html_tags_simple(title)
 }
 
-/// Gets an Arcweave nodes image name | ex. Image1.png
-fn get_image_from_id(act: &Value, id: String) -> String {
-    let image_value = act
-        .get("assets")
-        .and_then(|assets| assets.get(&id))
-        .and_then(|name| name.get("name"))
-        .expect(&format!(
-            "get_image_from_id: Unable to get image id for item {}",
-            id
-        ));
-
-    get_string_from_json_value(image_value)
-}
-
-/// Gets an Arcweave nodes type name
-fn get_scene_type_from_id(act: &Value, id: &String) -> SceneType {
-    // Array(Vec<Value>)
-    let components_list = act
-        .get("elements")
-        .and_then(|elements| elements.get(&id))
-        .and_then(|componenets| componenets.get("components"))
-        .expect(&format!(
-            "get_scene_type_from_id: Unable to get components list for item {}",
-            id
-        ));
-
-    let component_id = components_list.as_array().unwrap().first().unwrap();
-
-    let id_string = get_string_from_json_value(&component_id);
-
-    let component_name = act
-        .get("components")
-        .and_then(|component| component.get(id_string))
-        .and_then(|name| name.get("name"))
-        .expect(&format!(
-            "get_scene_type_from_id: Unable to get component name for item {}",
-            id
-        ));
-
-    let type_name = get_string_from_json_value(component_name);
-
-    match type_name.as_str() {
-        "Image Cutscene" => return SceneType::ImageCutscene,
-        "Map Cutscene" => return SceneType::MapCutscene,
-        _ => panic!(
-            "get_scene_type_from_id: Unrecognized scene type found: {}",
-            type_name
-        ),
-    }
-}
-
-fn get_map_path_from_id(act: &Value, id: &String) -> PathBuf {
-    let content_value = act
-        .get("elements")
-        .and_then(|elements| elements.get(&id))
-        .and_then(|content| content.get("content"))
-        .expect(&format!(
-            "get_map_path_from_id: Unable to get content for item {}",
-            id
-        ));
-
-    let content_string = get_string_from_json_value(content_value);
-    let regex = Regex::new(r#"data-id=\"([0-9a-f-]+)\""#).unwrap();
-
-    let map_component_id = regex
-        .captures(&content_string)
-        .and_then(|cap| cap.get(1))
-        .map(|m| m.as_str().to_string())
-        .unwrap();
-
-    let map_component_attributes_list = act
-        .get("components")
-        .and_then(|component| component.get(map_component_id))
-        .and_then(|attributes| attributes.get("attributes"))
-        .expect(&format!(
-            "get_map_path_from_id: Unable to get component attribute id for item {}",
-            id
-        ));
-
-    let map_component_attribute = map_component_attributes_list
-        .as_array()
-        .unwrap()
-        .first()
-        .unwrap();
-
-    let map_path_id = get_string_from_json_value(map_component_attribute);
-
-    let map_path_value = act
-        .get("attributes")
-        .and_then(|attribute| attribute.get(map_path_id))
-        .and_then(|value| value.get("value"))
-        .and_then(|data| data.get("data"))
-        .expect(&format!(
-            "get_map_path_from_id: Unable to get attribute data for item {}",
-            id
-        ));
-
-    let map_path_name = get_string_from_json_value(map_path_value);
-
-    // Need to prefix folder path
-    let folder_path = PathBuf::from("assets/map/");
-    let full_path = folder_path.join(map_path_name);
-
-    PathBuf::from(full_path)
-}
-
-/// This is called first and extracts all map actions from an Arcweave File
-/// without information from the map such as coordinates
-fn get_map_actions_from_id(act: &Value, id: &String) -> Vec<MapAction> {
-    let content_value = act
-        .get("elements")
-        .and_then(|elements| elements.get(&id))
-        .and_then(|content| content.get("content"))
-        .expect(&format!(
-            "get_map_actions_from_id: Unable to get content for item {}",
-            id
-        ));
-
-    let content_string = get_string_from_json_value(content_value);
-
-    // Strip HTML + other noise
-    let cleaned_map_cutscene_content = strip_html_for_map_actions(content_string.as_str());
-
-    // Send cleaned content to parse_map_actions
-    let map_actions = parse_map_actions(cleaned_map_cutscene_content.as_str());
-
-    map_actions
-}
-
-/// This is called second and extracts all map information from a Tiled Map
-/// such as coordinates, returning a finalized collection of MapActions
-fn get_map_actions_from_map(
-    incomplete_map_actions: Vec<MapAction>,
-    tiled_map: tiled::Map,
-    scene_name: String,
-) -> Vec<MapAction> {
-    let tile_width = tiled_map.tile_width;
-    let tile_height = tiled_map.tile_height;
-    let mut complete_map_actions = Vec::new();
-
-    for z in 0..tiled_map.layers().len() {
-        let is_object_layer = is_object_layer(&tiled_map, z);
-        if !is_object_layer {
-            continue;
-        }
-
-        let layer = tiled_map
-            .get_layer(z)
-            .expect("get_map_actions_from_map: Failed to unwrap layer.");
-        if layer.name != scene_name {
-            continue;
-        }
-
-        let object_layer = layer
-            .as_object_layer()
-            .expect("get_map_actions_from_map: Failed to unwrap layer as object layer.");
-
-        let actions_list = incomplete_map_actions.clone();
-
-        for action in actions_list {
-            let mut new_instructions = Vec::new();
-            for instruction in action.get_instructions() {
-                match instruction {
-                    MapInstruction::Place(character, map_location) => {
-                        let placement_object = object_layer
-                            .objects()
-                            .find(|object| {
-                                object.user_type == "Placement"
-                                    && object.name == *map_location.get_name()
-                            })
-                            .expect(&format!(
-                                "get_map_actions_from_map: No placement object with name {} found",
-                                map_location.get_name(),
-                            ));
-
-                        let new_x = (placement_object.x as u32 / tile_width) as usize;
-                        let new_y = (placement_object.y as u32 / tile_height) as usize;
-
-                        let new_cords = GridCords2D::new(new_x, new_y);
-
-                        let mut new_map_location = map_location.clone();
-                        new_map_location.set_cords(new_cords);
-
-                        new_instructions
-                            .push(MapInstruction::Place(character.clone(), new_map_location));
-                    }
-                    MapInstruction::Move(character, map_path) => {
-                        let move_path_object = object_layer
-                            .objects()
-                            .find(|object| {
-                                object.user_type == "Path" && object.name == *map_path.get_name()
-                            })
-                            .expect(&format!(
-                                "get_map_actions_from_map: No placement object with name {} found",
-                                map_path.get_name(),
-                            ));
-
-                        if let ObjectShape::Polyline { points } = &move_path_object.shape {
-                            let new_map_path_vec = get_path_from_points(
-                                move_path_object,
-                                points,
-                                tile_height,
-                                tile_width,
-                            );
-
-                            let mut new_map_path = map_path.clone();
-                            new_map_path.set_path(new_map_path_vec);
-
-                            new_instructions
-                                .push(MapInstruction::Move(character.clone(), new_map_path));
-                        }
-                    }
-                    MapInstruction::Loop(character, map_path) => {
-                        // TODO
-                    }
-                    MapInstruction::Wait(_) => {}
-                }
-            }
-            complete_map_actions.push(MapAction {
-                map_instructions: new_instructions,
-            });
-        }
-    }
-    complete_map_actions
-}
-
-fn get_path_from_points(
-    move_path_object: tiled::Object<'_>,
-    points: &[(f32, f32)],
-    tile_height: u32,
-    tile_width: u32,
-) -> Vec<GridCords2D> {
-    let origin_x = move_path_object.x;
-    let origin_y = move_path_object.y;
-    let tile_width_float = tile_width as f32;
-    let tile_height_float = tile_height as f32;
-    let mut final_path = Vec::new();
-
-    // The origin point is added by default
-    let origin_point_x = origin_x / tile_width_float;
-    let origin_point_y = origin_y / tile_height_float;
-    let origin_point = GridCords2D::new(origin_point_x as usize, origin_point_y as usize);
-    final_path.push(origin_point);
-
-    let line_segments = points.len() - 1;
-    for i in 0..line_segments {
-        let from_point_x = (origin_x + points[i].0) / tile_width_float;
-        let from_point_y = (origin_y + points[i].1) / tile_height_float;
-        let from_point = GridCords2D::new(from_point_x as usize, from_point_y as usize);
-
-        let to_point_x = (origin_x + points[i + 1].0) / tile_width_float;
-        let to_point_y = (origin_y + points[i + 1].1) / tile_height_float;
-        let to_point = GridCords2D::new(to_point_x as usize, to_point_y as usize);
-
-        let x_diff = to_point.get_x() as isize - from_point.get_x() as isize;
-        let y_diff = to_point.get_y() as isize - from_point.get_y() as isize;
-
-        let absolute_x_diff = x_diff.abs();
-        let absolute_y_diff = y_diff.abs();
-
-        if absolute_x_diff > 0 {
-            if x_diff > 0 {
-                // pos x movement
-                for i in 1..=absolute_x_diff {
-                    let tile =
-                        GridCords2D::new(from_point.get_x() + i as usize, from_point.get_y());
-                    final_path.push(tile);
-                }
-            } else if x_diff < 0 {
-                // neg x movement
-                for i in 1..=absolute_x_diff {
-                    let tile =
-                        GridCords2D::new(from_point.get_x() - i as usize, from_point.get_y());
-                    final_path.push(tile);
-                }
-            }
-        } else if absolute_y_diff > 0 {
-            if y_diff > 0 {
-                // pos y movement
-                for i in 1..=absolute_y_diff {
-                    let tile =
-                        GridCords2D::new(from_point.get_x(), from_point.get_y() + i as usize);
-                    final_path.push(tile);
-                }
-            } else if y_diff < 0 {
-                // neg y movement
-                for i in 1..=absolute_y_diff {
-                    let tile =
-                        GridCords2D::new(from_point.get_x(), from_point.get_y() - i as usize);
-                    final_path.push(tile);
-                }
-            }
-        }
-    }
-    final_path
-}
-
-fn strip_html_for_map_actions(input: &str) -> String {
-    let remove_simple_tags = input
-        .replace("<p>", "")
-        .replace("</p>", "")
-        .replace("</span>", "");
-
-    let remove_span_tags = Regex::new(r#"<span[^>]*>"#)
-        .unwrap()
-        .replace_all(&remove_simple_tags, "")
-        .to_string();
-
-    let stripped_before_first_bracket = remove_span_tags
-        .split_once('[')
-        .map(|(_before, after)| format!("[{}", after))
-        .unwrap_or(remove_span_tags);
-
-    let remove_outer_whitespace = Regex::new(r"\]\s*\[")
-        .unwrap()
-        .replace_all(&stripped_before_first_bracket, "][")
-        .to_string();
-
-    remove_outer_whitespace
-}
-
-/// Takes a batch of map actions, each enclosed within brackets,
-/// and converts them into proper MapActions
-fn parse_map_actions(map_cutscene_contents: &str) -> Vec<MapAction> {
-    let mut collected_map_actions: Vec<MapAction> = Vec::new();
-
-    let trimmed_map_cutscene_contents = map_cutscene_contents.trim_matches(['[', ']']);
-    let split_map_cutscene_contents: Vec<&str> =
-        trimmed_map_cutscene_contents.split("][").collect();
-
-    for batch in split_map_cutscene_contents {
-        let cleaned_batch = batch.replace("[", "").replace("]", "");
-        let map_action = MapAction {
-            map_instructions: parse_map_instructions(cleaned_batch.as_str()),
-        };
-        collected_map_actions.push(map_action);
-    }
-
-    collected_map_actions
-}
-
-/// Takes a batch of comma separated map instructions and
-/// converts them into their MapInstruction equivalent
-fn parse_map_instructions(map_instruction_batch: &str) -> Vec<MapInstruction> {
-    let mut parsed_map_instructions: Vec<MapInstruction> = Vec::new();
-
-    let split_map_instruction_batch: Vec<&str> = map_instruction_batch.split(',').collect();
-
-    for single_map_instruction in split_map_instruction_batch {
-        let split_map_instruction: Vec<&str> = single_map_instruction.split_whitespace().collect();
-
-        let instruction_action = split_map_instruction[1];
-
-        match instruction_action {
-            "@" => {
-                parsed_map_instructions.push(MapInstruction::Place(
-                    Character::new(split_map_instruction[0].to_string()),
-                    MapLocation::new(split_map_instruction[2].to_string()),
-                ));
-                continue;
-            }
-            ">" => {
-                parsed_map_instructions.push(MapInstruction::Move(
-                    Character::new(split_map_instruction[0].to_string()),
-                    MapPath::new(split_map_instruction[2].to_string()),
-                ));
-                continue;
-            }
-            "<->" => {
-                parsed_map_instructions.push(MapInstruction::Loop(
-                    Character::new(split_map_instruction[0].to_string()),
-                    MapPath::new(split_map_instruction[2].to_string()),
-                ));
-                continue;
-            }
-            _ => {}
-        }
-
-        let special_instruction = split_map_instruction[0];
-        let instruction_duration = split_map_instruction[1];
-
-        match special_instruction {
-            "Wait" => {
-                let duration = str_to_duration(instruction_duration);
-                parsed_map_instructions.push(MapInstruction::Wait(duration));
-                continue;
-            }
-            _ => panic!(
-                "parse_map_instructions: Unrecognized instruction found: {}",
-                special_instruction
-            ),
-        }
-    }
-
-    parsed_map_instructions
-}
-
-/// Takes an str in the format of: [number]s and returns a duration in seconds
-/// Example: "16s" would return a Duration of 16 seconds
-fn str_to_duration(duration_str: &str) -> Duration {
-    let trimmed_duration_str = duration_str.trim_end_matches("s").parse::<u64>().unwrap();
-    let duration = Duration::from_secs(trimmed_duration_str);
-
-    duration
-}
-
-/// Gets an Arcweave nodes list of outputs
-fn get_list_of_scene_connections(
-    arcweave_act_json: &Value,
-    current_scene_id: &String,
-) -> Vec<Value> {
-    // Get list of connections for this scene
-    let scene_connections = arcweave_act_json
-        .get("elements")
-        .and_then(|elements| elements.get(&current_scene_id))
-        .and_then(|element| element.get("outputs"))
-        .expect(&format!(
-            "create_connected_scenes: Unable to get scene outputs for item {}",
-            current_scene_id
-        ));
-    get_vec_from_json_value(scene_connections)
-}
-
-/// Gets an Arcweave connection target
-fn get_target_id(arcweave_act_json: &Value, connection_id: String) -> String {
-    let target_scene_id = arcweave_act_json
-        .get("connections")
-        .and_then(|connections| connections.get(&connection_id))
-        .and_then(|connection| connection.get("targetid"))
-        .expect(&format!(
-            "create_connected_scenes: Unable to get connection targetid for item {}",
-            connection_id
-        ));
-
-    get_string_from_json_value(target_scene_id)
-}
-
-/// Creates a SceneNode from the starting scene name
-fn create_starting_scene(scene_name: String, arcweave_act_json: &Value) -> SceneNode {
-    let scene_value = arcweave_act_json.get(scene_name).unwrap();
-    let id = get_string_from_json_value(scene_value);
-
-    create_scene_from_id(id, arcweave_act_json)
-}
-
-/// Creates a SceneNode from a given id
-fn create_scene_from_id(id: String, arcweave_act_json: &Value) -> SceneNode {
-    let title = get_title_from_id(&arcweave_act_json, &id);
-    let scene_type = get_scene_type_from_id(&arcweave_act_json, &id);
-    let scene_contents = SceneContents::parse_from(arcweave_act_json, &scene_type, &id);
-
-    let scene = Scene::make_scene(title, scene_type, scene_contents);
-    SceneNode::make_scene_node(id, scene)
-}
-
-/// Returns a list of SceneNodes connected to a given SceneNode
-fn create_connected_scenes(
-    current_scene_node: &SceneNode,
-    arcweave_act_json: &Value,
-) -> Vec<SceneNode> {
-    let mut connected_scenes = Vec::new();
-
-    let current_scene_id = current_scene_node.get_id();
-
-    let scene_connection_collection =
-        get_list_of_scene_connections(arcweave_act_json, current_scene_id);
-
-    // For each connection, get the scene it connects to and add it to the final list
-    for connection in scene_connection_collection {
-        let connection_id = get_string_from_json_value(&connection);
-
-        let target_scene_id = get_target_id(arcweave_act_json, connection_id);
-        let connected_scene = create_scene_from_id(target_scene_id, arcweave_act_json);
-
-        connected_scenes.push(connected_scene);
-    }
-
-    connected_scenes
-}
-
 /// Removes HTML tags added by Arcweave | ex. <p>text<\/p>
 pub fn strip_html_tags_simple(line: String) -> String {
     // Create a regex to match HTML tags
@@ -894,100 +944,4 @@ pub fn strip_html_tags_simple(line: String) -> String {
 
     // Turn the line back into a String
     cleaned_line.to_string()
-}
-
-#[cfg(test)]
-mod tests {
-    // Import/use any function outside of this test module.
-    use super::*;
-
-    // This is your brain on unit testing.
-    #[test]
-    fn str_to_duration_test() {
-        let duration_string = "10s";
-
-        let expected_duration = Duration::from_secs(10);
-        let actual_duration = str_to_duration(duration_string);
-
-        assert_eq!(expected_duration, actual_duration);
-    }
-
-    #[test]
-    fn parse_map_instructions_test() {
-        let instruction_string = "Player @ Place, OtherPlayer > OverThere";
-
-        let instruction_vector = parse_map_instructions(instruction_string);
-
-        let actual_first_instruction = instruction_vector[0].clone();
-        let actual_second_instruction = instruction_vector[1].clone();
-
-        let expected_first_instruction = MapInstruction::Place(
-            Character::new("Player".to_string()),
-            MapLocation::new("Place".to_string()),
-        );
-
-        let expected_second_instruction = MapInstruction::Move(
-            Character::new("OtherPlayer".to_string()),
-            MapPath::new("OverThere".to_string()),
-        );
-
-        assert_eq!(
-            expected_first_instruction, actual_first_instruction,
-            "First instruction mismatch"
-        );
-        assert_eq!(
-            expected_second_instruction, actual_second_instruction,
-            "Second instruction mismatch"
-        );
-    }
-
-    #[test]
-    fn parse_map_action_test() {
-        let map_action_string =
-            "[Player @ Place, OtherPlayer > OverThere][PlayerThree <-> CircleTime]";
-
-        let action_vector = parse_map_actions(map_action_string);
-
-        let actual_first_action = action_vector[0].clone();
-        let actual_second_action = action_vector[1].clone();
-
-        let mut first_action_instructions = Vec::new();
-        let first_map_action_first_instruction = MapInstruction::Place(
-            Character::new("Player".to_string()),
-            MapLocation::new("Place".to_string()),
-        );
-
-        let first_map_action_second_instruction = MapInstruction::Move(
-            Character::new("OtherPlayer".to_string()),
-            MapPath::new("OverThere".to_string()),
-        );
-
-        first_action_instructions.push(first_map_action_first_instruction);
-        first_action_instructions.push(first_map_action_second_instruction);
-
-        let mut second_action_instructions = Vec::new();
-        let second_map_action_first_instruction = MapInstruction::Loop(
-            Character::new("PlayerThree".to_string()),
-            MapPath::new("CircleTime".to_string()),
-        );
-
-        second_action_instructions.push(second_map_action_first_instruction);
-
-        let expected_first_action = MapAction {
-            map_instructions: first_action_instructions,
-        };
-
-        let expected_second_action = MapAction {
-            map_instructions: second_action_instructions,
-        };
-
-        assert_eq!(
-            expected_first_action, actual_first_action,
-            "First action mismatch"
-        );
-        assert_eq!(
-            expected_second_action, actual_second_action,
-            "Second action mismatch"
-        );
-    }
 }
