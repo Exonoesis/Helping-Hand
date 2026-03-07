@@ -58,18 +58,18 @@ Feature: An Act's Scenes can be traversed in the game.
         And the looping path 'RunInCircles' contains the tile 3, 12.
 
     Scenario: A line path can have multiple parts.
-    Given the game is capable of handling acts,
-    When the testing act called 'testing_act.json' is loaded,
-    Then the title of the current scene loaded is called 'Multiline Test'.
-    And the character 'Jay' will be moved along the line path 'Combo'.
-    And the line path 'Combo' has a path length of 10 tiles.
-    And tile 1 of line path 'Combo' is tile 0, 0.
-    And tile 2 of line path 'Combo' is tile 1, 0.
-    And tile 3 of line path 'Combo' is tile 2, 0.
-    And tile 4 of line path 'Combo' is tile 2, 1.
-    And tile 5 of line path 'Combo' is tile 1, 1.
-    And tile 6 of line path 'Combo' is tile 2, 1.
-    And tile 7 of line path 'Combo' is tile 3, 1.
-    And tile 8 of line path 'Combo' is tile 4, 1.
-    And tile 9 of line path 'Combo' is tile 4, 0.
-    And tile 10 of line path 'Combo' is tile 3, 0.
+        Given the game is capable of handling acts,
+        When the testing act called 'testing_act.json' is loaded,
+        Then the title of the current scene loaded is called 'Multiline Test'.
+        And the character 'Jay' will be moved along the line path 'Combo'.
+        And the line path 'Combo' has a path length of 10 tiles.
+        And tile 1 of line path 'Combo' is tile 0, 0.
+        And tile 2 of line path 'Combo' is tile 1, 0.
+        And tile 3 of line path 'Combo' is tile 2, 0.
+        And tile 4 of line path 'Combo' is tile 2, 1.
+        And tile 5 of line path 'Combo' is tile 1, 1.
+        And tile 6 of line path 'Combo' is tile 2, 1.
+        And tile 7 of line path 'Combo' is tile 3, 1.
+        And tile 8 of line path 'Combo' is tile 4, 1.
+        And tile 9 of line path 'Combo' is tile 4, 0.
+        And tile 10 of line path 'Combo' is tile 3, 0.

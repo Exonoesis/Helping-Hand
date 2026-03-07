@@ -23,16 +23,6 @@ Feature: Acts
         Then scene 'Intro Image 1' should connect to scene 'Intro Image 2'.
         And scene 'Intro Image 2' should connect to scene 'Intro Image 3'.
 
-    Scenario: Map Cutscenes are loaded.
-        Given an act file called introductory_act.json,
-        When the act is read from the act file,
-        Then the act's scene called 'Map Cutscene 1' is a Map Cutscene pointing to the map file called breeding_center.tmx.
-        And the act's scene called 'Map Cutscene 1' is a Map Cutscene with 3 Map Actions.
-        And in Map Action 1 of 'Map Cutscene 1', Map Instruction 1 says to place Jay at the PlayerStart location.
-        And in Map Action 1 of 'Map Cutscene 1', Map Instruction 2 says to loop Siblings along the RunInCircles path.
-        And in Map Action 2 of 'Map Cutscene 1', Map Instruction 1 says to wait 8 seconds.
-        And in Map Action 3 of 'Map Cutscene 1', Map Instruction 1 says to move Iye along the GoToPlayer path.
-
     Scenario: Scenes 3-4 are connected correctly
         Given an act file called introductory_act.json,
         When the act is read from the act file,

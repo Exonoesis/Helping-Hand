@@ -324,24 +324,23 @@ impl Act {
 }
 
 pub struct ActLoader {
-    act_file: PathBuf,
+    arcweave_act_json: Value,
 }
 
 impl ActLoader {
     pub fn new(act_file: PathBuf) -> Self {
-        Self { act_file }
+        let arcweave_act_json = load_json_file(act_file);
+
+        Self { arcweave_act_json }
     }
 
     /// Converts an arcweave file into a list of Scenes
     pub fn read_act_from(&self) -> Act {
         let mut read_act = Act::new();
 
-        // Create serde_json
-        let arcweave_act_json = Self::load_json_file(self);
-
         // Make the first scene in the act
         let starting_scene_name = String::from("startingElement");
-        let starting_scene = Self::create_starting_scene(starting_scene_name, &arcweave_act_json);
+        let starting_scene = self.create_starting_scene(starting_scene_name);
 
         // Loop to add all scenes to the act
         // TODO:
@@ -351,8 +350,7 @@ impl ActLoader {
         while let Some(current_scene_node) = scenes_to_investigate.pop() {
             read_act.add_scene(current_scene_node.get_scene().clone());
 
-            let next_scenes =
-                Self::create_connected_scenes(&current_scene_node, &arcweave_act_json);
+            let next_scenes = self.create_connected_scenes(&current_scene_node);
             for next_scene in next_scenes {
                 read_act.add_scene(next_scene.get_scene().clone());
                 read_act
@@ -364,39 +362,29 @@ impl ActLoader {
         read_act
     }
 
-    /// Modified version of from_reader example of serde_json
-    fn load_json_file(&self) -> Value {
-        let file = File::open(self.act_file.clone()).expect("load_json_file: Unable to open file");
-        let reader = BufReader::new(file);
-
-        let json_value = serde_json::from_reader(reader)
-            .expect("load_json_file: Unable to parse JSON file passed in.");
-
-        json_value
-    }
-
     /// Creates a SceneNode from the starting scene name
-    fn create_starting_scene(scene_name: String, arcweave_act_json: &Value) -> SceneNode {
-        let scene_value = arcweave_act_json.get(scene_name).unwrap();
+    fn create_starting_scene(&self, scene_name: String) -> SceneNode {
+        let scene_value = self.arcweave_act_json.get(scene_name).unwrap();
         let id = get_string_from_json_value(scene_value);
 
-        Self::create_scene_from_id(id, arcweave_act_json)
+        self.create_scene_from_id(id)
     }
 
     /// Creates a SceneNode from a given id
-    fn create_scene_from_id(id: String, arcweave_act_json: &Value) -> SceneNode {
-        let title = get_title_from_id(&arcweave_act_json, &id);
-        let scene_type = Self::get_scene_type_from_id(&arcweave_act_json, &id);
-        let scene_contents = SceneContents::parse_from(arcweave_act_json, &scene_type, &id);
+    fn create_scene_from_id(&self, id: String) -> SceneNode {
+        let title = get_title_from_id(&self.arcweave_act_json, &id);
+        let scene_type = self.get_scene_type_from_id(&id);
+        let scene_contents = SceneContents::parse_from(&self.arcweave_act_json, &scene_type, &id);
 
         let scene = Scene::make_scene(title, scene_type, scene_contents);
         SceneNode::make_scene_node(id, scene)
     }
 
     /// Gets an Arcweave nodes type name
-    fn get_scene_type_from_id(act: &Value, id: &String) -> SceneType {
+    fn get_scene_type_from_id(&self, id: &String) -> SceneType {
         // Array(Vec<Value>)
-        let components_list = act
+        let components_list = self
+            .arcweave_act_json
             .get("elements")
             .and_then(|elements| elements.get(&id))
             .and_then(|componenets| componenets.get("components"))
@@ -409,7 +397,8 @@ impl ActLoader {
 
         let id_string = get_string_from_json_value(&component_id);
 
-        let component_name = act
+        let component_name = self
+            .arcweave_act_json
             .get("components")
             .and_then(|component| component.get(id_string))
             .and_then(|name| name.get("name"))
@@ -431,23 +420,19 @@ impl ActLoader {
     }
 
     /// Returns a list of SceneNodes connected to a given SceneNode
-    fn create_connected_scenes(
-        current_scene_node: &SceneNode,
-        arcweave_act_json: &Value,
-    ) -> Vec<SceneNode> {
+    fn create_connected_scenes(&self, current_scene_node: &SceneNode) -> Vec<SceneNode> {
         let mut connected_scenes = Vec::new();
 
         let current_scene_id = current_scene_node.get_id();
 
-        let scene_connection_collection =
-            Self::get_list_of_scene_connections(arcweave_act_json, current_scene_id);
+        let scene_connection_collection = self.get_list_of_scene_connections(current_scene_id);
 
         // For each connection, get the scene it connects to and add it to the final list
         for connection in scene_connection_collection {
             let connection_id = get_string_from_json_value(&connection);
 
-            let target_scene_id = Self::get_target_id(arcweave_act_json, connection_id);
-            let connected_scene = Self::create_scene_from_id(target_scene_id, arcweave_act_json);
+            let target_scene_id = self.get_target_id(connection_id);
+            let connected_scene = self.create_scene_from_id(target_scene_id);
 
             connected_scenes.push(connected_scene);
         }
@@ -456,8 +441,9 @@ impl ActLoader {
     }
 
     /// Gets an Arcweave connection target
-    fn get_target_id(arcweave_act_json: &Value, connection_id: String) -> String {
-        let target_scene_id = arcweave_act_json
+    fn get_target_id(&self, connection_id: String) -> String {
+        let target_scene_id = self
+            .arcweave_act_json
             .get("connections")
             .and_then(|connections| connections.get(&connection_id))
             .and_then(|connection| connection.get("targetid"))
@@ -470,12 +456,10 @@ impl ActLoader {
     }
 
     /// Gets an Arcweave nodes list of outputs
-    fn get_list_of_scene_connections(
-        arcweave_act_json: &Value,
-        current_scene_id: &String,
-    ) -> Vec<Value> {
+    fn get_list_of_scene_connections(&self, current_scene_id: &String) -> Vec<Value> {
         // Get list of connections for this scene
-        let scene_connections = arcweave_act_json
+        let scene_connections = self
+            .arcweave_act_json
             .get("elements")
             .and_then(|elements| elements.get(&current_scene_id))
             .and_then(|element| element.get("outputs"))
@@ -483,10 +467,10 @@ impl ActLoader {
                 "create_connected_scenes: Unable to get scene outputs for item {}",
                 current_scene_id
             ));
-        Self::get_vec_from_json_value(scene_connections)
+        self.get_vec_from_json_value(scene_connections)
     }
 
-    fn get_vec_from_json_value(json_value: &Value) -> Vec<Value> {
+    fn get_vec_from_json_value(&self, json_value: &Value) -> Vec<Value> {
         json_value
             .as_array()
             .expect("Unable to convert value to array.")
@@ -908,6 +892,17 @@ impl MapCutsceneLoader {
         }
         final_path
     }
+}
+
+/// Modified version of from_reader example of serde_json
+fn load_json_file(act_file: PathBuf) -> Value {
+    let file = File::open(act_file.clone()).expect("load_json_file: Unable to open file");
+    let reader = BufReader::new(file);
+
+    let json_value = serde_json::from_reader(reader)
+        .expect("load_json_file: Unable to parse JSON file passed in.");
+
+    json_value
 }
 
 fn get_string_from_json_value(json_value: &Value) -> String {
