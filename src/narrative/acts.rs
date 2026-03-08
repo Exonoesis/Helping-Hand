@@ -198,31 +198,14 @@ impl SceneContents {
     ) -> SceneContents {
         match scene_type {
             SceneType::ImageCutscene => {
-                let loaded_image_cutscene =
+                let image_cutscene_loader =
                     ImageCutsceneLoader::new(arcweave_act_json.clone(), scene_id.clone());
-                let image_id = loaded_image_cutscene.get_scene_image_id();
-                let image_name = loaded_image_cutscene.get_image_from_id(image_id);
-                let image_path = PathBuf::from(image_name);
-
-                SceneContents::ImageCutscene(image_path)
+                return image_cutscene_loader.get_image_cutscene();
             }
             SceneType::MapCutscene => {
-                let loaded_mapcutscene =
+                let map_cutscene_loader =
                     MapCutsceneLoader::new(arcweave_act_json.clone(), scene_id.clone());
-                let map_path = loaded_mapcutscene.get_map_path_from_id();
-
-                let incomplete_map_actions = loaded_mapcutscene.get_map_actions_from_id();
-
-                let tiled_map = load_tiled_map(map_path.clone());
-                let scene_name = get_title_from_id(&arcweave_act_json, scene_id);
-
-                let finalized_map_actions = loaded_mapcutscene.get_map_actions_from_map(
-                    incomplete_map_actions,
-                    tiled_map,
-                    scene_name,
-                );
-
-                SceneContents::MapCutscene(map_path, finalized_map_actions)
+                return map_cutscene_loader.get_map_cutscene();
             }
         }
     }
@@ -488,6 +471,14 @@ impl ImageCutsceneLoader {
         Self { act, scene_id }
     }
 
+    fn get_image_cutscene(&self) -> SceneContents {
+        let image_id = self.get_scene_image_id();
+        let image_name = self.get_image_from_id(image_id);
+        let image_path = PathBuf::from(image_name);
+
+        SceneContents::ImageCutscene(image_path)
+    }
+
     /// Gets an Arcweave nodes image id
     fn get_scene_image_id(&self) -> String {
         let image_id_value = self
@@ -529,6 +520,20 @@ struct MapCutsceneLoader {
 impl MapCutsceneLoader {
     pub fn new(act: Value, scene_id: String) -> Self {
         Self { act, scene_id }
+    }
+
+    fn get_map_cutscene(&self) -> SceneContents {
+        let map_path = self.get_map_path_from_id();
+
+        let incomplete_map_actions = self.get_map_actions_from_id();
+
+        let tiled_map = load_tiled_map(map_path.clone());
+        let scene_name = get_title_from_id(&self.act, &self.scene_id);
+
+        let finalized_map_actions =
+            self.get_map_actions_from_map(incomplete_map_actions, tiled_map, scene_name);
+
+        SceneContents::MapCutscene(map_path, finalized_map_actions)
     }
 
     fn get_map_path_from_id(&self) -> PathBuf {
@@ -605,16 +610,15 @@ impl MapCutsceneLoader {
         let content_string = get_string_from_json_value(content_value);
 
         // Strip HTML + other noise
-        let cleaned_map_cutscene_content =
-            Self::strip_html_for_map_actions(content_string.as_str());
+        let cleaned_map_cutscene_content = self.strip_html_for_map_actions(content_string.as_str());
 
         // Send cleaned content to parse_map_actions
-        let map_actions = Self::parse_map_actions(cleaned_map_cutscene_content.as_str());
+        let map_actions = self.parse_map_actions(cleaned_map_cutscene_content.as_str());
 
         map_actions
     }
 
-    fn strip_html_for_map_actions(input: &str) -> String {
+    fn strip_html_for_map_actions(&self, input: &str) -> String {
         let remove_simple_tags = input
             .replace("<p>", "")
             .replace("</p>", "")
@@ -640,7 +644,7 @@ impl MapCutsceneLoader {
 
     /// Takes a batch of map actions, each enclosed within brackets,
     /// and converts them into proper MapActions
-    fn parse_map_actions(map_cutscene_contents: &str) -> Vec<MapAction> {
+    fn parse_map_actions(&self, map_cutscene_contents: &str) -> Vec<MapAction> {
         let mut collected_map_actions: Vec<MapAction> = Vec::new();
 
         let trimmed_map_cutscene_contents = map_cutscene_contents.trim_matches(['[', ']']);
@@ -650,7 +654,7 @@ impl MapCutsceneLoader {
         for batch in split_map_cutscene_contents {
             let cleaned_batch = batch.replace("[", "").replace("]", "");
             let map_action = MapAction {
-                map_instructions: Self::parse_map_instructions(cleaned_batch.as_str()),
+                map_instructions: self.parse_map_instructions(cleaned_batch.as_str()),
             };
             collected_map_actions.push(map_action);
         }
@@ -660,7 +664,7 @@ impl MapCutsceneLoader {
 
     /// Takes a batch of comma separated map instructions and
     /// converts them into their MapInstruction equivalent
-    fn parse_map_instructions(map_instruction_batch: &str) -> Vec<MapInstruction> {
+    fn parse_map_instructions(&self, map_instruction_batch: &str) -> Vec<MapInstruction> {
         let mut parsed_map_instructions: Vec<MapInstruction> = Vec::new();
 
         let split_map_instruction_batch: Vec<&str> = map_instruction_batch.split(',').collect();
@@ -701,7 +705,7 @@ impl MapCutsceneLoader {
 
             match special_instruction {
                 "Wait" => {
-                    let duration = Self::str_to_duration(instruction_duration);
+                    let duration = self.str_to_duration(instruction_duration);
                     parsed_map_instructions.push(MapInstruction::Wait(duration));
                     continue;
                 }
@@ -717,7 +721,7 @@ impl MapCutsceneLoader {
 
     /// Takes an str in the format of: [number]s and returns a duration in seconds
     /// Example: "16s" would return a Duration of 16 seconds
-    fn str_to_duration(duration_str: &str) -> Duration {
+    fn str_to_duration(&self, duration_str: &str) -> Duration {
         let trimmed_duration_str = duration_str.trim_end_matches("s").parse::<u64>().unwrap();
         let duration = Duration::from_secs(trimmed_duration_str);
 
@@ -794,7 +798,7 @@ impl MapCutsceneLoader {
                                 ));
 
                             if let ObjectShape::Polyline { points } = &move_path_object.shape {
-                                let new_map_path_vec = Self::get_path_from_points(
+                                let new_map_path_vec = self.get_path_from_points(
                                     move_path_object,
                                     points,
                                     tile_height,
@@ -823,6 +827,7 @@ impl MapCutsceneLoader {
     }
 
     fn get_path_from_points(
+        &self,
         move_path_object: tiled::Object<'_>,
         points: &[(f32, f32)],
         tile_height: u32,
