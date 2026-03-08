@@ -839,12 +839,6 @@ impl MapCutsceneLoader {
         let tile_height_float = tile_height as f32;
         let mut final_path = Vec::new();
 
-        // The origin point is added by default
-        let origin_point_x = origin_x / tile_width_float;
-        let origin_point_y = origin_y / tile_height_float;
-        let origin_point = GridCords2D::new(origin_point_x as usize, origin_point_y as usize);
-        final_path.push(origin_point);
-
         let line_segments = points.len() - 1;
         for i in 0..line_segments {
             let from_point_x = (origin_x + points[i].0) / tile_width_float;
@@ -864,14 +858,14 @@ impl MapCutsceneLoader {
             if absolute_x_diff > 0 {
                 if x_diff > 0 {
                     // pos x movement
-                    for i in 1..=absolute_x_diff {
+                    for i in 0..absolute_x_diff {
                         let tile =
                             GridCords2D::new(from_point.get_x() + i as usize, from_point.get_y());
                         final_path.push(tile);
                     }
                 } else if x_diff < 0 {
                     // neg x movement
-                    for i in 1..=absolute_x_diff {
+                    for i in 0..absolute_x_diff {
                         let tile =
                             GridCords2D::new(from_point.get_x() - i as usize, from_point.get_y());
                         final_path.push(tile);
@@ -880,14 +874,14 @@ impl MapCutsceneLoader {
             } else if absolute_y_diff > 0 {
                 if y_diff > 0 {
                     // pos y movement
-                    for i in 1..=absolute_y_diff {
+                    for i in 0..absolute_y_diff {
                         let tile =
                             GridCords2D::new(from_point.get_x(), from_point.get_y() + i as usize);
                         final_path.push(tile);
                     }
                 } else if y_diff < 0 {
                     // neg y movement
-                    for i in 1..=absolute_y_diff {
+                    for i in 0..absolute_y_diff {
                         let tile =
                             GridCords2D::new(from_point.get_x(), from_point.get_y() - i as usize);
                         final_path.push(tile);
@@ -895,6 +889,13 @@ impl MapCutsceneLoader {
                 }
             }
         }
+
+        // The final point is added to finish the path
+        let last_point_x = (origin_x + points[points.len() - 1].0) / tile_width_float;
+        let last_point_y = (origin_y + points[points.len() - 1].1) / tile_height_float;
+        let last_point = GridCords2D::new(last_point_x as usize, last_point_y as usize);
+        final_path.push(last_point);
+
         final_path
     }
 }
