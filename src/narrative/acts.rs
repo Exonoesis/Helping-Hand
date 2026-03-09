@@ -813,7 +813,30 @@ impl MapCutsceneLoader {
                             }
                         }
                         MapInstruction::Loop(character, map_path) => {
-                            // TODO
+                            let loop_path_object = object_layer
+                                .objects()
+                                .find(|object| {
+                                    object.user_type == "Loop" && object.name == *map_path.get_name()
+                                })
+                                .expect(&format!(
+                                    "get_map_actions_from_map: No looping object with name {} found",
+                                    map_path.get_name(),
+                                ));
+
+                            if let ObjectShape::Polygon { points } = &loop_path_object.shape {
+                                let new_map_path_vec = self.get_loop_from_points(
+                                    loop_path_object,
+                                    points,
+                                    tile_height,
+                                    tile_width,
+                                );
+
+                                let mut new_map_path = map_path.clone();
+                                new_map_path.set_path(new_map_path_vec);
+
+                                new_instructions
+                                    .push(MapInstruction::Loop(character.clone(), new_map_path));
+                            }
                         }
                         MapInstruction::Wait(_) => {}
                     }
@@ -833,20 +856,69 @@ impl MapCutsceneLoader {
         tile_height: u32,
         tile_width: u32,
     ) -> Vec<GridCords2D> {
-        let origin_x = move_path_object.x;
-        let origin_y = move_path_object.y;
         let tile_width_float = tile_width as f32;
         let tile_height_float = tile_height as f32;
+
+        let mut final_path = self.calculate_point_path(
+            points,
+            move_path_object,
+            tile_width_float,
+            tile_height_float,
+        );
+
+        // The final point is added to finish the path
+        let last_point_x = (move_path_object.x + points[points.len() - 1].0) / tile_width_float;
+        let last_point_y = (move_path_object.y + points[points.len() - 1].1) / tile_height_float;
+        let last_point = GridCords2D::new(last_point_x as usize, last_point_y as usize);
+        final_path.push(last_point);
+
+        final_path
+    }
+
+    fn get_loop_from_points(
+        &self,
+        loop_path_object: tiled::Object<'_>,
+        points: &[(f32, f32)],
+        tile_height: u32,
+        tile_width: u32,
+    ) -> Vec<GridCords2D> {
+        let tile_width_float = tile_width as f32;
+        let tile_height_float = tile_height as f32;
+
+        // A looping path is defined by ending where it began, so we append
+        let mut new_points = points.to_vec();
+        new_points.push(points[0]);
+        let new_points_slice = &new_points[..];
+
+        let final_path = self.calculate_point_path(
+            new_points_slice,
+            loop_path_object,
+            tile_width_float,
+            tile_height_float,
+        );
+
+        final_path
+    }
+
+    fn calculate_point_path(
+        &self,
+        points: &[(f32, f32)],
+        move_path_object: tiled::Object<'_>,
+        tile_width: f32,
+        tile_height: f32,
+    ) -> Vec<GridCords2D> {
+        let origin_x = move_path_object.x;
+        let origin_y = move_path_object.y;
         let mut final_path = Vec::new();
 
         let line_segments = points.len() - 1;
         for i in 0..line_segments {
-            let from_point_x = (origin_x + points[i].0) / tile_width_float;
-            let from_point_y = (origin_y + points[i].1) / tile_height_float;
+            let from_point_x = (origin_x + points[i].0) / tile_width;
+            let from_point_y = (origin_y + points[i].1) / tile_height;
             let from_point = GridCords2D::new(from_point_x as usize, from_point_y as usize);
 
-            let to_point_x = (origin_x + points[i + 1].0) / tile_width_float;
-            let to_point_y = (origin_y + points[i + 1].1) / tile_height_float;
+            let to_point_x = (origin_x + points[i + 1].0) / tile_width;
+            let to_point_y = (origin_y + points[i + 1].1) / tile_height;
             let to_point = GridCords2D::new(to_point_x as usize, to_point_y as usize);
 
             let x_diff = to_point.get_x() as isize - from_point.get_x() as isize;
@@ -889,13 +961,6 @@ impl MapCutsceneLoader {
                 }
             }
         }
-
-        // The final point is added to finish the path
-        let last_point_x = (origin_x + points[points.len() - 1].0) / tile_width_float;
-        let last_point_y = (origin_y + points[points.len() - 1].1) / tile_height_float;
-        let last_point = GridCords2D::new(last_point_x as usize, last_point_y as usize);
-        final_path.push(last_point);
-
         final_path
     }
 }

@@ -78,7 +78,7 @@ fn check_looping_path_data(
                 if *found_character.get_name() == expected_character_name
                     && *found_map_path.get_name() == path_or_location_name =>
             {
-                return true
+                return true;
             }
             _ => {}
         }
@@ -101,6 +101,10 @@ fn get_location_by_name(instructions: Vec<MapInstruction>, location_name: String
 fn get_path_by_name(instructions: Vec<MapInstruction>, path_name: String) -> Vec<GridCords2D> {
     for instruction in instructions {
         if let MapInstruction::Move(_, found_path) = instruction {
+            if found_path.get_name() == &path_name {
+                return found_path.get_path().clone();
+            }
+        } else if let MapInstruction::Loop(_, found_path) = instruction {
             if found_path.get_name() == &path_name {
                 return found_path.get_path().clone();
             }
@@ -268,8 +272,15 @@ fn verify_location_at_tile(game: &mut Game, location_name: String, tile_x: usize
     assert_eq!(expected_tile_cords, actual_tile_cords);
 }
 
-#[then(regex = r"the line path '(.+)' has a path length of ([0-9]+) tiles.")]
-fn verify_path_length(game: &mut Game, path_name: String, expected_path_length: usize) {
+#[then(regex = r"the (.+) path '(.+)' has a path length of ([0-9]+) tiles.")]
+fn verify_path_length(
+    game: &mut Game,
+    path_type: String,
+    path_name: String,
+    expected_path_length: usize,
+) {
+    assert!(path_type == "line" || path_type == "looping");
+
     let current_act = game.get_mut::<Act>();
     let current_scene = current_act.get_current_scene();
     let scene_contents = current_scene.get_scene_contents();
@@ -281,14 +292,17 @@ fn verify_path_length(game: &mut Game, path_name: String, expected_path_length: 
     assert_eq!(expected_path_length, actual_path_length);
 }
 
-#[then(regex = r"tile ([0-9]+) of line path '(.+)' is tile ([0-9]+), ([0-9]+).")]
+#[then(regex = r"tile ([0-9]+) of (.+) path '(.+)' is tile ([0-9]+), ([0-9]+).")]
 fn verify_path_tile_cords(
     game: &mut Game,
     tile_index: usize,
+    path_type: String,
     path_name: String,
     expected_x: usize,
     expected_y: usize,
 ) {
+    assert!(path_type == "line" || path_type == "looping");
+
     let current_act = game.get_mut::<Act>();
     let current_scene = current_act.get_current_scene();
     let scene_contents = current_scene.get_scene_contents();

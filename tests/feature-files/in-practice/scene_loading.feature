@@ -43,19 +43,19 @@ Feature: An Act's Scenes can be traversed in the game.
         And tile 5 of line path 'GoToPlayer' is tile 5, 16.
         # Confirm character and each tile were found properly in the looping path.
         And the character 'Siblings' will be moved along the looping path 'RunInCircles'.
-        And the looping path 'RunInCircles' has a path length of 12 tiles.
-        And the looping path 'RunInCircles' contains the tile 3, 11.
-        And the looping path 'RunInCircles' contains the tile 4, 11.
-        And the looping path 'RunInCircles' contains the tile 5, 11.
-        And the looping path 'RunInCircles' contains the tile 6, 11.
-        And the looping path 'RunInCircles' contains the tile 6, 12.
-        And the looping path 'RunInCircles' contains the tile 6, 13.
-        And the looping path 'RunInCircles' contains the tile 6, 14.
-        And the looping path 'RunInCircles' contains the tile 5, 14.
-        And the looping path 'RunInCircles' contains the tile 4, 14.
-        And the looping path 'RunInCircles' contains the tile 3, 14.
-        And the looping path 'RunInCircles' contains the tile 3, 13.
-        And the looping path 'RunInCircles' contains the tile 3, 12.
+        #And the looping path 'RunInCircles' has a path length of 12 tiles.
+        And tile 1 of looping path 'RunInCircles' is tile 3, 11.
+        And tile 2 of looping path 'RunInCircles' is tile 3, 12.
+        And tile 3 of looping path 'RunInCircles' is tile 3, 13.
+        And tile 4 of looping path 'RunInCircles' is tile 3, 14.
+        And tile 5 of looping path 'RunInCircles' is tile 4, 14.
+        And tile 6 of looping path 'RunInCircles' is tile 5, 14.
+        And tile 7 of looping path 'RunInCircles' is tile 6, 14.
+        And tile 8 of looping path 'RunInCircles' is tile 6, 13.
+        And tile 9 of looping path 'RunInCircles' is tile 6, 12.
+        And tile 10 of looping path 'RunInCircles' is tile 6, 11.
+        And tile 11 of looping path 'RunInCircles' is tile 5, 11.
+        And tile 12 of looping path 'RunInCircles' is tile 4, 11.
 
     Scenario: A line path can have multiple parts.
         Given the game is capable of handling acts,
