@@ -886,6 +886,7 @@ impl MapCutsceneLoader {
         let tile_height_float = tile_height as f32;
 
         // A looping path is defined by ending where it began, so we append
+        // the first point to the end to close the loop
         let mut new_points = points.to_vec();
         new_points.push(points[0]);
         let new_points_slice = &new_points[..];
