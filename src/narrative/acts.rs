@@ -838,7 +838,9 @@ impl MapCutsceneLoader {
                                     .push(MapInstruction::Loop(character.clone(), new_map_path));
                             }
                         }
-                        MapInstruction::Wait(_) => {}
+                        MapInstruction::Wait(duration) => {
+                            new_instructions.push(MapInstruction::Wait(*duration));
+                        }
                     }
                 }
                 complete_map_actions.push(MapAction {
