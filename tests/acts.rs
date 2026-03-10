@@ -98,7 +98,8 @@ fn given_some_act_file_name(game: &mut GameWorld, file_name: String) {
 #[when("the act is read from the act file,")]
 fn read_act_file(game: &mut GameWorld) {
     let act_file = game.act_file.clone();
-    let act_loader = ActLoader::new(act_file);
+    let maps_folder = PathBuf::from("assets/map/");
+    let act_loader = ActLoader::new(act_file, maps_folder);
     game.current_act = act_loader.read_act_from();
 }
 

@@ -89,8 +89,9 @@ pub fn load_act(
     let load_act_request = load_act_requests.read().next().unwrap();
 
     let act_file_path = PathBuf::from(load_act_request.get_act_file_path());
+    let maps_folder = PathBuf::from("assets/map/");
 
-    let act_loader = ActLoader::new(act_file_path);
+    let act_loader = ActLoader::new(act_file_path, maps_folder);
     let loaded_act = act_loader.read_act_from();
 
     commands.spawn(loaded_act);

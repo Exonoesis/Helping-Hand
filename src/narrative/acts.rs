@@ -195,6 +195,7 @@ impl SceneContents {
         arcweave_act_json: &Value,
         scene_type: &SceneType,
         scene_id: &String,
+        maps_folder: PathBuf,
     ) -> SceneContents {
         match scene_type {
             SceneType::ImageCutscene => {
@@ -203,8 +204,11 @@ impl SceneContents {
                 return image_cutscene_loader.get_image_cutscene();
             }
             SceneType::MapCutscene => {
-                let map_cutscene_loader =
-                    MapCutsceneLoader::new(arcweave_act_json.clone(), scene_id.clone());
+                let map_cutscene_loader = MapCutsceneLoader::new(
+                    arcweave_act_json.clone(),
+                    scene_id.clone(),
+                    maps_folder,
+                );
                 return map_cutscene_loader.get_map_cutscene();
             }
         }
@@ -308,13 +312,17 @@ impl Act {
 
 pub struct ActLoader {
     arcweave_act_json: Value,
+    maps_folder: PathBuf,
 }
 
 impl ActLoader {
-    pub fn new(act_file: PathBuf) -> Self {
+    pub fn new(act_file: PathBuf, maps_folder: PathBuf) -> Self {
         let arcweave_act_json = load_json_file(act_file);
 
-        Self { arcweave_act_json }
+        Self {
+            arcweave_act_json,
+            maps_folder,
+        }
     }
 
     /// Converts an arcweave file into a list of Scenes
@@ -357,7 +365,12 @@ impl ActLoader {
     fn create_scene_from_id(&self, id: String) -> SceneNode {
         let title = get_title_from_id(&self.arcweave_act_json, &id);
         let scene_type = self.get_scene_type_from_id(&id);
-        let scene_contents = SceneContents::parse_from(&self.arcweave_act_json, &scene_type, &id);
+        let scene_contents = SceneContents::parse_from(
+            &self.arcweave_act_json,
+            &scene_type,
+            &id,
+            self.maps_folder.clone(),
+        );
 
         let scene = Scene::make_scene(title, scene_type, scene_contents);
         SceneNode::make_scene_node(id, scene)
@@ -515,11 +528,16 @@ impl ImageCutsceneLoader {
 struct MapCutsceneLoader {
     act: Value,
     scene_id: String,
+    maps_folder: PathBuf,
 }
 
 impl MapCutsceneLoader {
-    pub fn new(act: Value, scene_id: String) -> Self {
-        Self { act, scene_id }
+    pub fn new(act: Value, scene_id: String, maps_folder: PathBuf) -> Self {
+        Self {
+            act,
+            scene_id,
+            maps_folder,
+        }
     }
 
     fn get_map_cutscene(&self) -> SceneContents {
@@ -588,8 +606,10 @@ impl MapCutsceneLoader {
         let map_path_name = get_string_from_json_value(map_path_value);
 
         // Need to prefix folder path
-        let folder_path = PathBuf::from("assets/map/");
-        let full_path = folder_path.join(map_path_name);
+        //let folder_path = PathBuf::from("assets/map/");
+        //let full_path = folder_path.join(map_path_name);
+
+        let full_path = self.maps_folder.join(map_path_name);
 
         PathBuf::from(full_path)
     }
