@@ -1,7 +1,6 @@
 use crate::map::interactions::map_changing::ChangeLevel;
-// Masking our Scene type as ActScene due to Bevy conflict
-use crate::narrative::acts::{Act, MapAction, Scene as ActScene, SceneContents};
-use crate::plugins::acts::FadeDuration;
+use crate::narrative::acts::{Act, SceneContents};
+use crate::plugins::acts::{FadeDuration, MapsFolderPath};
 use crate::{map::interactions::map_changing::CameraBundle, ui::menus::ImageNodeBundle};
 use bevy::prelude::*;
 use std::path::{Path, PathBuf};
@@ -75,6 +74,7 @@ pub fn load_act(
     mut load_act_requests: EventReader<LoadAct>,
     mut commands: Commands,
     loaded_act: Query<Entity, With<Act>>,
+    maps_path_folder: Res<MapsFolderPath>,
 ) {
     if load_act_requests.is_empty() {
         return;
@@ -89,7 +89,7 @@ pub fn load_act(
     let load_act_request = load_act_requests.read().next().unwrap();
 
     let act_file_path = PathBuf::from(load_act_request.get_act_file_path());
-    let maps_folder = PathBuf::from("assets/map/");
+    let maps_folder = maps_path_folder.get_path();
 
     let act_loader = ActLoader::new(act_file_path, maps_folder);
     let loaded_act = act_loader.read_act_from();

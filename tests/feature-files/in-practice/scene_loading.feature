@@ -58,7 +58,7 @@ Feature: An Act's Scenes can be traversed in the game.
         And tile 12 of looping path 'RunInCircles' is tile 4, 11.
 
     Scenario: A line path can have multiple parts.
-        Given the game is capable of handling acts,
+        Given the game is capable of handling testing acts,
         When the testing act called 'testing_act.json' is loaded,
         Then the title of the current scene loaded is called 'Multiline Test'.
         And the character 'Jay' will be moved along the line path 'Combo'.

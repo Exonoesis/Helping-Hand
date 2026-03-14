@@ -116,7 +116,18 @@ fn get_path_by_name(instructions: Vec<MapInstruction>, path_name: String) -> Vec
 #[given("the game is capable of handling acts,")]
 fn add_acts_plugin(game: &mut Game) {
     let fade_duration = Duration::from_secs(0);
-    game.add_plugin(CoreActsPlugin::new(fade_duration));
+    let maps_folder_path = PathBuf::from("assets/map/");
+
+    game.add_plugin(CoreActsPlugin::new(fade_duration, maps_folder_path));
+    game.add_plugin(CoreLevelsPlugin);
+}
+
+#[given("the game is capable of handling testing acts,")]
+fn add_test_acts_plugin(game: &mut Game) {
+    let fade_duration = Duration::from_secs(0);
+    let maps_folder_path = PathBuf::from("tests/test-assets/maps/");
+
+    game.add_plugin(CoreActsPlugin::new(fade_duration, maps_folder_path));
     game.add_plugin(CoreLevelsPlugin);
 }
 
