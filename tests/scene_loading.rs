@@ -125,7 +125,7 @@ fn add_acts_plugin(game: &mut Game) {
 #[given("the game is capable of handling testing acts,")]
 fn add_test_acts_plugin(game: &mut Game) {
     let fade_duration = Duration::from_secs(0);
-    let maps_folder_path = PathBuf::from("tests/test_assets/maps/");
+    let maps_folder_path = PathBuf::from("tests/test_assets/maps/scene_loading/");
 
     game.add_plugin(CoreActsPlugin::new(fade_duration, maps_folder_path));
     game.add_plugin(CoreLevelsPlugin);
