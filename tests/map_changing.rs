@@ -12,7 +12,7 @@ use helping_hand::{
 fn given_some_tiled_map(game: &mut Game, tiled_map_name: String) {
     game.add_plugin(CoreLevelsPlugin);
 
-    let map_path = format!("tests/test-assets/maps/{}", tiled_map_name);
+    let map_path = format!("tests/test_assets/maps/map_changing/{}", tiled_map_name);
     game.broadcast_event(LoadLevel::new(&map_path));
 }
 
@@ -82,6 +82,6 @@ fn verify_map_size(game: &mut Game, expected_map_width: u32, expected_map_height
 // This runs before everything else, so you can setup things here.
 fn main() {
     futures::executor::block_on(Game::run(
-        "tests/feature-files/in-practice/map_changing.feature",
+        "tests/feature_files/in-practice/map_changing.feature",
     ));
 }

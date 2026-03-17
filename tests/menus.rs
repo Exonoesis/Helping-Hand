@@ -9,6 +9,6 @@ fn main() {
     // You may even have an `async` main, it doesn't matter. The point is that
     // Cucumber is composable. :)
     futures::executor::block_on(GameWorld::run(
-        "tests/feature-files/in-practice/menus.feature",
+        "tests/feature_files/in-practice/menus.feature",
     ));
 }

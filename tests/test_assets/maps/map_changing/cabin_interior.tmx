@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="16" height="11" tilewidth="64" tileheight="64" infinite="0" nextlayerid="11" nextobjectid="3">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="11" tilewidth="64" tileheight="64" infinite="0" nextlayerid="11" nextobjectid="3">
  <tileset firstgid="1" name="atlas_64x" tilewidth="64" tileheight="64" tilecount="768" columns="48">
-  <image source="../../../assets/textures/environments/atlas_64x.png" width="3072" height="1024"/>
+  <image source="../../../../assets/textures/environments/atlas_64x.png" width="3072" height="1024"/>
  </tileset>
  <tileset firstgid="769" name="!CL_DEMO_64" tilewidth="64" tileheight="64" tilecount="1240" columns="40">
-  <image source="../../../assets/textures/environments/!CL_DEMO_64.png" width="2560" height="1984"/>
+  <image source="../../../../assets/textures/environments/!CL_DEMO_64.png" width="2560" height="1984"/>
  </tileset>
  <tileset firstgid="2009" name="duck-Sheet" tilewidth="64" tileheight="64" tilecount="120" columns="24">
-  <image source="../../../assets/textures/characters/duck-Sheet.png" width="1536" height="320"/>
+  <image source="../../../../assets/textures/characters/duck-Sheet.png" width="1536" height="320"/>
  </tileset>
  <layer id="1" name="Base_Layer" width="16" height="11">
   <data encoding="csv">
@@ -120,7 +120,7 @@
  <objectgroup id="9" name="Object Layer 1">
   <object id="1" x="448" y="640" width="128" height="64">
    <properties>
-    <property name="Transition" value="tests/test-assets/maps/test_map_with_collision.tmx"/>
+    <property name="Transition" value="tests/test_assets/maps/map_changing/test_map_with_collision.tmx"/>
    </properties>
   </object>
  </objectgroup>

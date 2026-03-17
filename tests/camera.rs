@@ -31,7 +31,7 @@ fn convert_string_to_movement_direction(movement_string: String) -> MovementDire
 fn given_some_tiled_map(game: &mut Game, tiled_map_name: String) {
     game.add_plugin(CoreLevelsPlugin);
 
-    let map_path = format!("tests/test-assets/maps/{}", tiled_map_name);
+    let map_path = format!("tests/test_assets/maps/camera/{}", tiled_map_name);
     game.broadcast_event(LoadLevel::new(&map_path));
 }
 
@@ -148,5 +148,5 @@ fn verify_camera_centered_on_player_center(game: &mut Game, expected_x: f32, exp
 }
 
 fn main() {
-    futures::executor::block_on(Game::run("tests/feature-files/in-practice/camera.feature"));
+    futures::executor::block_on(Game::run("tests/feature_files/in-practice/camera.feature"));
 }

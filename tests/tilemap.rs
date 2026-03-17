@@ -68,7 +68,7 @@ fn get_tiled_map_location(map_name: String) -> PathBuf {
         tiled_map_path.push(manifest_dir);
     }
 
-    tiled_map_path.push("tests/test-assets/maps");
+    tiled_map_path.push("tests/test_assets/maps/tilemap");
     tiled_map_path.push(map_name);
 
     tiled_map_path
@@ -418,6 +418,6 @@ fn verify_cords_convert_from_3d_to_1d(
 
 fn main() {
     futures::executor::block_on(GameWorld::run(
-        "tests/feature-files/in-theory/tilemap.feature",
+        "tests/feature_files/in-theory/tilemap.feature",
     ));
 }

@@ -125,7 +125,7 @@ fn add_acts_plugin(game: &mut Game) {
 #[given("the game is capable of handling testing acts,")]
 fn add_test_acts_plugin(game: &mut Game) {
     let fade_duration = Duration::from_secs(0);
-    let maps_folder_path = PathBuf::from("tests/test-assets/maps/");
+    let maps_folder_path = PathBuf::from("tests/test_assets/maps/");
 
     game.add_plugin(CoreActsPlugin::new(fade_duration, maps_folder_path));
     game.add_plugin(CoreLevelsPlugin);
@@ -150,7 +150,7 @@ fn load_act(game: &mut Game, act_file_name: String) {
 
 #[when(regex = r"the testing act called '(.+)' is loaded,")]
 fn load_testing_act(game: &mut Game, act_file_name: String) {
-    let act_file_path_name = format!("tests/test-assets/acts/{}", act_file_name);
+    let act_file_path_name = format!("tests/test_assets/acts/{}", act_file_name);
     let act_file_path = PathBuf::from(&act_file_path_name);
 
     assert!(
@@ -331,6 +331,6 @@ fn verify_path_tile_cords(
 // This runs before everything else, so you can setup things here.
 fn main() {
     futures::executor::block_on(Game::run(
-        "tests/feature-files/in-practice/scene_loading.feature",
+        "tests/feature_files/in-practice/scene_loading.feature",
     ));
 }

@@ -223,5 +223,5 @@ fn verify_scene_connection_exists(
 }
 
 fn main() {
-    futures::executor::block_on(GameWorld::run("tests/feature-files/in-theory/acts.feature"));
+    futures::executor::block_on(GameWorld::run("tests/feature_files/in-theory/acts.feature"));
 }

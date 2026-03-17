@@ -65,7 +65,7 @@ fn get_tiled_map_location(map_name: String) -> PathBuf {
         tiled_map_path.push(manifest_dir);
     }
 
-    tiled_map_path.push("tests/test-assets/maps");
+    tiled_map_path.push("tests/test_assets/maps/grid_based_movement");
     tiled_map_path.push(map_name);
 
     tiled_map_path
@@ -190,6 +190,6 @@ fn verify_tile_is_in_collision_collection(
 
 fn main() {
     futures::executor::block_on(GameWorld::run(
-        "tests/feature-files/in-theory/collision.feature",
+        "tests/feature_files/in-theory/collision.feature",
     ));
 }

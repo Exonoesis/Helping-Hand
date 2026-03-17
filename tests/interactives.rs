@@ -43,7 +43,7 @@ fn get_tiled_map_location(map_name: String) -> PathBuf {
         tiled_map_path.push(manifest_dir);
     }
 
-    tiled_map_path.push("tests/test-assets/maps");
+    tiled_map_path.push("tests/test_assets/maps/interactives");
     tiled_map_path.push(map_name);
 
     tiled_map_path
@@ -189,6 +189,6 @@ fn verify_interactive_type_path_value(world: &mut GameWorld, path_name: String) 
 
 fn main() {
     futures::executor::block_on(GameWorld::run(
-        "tests/feature-files/in-theory/interactives.feature",
+        "tests/feature_files/in-theory/interactives.feature",
     ));
 }

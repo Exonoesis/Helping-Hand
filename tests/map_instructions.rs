@@ -12,6 +12,6 @@ impl GameWorld {
 
 fn main() {
     futures::executor::block_on(GameWorld::run(
-        "tests/feature-files/in-theory/map_instructions.feature",
+        "tests/feature_files/in-theory/map_instructions.feature",
     ));
 }

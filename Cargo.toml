@@ -26,7 +26,7 @@ name = "menus"
 harness = false
 
 [[test]]
-name = "grid-based-movement"
+name = "grid_based_movement"
 harness = false
 
 [[test]]
