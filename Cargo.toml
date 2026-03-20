@@ -22,10 +22,6 @@ criterion = { version = "^0.5", features = ["html_reports"] }
 # When adding a new feature, add a new Cucumber Test below
 # following the format below:
 [[test]]
-name = "menus"
-harness = false
-
-[[test]]
 name = "grid_based_movement"
 harness = false
 
@@ -55,10 +51,6 @@ harness = false
 
 [[test]]
 name = "scene_loading"
-harness = false
-
-[[test]]
-name = "map_instructions"
 harness = false
 
 # When measuring the performance of some feature, add a new Criterion benchmark below
