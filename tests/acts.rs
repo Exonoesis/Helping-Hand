@@ -32,7 +32,7 @@ fn get_act_file_location(act_file_name: String) -> PathBuf {
         act_file_path.push(project_root);
     }
 
-    act_file_path.push("assets/acts");
+    act_file_path.push("tests/test_assets/acts");
     act_file_path.push(act_file_name);
 
     act_file_path
@@ -98,7 +98,7 @@ fn given_some_act_file_name(game: &mut GameWorld, file_name: String) {
 #[when("the act is read from the act file,")]
 fn read_act_file(game: &mut GameWorld) {
     let act_file = game.act_file.clone();
-    let maps_folder = PathBuf::from("assets/map/");
+    let maps_folder = PathBuf::from("test_assets/maps/");
     let act_loader = ActLoader::new(act_file, maps_folder);
     game.current_act = act_loader.read_act_from();
 }

@@ -13,9 +13,9 @@
 </data>
  </layer>
  <objectgroup id="7" name="Interaction">
-  <object id="9" name="Jay" type="Player" gid="1241" x="0" y="64" width="64" height="64"/>
+  <object id="9" name="Jay" type="Player" gid="1241" x="0" y="128" width="64" height="64"/>
  </objectgroup>
- <objectgroup id="14" name="MapCutscene1">
+ <objectgroup id="14" name="Placement Test">
   <object id="11" name="PlayerStart" type="Placement" x="95.3333" y="110.667">
    <point/>
   </object>

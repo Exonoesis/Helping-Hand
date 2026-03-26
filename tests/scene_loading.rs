@@ -114,15 +114,6 @@ fn get_path_by_name(instructions: Vec<MapInstruction>, path_name: String) -> Vec
 }
 
 #[given("the game is capable of handling acts,")]
-fn add_acts_plugin(game: &mut Game) {
-    let fade_duration = Duration::from_secs(0);
-    let maps_folder_path = PathBuf::from("assets/map/");
-
-    game.add_plugin(CoreActsPlugin::new(fade_duration, maps_folder_path));
-    game.add_plugin(CoreLevelsPlugin);
-}
-
-#[given("the game is capable of handling testing acts,")]
 fn add_test_acts_plugin(game: &mut Game) {
     let fade_duration = Duration::from_secs(0);
     let maps_folder_path = PathBuf::from("tests/test_assets/maps/scene_loading/");
@@ -133,23 +124,6 @@ fn add_test_acts_plugin(game: &mut Game) {
 
 #[when(regex = r"the act called '(.+)' is loaded,")]
 fn load_act(game: &mut Game, act_file_name: String) {
-    let act_file_path_name = format!("assets/acts/{}", act_file_name);
-    let act_file_path = PathBuf::from(&act_file_path_name);
-
-    assert!(
-        act_file_path.exists(),
-        "Act file does not exist at location {:?}",
-        act_file_path.canonicalize().unwrap()
-    );
-
-    game.broadcast_event(LoadAct::new(&act_file_path_name));
-
-    // Since we're manually broadcasting an event, we MUST manually tick for the act to be visible
-    game.tick();
-}
-
-#[when(regex = r"the testing act called '(.+)' is loaded,")]
-fn load_testing_act(game: &mut Game, act_file_name: String) {
     let act_file_path_name = format!("tests/test_assets/acts/{}", act_file_name);
     let act_file_path = PathBuf::from(&act_file_path_name);
 
