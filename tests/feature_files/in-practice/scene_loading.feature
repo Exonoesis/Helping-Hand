@@ -24,9 +24,6 @@ Feature: An Act's Scenes can be traversed in the game.
         And the image at 'acts/images/PI2.png' is displayed on the screen.
         And the loaded image's opacity is 100%.
 
-    # TODO: Split into three tests, loading the map cutscene, the placement, and the loop
-    # Expand node in arcweaves testing chapter (add maps here too, the existing loop and make a placement, or do we have one?)
-
     Scenario: A map cutscene is loaded into the game.
         Given the game is capable of handling acts,
         When the act called 'map_cutscene_act.json' is loaded,
