@@ -13,7 +13,7 @@ fn given_some_tiled_map(game: &mut Game, tiled_map_name: String) {
     game.add_plugin(CoreLevelsPlugin);
 
     let map_path = format!("tests/test_assets/maps/map_changing/{}", tiled_map_name);
-    game.broadcast_event(LoadLevel::new(&map_path));
+    game.write_message(LoadLevel::new(&map_path));
 }
 
 #[given(regex = r"a map size of ([0-9]+) x ([0-9]+) tiles,")]
@@ -45,7 +45,7 @@ fn verify_player_spawned_at_tile_pos(game: &mut Game, tile_x: u32, tile_y: u32) 
 
 #[when("the player interacts with the tile ahead of them,")]
 fn trigger_player_interaction(game: &mut Game) {
-    game.broadcast_event(PlayerInteraction);
+    game.write_message(PlayerInteraction);
 
     for _ in 0..5 {
         game.tick();

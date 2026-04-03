@@ -32,11 +32,11 @@ fn given_some_tiled_map(game: &mut Game, tiled_map_name: String) {
     game.add_plugin(CoreLevelsPlugin);
 
     let map_path = format!("tests/test_assets/maps/camera/{}", tiled_map_name);
-    game.broadcast_event(LoadLevel::new(&map_path));
+    game.write_message(LoadLevel::new(&map_path));
 }
 
 #[given(regex = r"a custom game resolution of ([0-9]+) x ([0-9]+),")]
-fn given_some_window_resolution(game: &mut Game, window_width: usize, window_height: usize) {
+fn given_some_window_resolution(game: &mut Game, window_width: u32, window_height: u32) {
     game.set_window_resolution(window_width, window_height);
 }
 
@@ -69,7 +69,7 @@ fn when_map_spawned(game: &mut Game) {
 #[when(regex = r"the player is requested to move ([a-zA-Z]+),")]
 fn request_player_to_move(game: &mut Game, movement_direction: String) {
     let movement_direction_event = convert_string_to_movement_direction(movement_direction);
-    game.broadcast_event(movement_direction_event);
+    game.write_message(movement_direction_event);
 }
 
 #[when(regex = r"the player moves ([a-zA-Z]+),")]

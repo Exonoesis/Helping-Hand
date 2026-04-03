@@ -29,7 +29,7 @@ impl FadeTimer {
     }
 }
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct LoadAct {
     act_path_name: String,
 }
@@ -46,7 +46,7 @@ impl LoadAct {
     }
 }
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct ImageDespawn {}
 
 impl ImageDespawn {
@@ -55,7 +55,7 @@ impl ImageDespawn {
     }
 }
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct LoadNextScene {}
 
 impl LoadNextScene {
@@ -65,13 +65,13 @@ impl LoadNextScene {
 }
 
 /// Loads initial act of the game
-pub fn load_starting_act(mut load_act_broadcaster: EventWriter<LoadAct>) {
+pub fn load_starting_act(mut load_act_broadcaster: MessageWriter<LoadAct>) {
     let starting_act = LoadAct::new("assets/acts/introductory_act.json");
     load_act_broadcaster.write(starting_act);
 }
 
 pub fn load_act(
-    mut load_act_requests: EventReader<LoadAct>,
+    mut load_act_requests: MessageReader<LoadAct>,
     mut commands: Commands,
     loaded_act: Query<Entity, With<Act>>,
     maps_path_folder: Res<MapsFolderPath>,
@@ -140,7 +140,7 @@ pub fn render_image_cutscene(
 /// Render a Map Cutscene into the game
 pub fn render_map_cutscene(
     current_act: Single<(&Act, Ref<Act>)>,
-    mut load_level_broadcaster: EventWriter<ChangeLevel>,
+    mut load_level_broadcaster: MessageWriter<ChangeLevel>,
 ) {
     if !current_act.1.is_changed() {
         return;
@@ -158,7 +158,7 @@ pub fn render_map_cutscene(
 
 /// Renders the next scene into the game from the current act
 pub fn load_next_scene(
-    mut load_next_scene_requests: EventReader<LoadNextScene>,
+    mut load_next_scene_requests: MessageReader<LoadNextScene>,
     mut current_act_query: Query<&mut Act>,
 ) {
     if load_next_scene_requests.is_empty() {
@@ -178,7 +178,7 @@ pub fn load_next_scene(
 pub fn fade_into(
     mut query: Query<(&mut ImageNode, &mut FadeTimer)>,
     time: Res<Time>,
-    mut despawn_image_broadcaster: EventWriter<ImageDespawn>,
+    mut despawn_image_broadcaster: MessageWriter<ImageDespawn>,
 ) {
     for (mut image_node, mut fade_timer) in query.iter_mut() {
         fade_timer.get_timer().tick(time.delta());
@@ -187,14 +187,14 @@ pub fn fade_into(
             .color
             .set_alpha(fade_timer.get_timer().fraction());
 
-        if fade_timer.get_timer().finished() {
+        if fade_timer.get_timer().is_finished() {
             despawn_image_broadcaster.write(ImageDespawn::new());
         }
     }
 }
 
 pub fn despawn_image(
-    mut despawn_image_requests: EventReader<ImageDespawn>,
+    mut despawn_image_requests: MessageReader<ImageDespawn>,
     scene_to_remove_query: Query<Entity, (With<SceneUI>, Without<FadeTimer>)>,
     mut current_scene_query: Query<Entity, (With<SceneUI>, With<FadeTimer>)>,
     mut commands: Commands,
@@ -234,7 +234,7 @@ pub fn load_next_scene_on_player_input(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mouse_button_input: Res<ButtonInput<MouseButton>>,
     current_act_query: Query<&mut Act>,
-    mut load_next_scene_broadcaster: EventWriter<LoadNextScene>,
+    mut load_next_scene_broadcaster: MessageWriter<LoadNextScene>,
 ) {
     let found_loaded_act = current_act_query.iter().next();
 

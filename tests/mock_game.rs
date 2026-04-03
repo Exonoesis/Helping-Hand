@@ -33,7 +33,7 @@ impl Game {
         app.add_plugins(InputPlugin::default());
         app.add_plugins(WindowPlugin {
             primary_window: Some(Window {
-                resolution: WindowResolution::new(1280.0, 720.0),
+                resolution: WindowResolution::new(1280, 720),
                 ..default()
             }),
             ..default()
@@ -230,18 +230,18 @@ impl Game {
     }
 
     /// Send an event to all systems listening in the Bevy game engine.
-    pub fn broadcast_event<C>(&mut self, event_to_send: C)
+    pub fn write_message<C>(&mut self, event_to_send: C)
     where
-        C: Event,
+        C: Message,
     {
-        self.app.world_mut().send_event(event_to_send);
+        self.app.world_mut().write_message(event_to_send);
         self.tick();
     }
 
     /// Sets the window dimensions of the game to the specified width and height.
-    pub fn set_window_resolution(&mut self, window_width: usize, window_height: usize) {
+    pub fn set_window_resolution(&mut self, window_width: u32, window_height: u32) {
         let mut window = self.get_mut::<Window>();
 
-        window.resolution = WindowResolution::new(window_width as f32, window_height as f32);
+        window.resolution = WindowResolution::new(window_width, window_height);
     }
 }

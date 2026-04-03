@@ -533,7 +533,7 @@ pub fn change_music_volume(
             continue;
         }
 
-        let slider_percentage = get_percentage_from(text.clone());
+        let slider_percentage = get_percentage_from(text.clone()) as f32;
 
         background_music.set_volume(slider_percentage);
     }
@@ -549,7 +549,7 @@ pub fn change_sfx_volumes(
             continue;
         }
 
-        let slider_percentage = get_percentage_from(text.clone());
+        let slider_percentage = get_percentage_from(text.clone()) as f32;
 
         player_movement_sound.set_volume(slider_percentage);
         player_bump_sound.set_volume(slider_percentage);
@@ -973,7 +973,7 @@ fn get_node_width(
 
     while let Some(val) = value_stack.pop() {
         node_width = val
-            .resolve(node_width, viewport_size)
+            .resolve(1.0, node_width, viewport_size)
             .expect("get_node_width: Node width could not be resolved");
     }
 

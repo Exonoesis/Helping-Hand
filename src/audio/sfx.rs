@@ -15,7 +15,7 @@ pub fn load_player_movement_sound(
 }
 
 pub fn play_player_movement_sound(
-    mut player_movement_receiver: EventReader<PlayerMovementActions>,
+    mut player_movement_receiver: MessageReader<PlayerMovementActions>,
     player_movement_sound: Res<AudioChannel<PlayerWalkChannel>>,
 ) {
     if player_movement_receiver.is_empty() {
@@ -46,7 +46,7 @@ pub fn load_player_bump_sound(
 }
 
 pub fn play_player_bump_sound(
-    mut player_movement_receiver: EventReader<PlayerMovementActions>,
+    mut player_movement_receiver: MessageReader<PlayerMovementActions>,
     player_bump_sound: Res<AudioChannel<PlayerBumpChannel>>,
 ) {
     if player_movement_receiver.is_empty() {

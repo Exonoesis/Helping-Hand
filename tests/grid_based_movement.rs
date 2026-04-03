@@ -36,7 +36,7 @@ fn given_some_tiled_map(game: &mut Game, tiled_map_name: String) {
         "tests/test_assets/maps/grid_based_movement/{}",
         tiled_map_name
     );
-    game.broadcast_event(LoadLevel::new(&map_path));
+    game.write_message(LoadLevel::new(&map_path));
 }
 
 #[given(regex = r"the Player is at ([0-9]+),([0-9]+),([0-9]+),")]
@@ -52,7 +52,7 @@ fn verify_player_spawned_at_tile_pos(game: &mut Game, tile_x: u32, tile_y: u32, 
 #[when(regex = r"the Player is requested to move ([a-zA-Z]+),")]
 fn request_player_to_move(game: &mut Game, movement_direction: String) {
     let movement_direction_event = convert_string_to_movement_direction(movement_direction);
-    game.broadcast_event(movement_direction_event);
+    game.write_message(movement_direction_event);
 }
 
 #[when(regex = r"the Player moves ([a-zA-Z]+),")]

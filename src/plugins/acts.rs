@@ -75,10 +75,10 @@ impl Plugin for CoreActsPlugin {
         app.insert_resource(self.time_to_fade);
         app.insert_resource(self.maps_path_folder.clone());
 
-        app.add_event::<LoadAct>()
-            .add_event::<LoadNextScene>()
-            .add_event::<ImageDespawn>()
-            .add_event::<ChangeLevel>()
+        app.add_message::<LoadAct>()
+            .add_message::<LoadNextScene>()
+            .add_message::<ImageDespawn>()
+            .add_message::<ChangeLevel>()
             .add_systems(
                 Update,
                 (

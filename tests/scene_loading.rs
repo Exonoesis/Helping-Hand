@@ -133,7 +133,7 @@ fn load_act(game: &mut Game, act_file_name: String) {
         act_file_path.canonicalize().unwrap()
     );
 
-    game.broadcast_event(LoadAct::new(&act_file_path_name));
+    game.write_message(LoadAct::new(&act_file_path_name));
 
     // Since we're manually broadcasting an event, we MUST manually tick for the act to be visible
     game.tick();
@@ -141,7 +141,7 @@ fn load_act(game: &mut Game, act_file_name: String) {
 
 #[when("the game transitions to the next scene,")]
 fn transition_to_next_scene(game: &mut Game) {
-    game.broadcast_event(LoadNextScene::new());
+    game.write_message(LoadNextScene::new());
 
     // Since we're manually broadcasting an event, we MUST manually tick for the next scene to be visible
     game.tick();
@@ -150,7 +150,7 @@ fn transition_to_next_scene(game: &mut Game) {
 #[when(regex = r"the game transitions to scene ([0-9]+),")]
 fn transition_to_given_scene(game: &mut Game, given_scene_num: usize) {
     for _ in 0..(given_scene_num - 1) {
-        game.broadcast_event(LoadNextScene::new());
+        game.write_message(LoadNextScene::new());
         // Since we're manually broadcasting an event, we MUST manually tick each time for the next scene to be visible
         game.tick();
     }

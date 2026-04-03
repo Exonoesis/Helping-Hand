@@ -15,7 +15,7 @@ pub enum ButtonTypes {
 const WHITE: Color = Color::srgb(1.0, 1.0, 1.0);
 
 pub fn button_system(
-    mut exit_event: EventWriter<AppExit>,
+    mut exit_event: MessageWriter<AppExit>,
     mut next_state: ResMut<NextState<AppState>>,
     mut interaction_query: Query<
         (&Interaction, &ButtonTypes),

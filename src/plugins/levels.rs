@@ -31,9 +31,9 @@ pub struct CoreLevelsPlugin;
 impl Plugin for CoreLevelsPlugin {
     fn build(&self, app: &mut App) {
         // Loading the map
-        app.add_event::<LoadLevel>()
-            .add_event::<ChangeLevel>()
-            .add_event::<PlayerInteraction>()
+        app.add_message::<LoadLevel>()
+            .add_message::<ChangeLevel>()
+            .add_message::<PlayerInteraction>()
             .add_systems(
                 Update,
                 (

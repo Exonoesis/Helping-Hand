@@ -242,7 +242,7 @@ pub fn flip_interactives_on_y_axis(
 
 pub fn interact_entity(
     input: Res<ButtonInput<KeyCode>>,
-    mut interactive_event_writer: EventWriter<PlayerInteraction>,
+    mut interactive_event_writer: MessageWriter<PlayerInteraction>,
 ) {
     if !input.just_pressed(KeyCode::KeyE) {
         return;

@@ -6,7 +6,7 @@ use crate::map::{player::*, GridCords3D, GridDimensions, PxDimensions};
 
 use super::collision::CollisionCollection;
 
-#[derive(Event, Copy, Clone, Debug, PartialEq, Component)]
+#[derive(Message, Copy, Clone, Debug, PartialEq, Component)]
 pub enum MovementDirection {
     Left,
     Right,
@@ -39,8 +39,8 @@ impl Target {
 
 /// Sets the target location of the player on the map.
 pub fn set_player_target(
-    mut requests_to_move: EventReader<MovementDirection>,
-    mut movement_notifications: EventWriter<PlayerMovementActions>,
+    mut requests_to_move: MessageReader<MovementDirection>,
+    mut movement_notifications: MessageWriter<PlayerMovementActions>,
     mut commands: Commands,
     mut player: Query<
         (
@@ -297,7 +297,7 @@ pub fn move_entity_to_target(
     {
         time_to_reach_destination.advance(time.delta());
 
-        if time_to_reach_destination.timer.finished() {
+        if time_to_reach_destination.timer.is_finished() {
             *entity_physical_position = *entity_target.get_position();
             *entity_logical_position = *entity_target.get_grid_coordinate();
 
@@ -387,7 +387,8 @@ fn calculate_current_distance(
     let elapsed_time = time_to_reach_destination.elapsed();
     let total_time = time_to_reach_destination.total();
 
-    let current_distance = if total_time.is_zero() || time_to_reach_destination.timer.finished() {
+    let current_distance = if total_time.is_zero() || time_to_reach_destination.timer.is_finished()
+    {
         total_distance as f32
     } else {
         (total_distance as f32 * elapsed_time.as_secs_f32()) / total_time.as_secs_f32()
@@ -398,7 +399,7 @@ fn calculate_current_distance(
 
 pub fn move_player_on_key_press(
     input: Res<ButtonInput<KeyCode>>,
-    mut move_player_requester: EventWriter<MovementDirection>,
+    mut move_player_requester: MessageWriter<MovementDirection>,
 ) {
     if input.pressed(KeyCode::KeyW) {
         move_player_requester.write(MovementDirection::Up);

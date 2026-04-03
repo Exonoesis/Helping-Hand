@@ -8,7 +8,7 @@ pub struct MusicChannel;
 
 pub fn play_level_music(
     asset_server: Res<AssetServer>,
-    mut level_change_requests: EventReader<LoadLevel>,
+    mut level_change_requests: MessageReader<LoadLevel>,
     background_music: Res<AudioChannel<MusicChannel>>,
 ) {
     let level_has_changed = !level_change_requests.is_empty();

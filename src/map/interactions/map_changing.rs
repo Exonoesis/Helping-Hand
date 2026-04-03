@@ -17,7 +17,7 @@ use super::interactives::{
     flip_interactives_on_y_axis, get_interactives_from, InteractiveCollection,
 };
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct LoadLevel {
     level_path: PathBuf,
 }
@@ -51,7 +51,7 @@ impl LoadLevel {
     }
 }
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct ChangeLevel {
     level_path: PathBuf,
 }
@@ -69,7 +69,7 @@ impl ChangeLevel {
 }
 
 /// Loads some predetermined map when clicking the "Play" button.
-pub fn load_starting_map(mut change_level_requester: EventWriter<LoadLevel>) {
+pub fn load_starting_map(mut change_level_requester: MessageWriter<LoadLevel>) {
     let tiled_map_name = "test_map_with_collision.tmx";
     let map_path = format!("tests/test-assets/maps/{}", tiled_map_name);
     change_level_requester.write(LoadLevel::new(&map_path));
@@ -77,7 +77,7 @@ pub fn load_starting_map(mut change_level_requester: EventWriter<LoadLevel>) {
 
 /// Loads the Tiled test map with a Camera into the game at the center of the map.
 pub fn load_map(
-    mut change_level_requests: EventReader<LoadLevel>,
+    mut change_level_requests: MessageReader<LoadLevel>,
     mut commands: Commands,
     asset_spawner: Res<AssetServer>,
     mut texture_atlas_assets: ResMut<Assets<TextureAtlasLayout>>,
@@ -124,8 +124,8 @@ pub fn load_map(
 }
 
 pub fn change_to_new_level(
-    mut change_level_requests: EventReader<ChangeLevel>,
-    mut load_level_broadcaster: EventWriter<LoadLevel>,
+    mut change_level_requests: MessageReader<ChangeLevel>,
+    mut load_level_broadcaster: MessageWriter<LoadLevel>,
     loaded_level_tiles: Query<(Entity, &GridCords3D, &TileType, &PxDimensions)>,
     map_properties: Query<
         Entity,
@@ -198,10 +198,10 @@ fn create_centered_camera(map: &Tilemap) -> CameraBundle {
 
 /// Changes the level if there's a marker present in front of the player and it is transitional.
 pub fn change_level_from_marker(
-    mut requests_to_interact: EventReader<PlayerInteraction>,
+    mut requests_to_interact: MessageReader<PlayerInteraction>,
     player: Query<(&Transform, &PxDimensions, &MovementDirection), With<Player>>,
     map_markers: Query<(&InteractiveCollection, &PxDimensions)>,
-    mut change_level_requests: EventWriter<ChangeLevel>,
+    mut change_level_requests: MessageWriter<ChangeLevel>,
 ) {
     if player.is_empty() {
         return;

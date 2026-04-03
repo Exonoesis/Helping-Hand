@@ -30,7 +30,7 @@ Feature: An Act's Scenes can be traversed in the game.
         Then the title of the current scene loaded is called 'Placement Test'.
         And the map size should be 2 x 2 tiles.
 
-    Scenario: The character and tile were found properly in the placement.
+    Scenario: The character and tile is found properly in a placement.
         Given the game is capable of handling acts,
         When the act called 'map_cutscene_act.json' is loaded,
         Then the title of the current scene loaded is called 'Placement Test'.
@@ -55,7 +55,7 @@ Feature: An Act's Scenes can be traversed in the game.
         And tile 9 of line path 'Combo' is tile 4, 0.
         And tile 10 of line path 'Combo' is tile 3, 0.
 
-    Scenario: The character and each tile were found properly in the looping path.
+    Scenario: The character and each tile is found properly in a looping path.
         Given the game is capable of handling acts,
         When the act called 'map_cutscene_act.json' is loaded,
         And the game transitions to scene 3,
