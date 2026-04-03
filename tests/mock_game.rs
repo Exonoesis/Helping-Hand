@@ -6,10 +6,12 @@ use std::{
 use bevy::{
     ecs::component::Mutable,
     input::InputPlugin,
+    mesh::MeshPlugin,
     prelude::*,
     render::{settings::WgpuSettings, view::screenshot::CapturedScreenshots, RenderPlugin},
     sprite::SpritePlugin,
     state::app::StatesPlugin,
+    text::TextPlugin,
     window::WindowResolution,
 };
 use cucumber::World;
@@ -53,11 +55,13 @@ impl Game {
         app.add_plugins(DefaultPickingPlugins);
 
         app.add_plugins(PlayableCharacterTestingPlugin);
+        app.add_plugins(MeshPlugin);
+        app.add_plugins(TextPlugin);
         app.insert_resource(ArrivalTime::new(Duration::from_secs_f32(0.0)));
 
         // NOTE: How dare you Bevy! We need this to ensure tests do not crash
         // starting in 0.15. Maybe we can remove these two lines in the future.
-        let (tx, rx) = std::sync::mpsc::channel();
+        let (_, rx) = std::sync::mpsc::channel();
         app.insert_resource(CapturedScreenshots(Arc::new(Mutex::new(rx))));
 
         app.insert_state(AppState::InGame);
