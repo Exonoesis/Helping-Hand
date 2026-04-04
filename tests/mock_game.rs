@@ -248,4 +248,20 @@ impl Game {
 
         window.resolution = WindowResolution::new(window_width, window_height);
     }
+
+    /// Returns a specified Resource
+    pub fn get_res<R>(&mut self) -> &R
+    where
+        R: Resource,
+    {
+        self.app.world().resource::<R>()
+    }
+
+    /// Returns a specified mutable Resource
+    pub fn get_res_mut<R>(&mut self) -> Mut<'_, R>
+    where
+        R: Resource,
+    {
+        self.app.world_mut().resource_mut::<R>()
+    }
 }

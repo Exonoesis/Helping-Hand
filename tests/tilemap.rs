@@ -1,3 +1,5 @@
+mod mock_game;
+
 use std::fmt::Debug;
 
 use bevy::prelude::*;
@@ -13,13 +15,14 @@ use helping_hand::map::*;
 use std::ffi::OsString;
 use std::path::PathBuf;
 
+use crate::mock_game::Game;
+
 #[derive(Debug, Default, World)]
 #[world(init = Self::new)]
 struct GameWorld {
-    pub app: App,
+    pub app: Game,
     pub map_location: PathBuf,
     pub assets_folder_path: PathBuf,
-
     pub loaded_map: Tilemap,
     pub bevy_map: RenderedMap,
 }
@@ -29,23 +32,9 @@ impl GameWorld {
         let map_location = PathBuf::new();
         let loaded_map = Tilemap::default();
         let bevy_map = RenderedMap::default();
-
         let absolute_assets_folder_path = PathBuf::new();
 
-        // Testable "game"
-        let mut app = App::new();
-        app.add_plugins(MinimalPlugins);
-        app.add_plugins(AssetPlugin::default());
-        app.add_plugins(RenderPlugin {
-            render_creation: WgpuSettings {
-                backends: None,
-                ..default()
-            }
-            .into(),
-            ..default()
-        });
-        app.add_plugins(SpritePlugin::default());
-        app.add_plugins(ImagePlugin::default());
+        let app = Game::new();
 
         Self {
             app,
@@ -124,11 +113,8 @@ fn trim_to_bevy_path(world: &mut GameWorld) {
 #[when("the Tiled map has been converted to a rendered map,")]
 fn tiled_map_to_bevy_tiles(world: &mut GameWorld) {
     let tilemap = &world.loaded_map;
-    let asset_server = world.app.world().resource::<AssetServer>().clone();
-    let mut texture_atlas_layout = world
-        .app
-        .world_mut()
-        .resource_mut::<Assets<TextureAtlasLayout>>();
+    let asset_server = world.app.get_res::<AssetServer>().clone();
+    let mut texture_atlas_layout = world.app.get_res_mut::<Assets<TextureAtlasLayout>>();
 
     let rendered_bevy_map = RenderedMap::new(tilemap, &asset_server, &mut texture_atlas_layout);
     world.bevy_map = rendered_bevy_map;
