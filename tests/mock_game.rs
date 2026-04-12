@@ -64,7 +64,7 @@ impl Game {
         let (_, rx) = std::sync::mpsc::channel();
         app.insert_resource(CapturedScreenshots(Arc::new(Mutex::new(rx))));
 
-        app.insert_state(AppState::InGame);
+        app.insert_state(AppState::InScene);
 
         Self { app }
     }

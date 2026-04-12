@@ -20,7 +20,7 @@ impl Plugin for LevelsPlugin {
         app.add_plugins(CoreLevelsPlugin)
             .add_systems(
                 Update,
-                (play_level_music, interact_entity).run_if(in_state(AppState::InGame)),
+                (play_level_music, interact_entity).run_if(in_state(AppState::InScene)),
             )
             .add_audio_channel::<MusicChannel>();
     }
@@ -43,7 +43,7 @@ impl Plugin for CoreLevelsPlugin {
                     move_player_on_key_press,
                     change_level_from_marker,
                 )
-                    .run_if(in_state(AppState::InGame)),
+                    .run_if(in_state(AppState::InScene)),
             );
     }
 }

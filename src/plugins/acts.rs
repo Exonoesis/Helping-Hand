@@ -15,11 +15,11 @@ impl Plugin for ActsPlugin {
         app.add_plugins(CoreActsPlugin::new(Duration::from_secs(3), map_folder_path))
             .add_systems(
                 Update,
-                (load_next_scene_on_player_input,).run_if(in_state(AppState::InGame)),
+                (load_next_scene_on_player_input,).run_if(in_state(AppState::InScene)),
             )
             .add_systems(
-                OnEnter(AppState::InGame),
-                load_starting_act.run_if(in_state(AppState::InGame)),
+                OnEnter(AppState::InScene),
+                load_starting_act.run_if(in_state(AppState::InScene)),
             );
     }
 }
@@ -89,7 +89,7 @@ impl Plugin for CoreActsPlugin {
                     render_image_cutscene.after(load_next_scene),
                     render_map_cutscene.after(load_next_scene),
                 )
-                    .run_if(in_state(AppState::InGame)),
+                    .run_if(in_state(AppState::InScene)),
             );
     }
 }

@@ -11,5 +11,5 @@ pub enum AppState {
     #[default]
     MainMenu,
     SettingsMenu,
-    InGame,
+    InScene,
 }

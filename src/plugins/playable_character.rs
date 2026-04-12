@@ -18,7 +18,7 @@ impl Plugin for PlayableCharacterPlugin {
 
         app.add_systems(
             Update,
-            (set_player_target, move_entity_to_target).run_if(in_state(AppState::InGame)),
+            (set_player_target, move_entity_to_target).run_if(in_state(AppState::InScene)),
         )
         .add_systems(
             Update,
@@ -28,7 +28,7 @@ impl Plugin for PlayableCharacterPlugin {
             ),
         )
         .add_systems(
-            OnEnter(AppState::InGame),
+            OnEnter(AppState::InScene),
             (load_player_movement_sound, load_player_bump_sound),
         )
         .add_audio_channel::<PlayerWalkChannel>()
@@ -46,7 +46,7 @@ impl Plugin for PlayableCharacterTestingPlugin {
 
         app.add_systems(
             Update,
-            (set_player_target, move_entity_to_target).run_if(in_state(AppState::InGame)),
+            (set_player_target, move_entity_to_target).run_if(in_state(AppState::InScene)),
         )
         .add_message::<PlayerMovementActions>();
     }
