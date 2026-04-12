@@ -6,6 +6,10 @@ Feature: Grid-based Movement
         Then the Player should have a Target.
         And the Player is facing right.
 
+    ##################################################################################
+    #                            Player Movement Tests                               #
+    ##################################################################################
+
     Scenario: A Player moves to the right
         Given a Tiled map called player_3x3.tmx,
         And the Player is at 1,1,1,
@@ -37,6 +41,10 @@ Feature: Grid-based Movement
         Then the Player's pixel coordinates are equivalent to tile 1,2,1.
         And the Player's grid coordinates are set to tile 1,2,1.
         And the Player is facing down.
+
+    ##################################################################################
+    #                              Collision Tests                                   #
+    ##################################################################################
 
     Scenario: A Player cannot move right
         Given a Tiled map called collision_test.tmx,

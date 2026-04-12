@@ -9,6 +9,19 @@ Feature: Interactives
         And marker 2 has a position of 64,128,1.
         And marker 2 has a size of 128x64.
 
+    Scenario: A marker has a given interactive type
+        Given a Tiled map called multiple_marker_test.tmx,
+        And a position of 32,96,
+        When the Tiled map is loaded,
+        And an Interactive Collection is extracted from the Tiled map,
+        And a marker is requested for the position,
+        Then the marker has the type Transition.
+        And the Transition marker has a path of cabin_interior.tmx.
+
+    ##################################################################################
+    #                              Proximity Tests                                   #
+    ##################################################################################
+
     Scenario: A position left of the marker reports as lower.
         Given a Tiled map called marker_test.tmx,
         And a position of 0,63,
@@ -48,6 +61,10 @@ Feature: Interactives
         And an Interactive Collection is extracted from the Tiled map,
         Then there is 1 interactive marker in the collection.
         And the position reports match on the marker.
+
+    ##################################################################################
+    #                                Lookup Tests                                    #
+    ##################################################################################
 
     Scenario: A marker for a certain position is found.
         Given a Tiled map called multiple_marker_test.tmx,
@@ -92,12 +109,3 @@ Feature: Interactives
         And a marker is requested for the position,
         Then the marker has a position of 128,128,1.
         And the marker has a size of 64x64.
-
-    Scenario: A marker has a given interactive type
-        Given a Tiled map called multiple_marker_test.tmx,
-        And a position of 32,96,
-        When the Tiled map is loaded,
-        And an Interactive Collection is extracted from the Tiled map,
-        And a marker is requested for the position,
-        Then the marker has the type Transition.
-        And the Transition marker has a path of cabin_interior.tmx.

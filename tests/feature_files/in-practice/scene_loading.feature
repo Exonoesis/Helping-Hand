@@ -10,6 +10,10 @@ Feature: An Act's Scenes can be traversed in the game.
         And the game transitions to the next scene,
         Then the title of the current scene loaded is called 'Intro Image 2'.
 
+    ##################################################################################
+    #                             Image Cutscene Tests                               #
+    ##################################################################################
+
     Scenario: An image cutscene is loaded into the game.
         Given the game is capable of handling acts,
         When the act called 'image_cutscene_act.json' is loaded,
@@ -23,6 +27,10 @@ Feature: An Act's Scenes can be traversed in the game.
         Then there is only one image loaded.
         And the image at 'acts/images/PI2.png' is displayed on the screen.
         And the loaded image's opacity is 100%.
+
+    ##################################################################################
+    #                              Map Cutscene Tests                                #
+    ##################################################################################
 
     Scenario: A map cutscene is loaded into the game.
         Given the game is capable of handling acts,
