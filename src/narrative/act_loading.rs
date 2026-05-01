@@ -1,6 +1,7 @@
 use crate::map::interactions::map_changing::ChangeLevel;
 use crate::narrative::acts::{Act, SceneContents};
 use crate::plugins::acts::{FadeDuration, MapsFolderPath};
+use crate::AppState;
 use crate::{map::interactions::map_changing::CameraBundle, ui::menus::ImageNodeBundle};
 use bevy::prelude::*;
 use std::path::{Path, PathBuf};
@@ -160,21 +161,32 @@ pub fn render_map_cutscene(
 pub fn load_next_scene(
     mut load_next_scene_requests: MessageReader<LoadNextScene>,
     mut current_act_query: Query<&mut Act>,
+    mut next_state: ResMut<NextState<AppState>>,
 ) {
     if load_next_scene_requests.is_empty() {
         return;
     }
 
     load_next_scene_requests.read().next();
-    let mut current_act = current_act_query.single_mut().unwrap();
+
+    let current_act = current_act_query.single_mut().unwrap();
 
     if !current_act.has_more_scenes() {
         return;
     }
 
-    current_act.move_to_next_scene();
+    // Go to transitioning state
+    next_state.set(AppState::Transitioning);
 }
 
+pub fn spawn_curtain() {
+    // TODO: Make image node bundle ()
+    // - change color to black
+    // - set z index to highest (int max)
+    // - add curtain component (label)
+}
+
+// TODO: Refactor into curtain down
 pub fn fade_into(
     mut query: Query<(&mut ImageNode, &mut FadeTimer)>,
     time: Res<Time>,
@@ -193,6 +205,34 @@ pub fn fade_into(
     }
 }
 
+#[derive(Message)]
+pub enum Despawn {
+    Image,
+    Map,
+}
+
+impl Despawn {
+    pub fn new() -> Self {
+        Self::Image // TODO: Figure out how to handle default
+    }
+}
+
+#[derive(Message)]
+pub struct DespawnDone {}
+
+impl DespawnDone {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+pub fn despawn_old_scene() {
+    // TODO: Switchboard
+    // - Read scene type
+    // - Call specailized despawn via event
+}
+
+// TODO: Refactor
 pub fn despawn_image(
     mut despawn_image_requests: MessageReader<ImageDespawn>,
     scene_to_remove_query: Query<Entity, (With<SceneUI>, Without<FadeTimer>)>,
@@ -217,6 +257,51 @@ pub fn despawn_image(
             .remove::<FadeTimer>()
             .insert(ZIndex(0));
     }
+}
+
+pub fn despawn_map_cutscene() {
+    // TODO: We have a map despawn fn somewhere already
+}
+
+#[derive(Message)]
+pub enum Spawn {
+    Image,
+    Map,
+}
+
+impl Spawn {
+    pub fn new() -> Self {
+        Self::Image // TODO: Figure out how to handle default
+    }
+}
+
+#[derive(Message)]
+pub struct SpawnDone {}
+
+impl SpawnDone {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+pub fn spawn_new_scene() {
+    // TODO: Switchboard
+    // - Move to next scene
+    // - Read scene type
+    // - Call specialized spawn via event (we have these too, just need to modify)
+}
+
+pub fn set_curtain_to_raise() {
+    // TODO: Attach new timer to curtain here
+}
+
+pub fn curtain_up() {
+    // TODO: Inverse of curtain_down (currently fade_into)
+    // - Set state to InScene
+}
+
+pub fn despawn_curtain() {
+    // TODO: Despawn curtain as final clean-up on exit
 }
 
 pub fn create_full_screen_node() -> Node {

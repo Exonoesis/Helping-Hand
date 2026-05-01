@@ -12,4 +12,5 @@ pub enum AppState {
     MainMenu,
     SettingsMenu,
     InScene,
+    Transitioning,
 }
