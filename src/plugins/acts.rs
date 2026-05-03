@@ -2,6 +2,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use crate::map::interactions::map_changing::ChangeLevel;
+use crate::narrative::act_loading::SpawnScene as SpawnOurScene;
 use crate::narrative::act_loading::*;
 use crate::AppState;
 use bevy::prelude::*;
@@ -77,19 +78,32 @@ impl Plugin for CoreActsPlugin {
 
         app.add_message::<LoadAct>()
             .add_message::<LoadNextScene>()
-            .add_message::<ImageDespawn>()
+            .add_message::<CurtainIsDown>()
+            .add_message::<DespawnScene>()
+            .add_message::<DespawnDone>()
+            .add_message::<SpawnOurScene>()
+            .add_message::<SpawnDone>()
             .add_message::<ChangeLevel>()
+            .add_systems(OnEnter(AppState::Transitioning), spawn_curtain)
+            .add_systems(
+                Update,
+                (load_act, load_next_scene).run_if(in_state(AppState::InScene)),
+            )
             .add_systems(
                 Update,
                 (
-                    load_act,
-                    fade_into,
-                    despawn_image.after(fade_into),
-                    load_next_scene.after(despawn_image),
-                    render_image_cutscene.after(load_next_scene),
-                    render_map_cutscene.after(load_next_scene),
+                    curtain_down,
+                    despawn_old_scene,
+                    despawn_image,
+                    despawn_map_cutscene,
+                    spawn_new_scene,
+                    render_image_cutscene,
+                    render_map_cutscene,
+                    set_curtain_to_raise,
+                    curtain_up,
                 )
-                    .run_if(in_state(AppState::InScene)),
-            );
+                    .run_if(in_state(AppState::Transitioning)),
+            )
+            .add_systems(OnExit(AppState::Transitioning), despawn_curtain);
     }
 }

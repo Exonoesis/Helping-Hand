@@ -1,8 +1,9 @@
 use crate::map::interactions::map_changing::ChangeLevel;
-use crate::narrative::acts::{Act, SceneContents};
+use crate::narrative::acts::{Act, SceneContents, SceneType};
 use crate::plugins::acts::{FadeDuration, MapsFolderPath};
 use crate::AppState;
 use crate::{map::interactions::map_changing::CameraBundle, ui::menus::ImageNodeBundle};
+use bevy::color::palettes::css::BLACK;
 use bevy::prelude::*;
 use std::path::{Path, PathBuf};
 
@@ -10,17 +11,37 @@ use super::acts::ActLoader;
 
 /// Identifies components created for a single scene
 #[derive(Component)]
-pub struct SceneUI;
+pub struct ImageCutscene;
 
-/// Timer for fading Image Cutscenes
+/// Timer for fading the transition curtain in
+/// [Transparent -> Opaque]
 #[derive(Component)]
-pub struct FadeTimer {
+pub struct CurtainDownTimer {
     timer: Timer,
 }
 
-impl FadeTimer {
+impl CurtainDownTimer {
     pub fn new(fade_duration: &FadeDuration) -> Self {
-        let timer = Timer::new(fade_duration.get_duration(), TimerMode::Once);
+        let timer = Timer::new(fade_duration.get_duration() / 2, TimerMode::Once);
+
+        Self { timer }
+    }
+
+    pub fn get_timer(&mut self) -> &mut Timer {
+        &mut self.timer
+    }
+}
+
+/// Timer for fading the transition curtain out
+/// [Opaque -> Transparent]
+#[derive(Component)]
+pub struct CurtainUpTimer {
+    timer: Timer,
+}
+
+impl CurtainUpTimer {
+    pub fn new(fade_duration: &FadeDuration) -> Self {
+        let timer = Timer::new(fade_duration.get_duration() / 2, TimerMode::Once);
 
         Self { timer }
     }
@@ -48,22 +69,7 @@ impl LoadAct {
 }
 
 #[derive(Message)]
-pub struct ImageDespawn {}
-
-impl ImageDespawn {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-#[derive(Message)]
-pub struct LoadNextScene {}
-
-impl LoadNextScene {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
+pub struct LoadNextScene;
 
 /// Loads initial act of the game
 pub fn load_starting_act(mut load_act_broadcaster: MessageWriter<LoadAct>) {
@@ -101,59 +107,13 @@ pub fn load_act(
     commands.spawn(the_camera);
 }
 
-/// Render an Image Cutscene into the game
-pub fn render_image_cutscene(
-    asset_server: Res<AssetServer>,
-    fade_duration: Res<FadeDuration>,
-    mut commands: Commands,
-    current_act: Single<(&Act, Ref<Act>)>,
-) {
-    if !current_act.1.is_changed() {
-        return;
-    }
-
-    let current_scene = current_act.0.get_current_scene();
-
-    if let SceneContents::ImageCutscene(image_path) = current_scene.get_scene_contents() {
-        let node = create_full_screen_node();
-        let scene_image = image_path.to_str().unwrap();
-
-        // Check image path is correct
-        let mut image = check_image_path(&asset_server, scene_image);
-
-        // Set image to be invisible
-        image.color.set_alpha(0.0);
-
-        let ui_container = (ImageNodeBundle::from_nodes(node, image), SceneUI);
-
-        // Create Timer Component
-        let fade_timer = FadeTimer::new(&fade_duration);
-
-        let z_index = ZIndex(!current_act.1.is_added() as i32);
-
-        commands
-            .spawn(ui_container)
-            .insert(z_index)
-            .insert(fade_timer);
-    }
-}
-
-/// Render a Map Cutscene into the game
-pub fn render_map_cutscene(
-    current_act: Single<(&Act, Ref<Act>)>,
-    mut load_level_broadcaster: MessageWriter<ChangeLevel>,
-) {
-    if !current_act.1.is_changed() {
-        return;
-    }
-
-    let current_scene = current_act.0.get_current_scene();
-
-    if let SceneContents::MapCutscene(map_path, map_actions) = current_scene.get_scene_contents() {
-        let level_name = map_path.to_str().unwrap();
-        load_level_broadcaster.write(ChangeLevel::new(level_name));
-
-        //TODO: Load path objects
+pub fn create_full_screen_node() -> Node {
+    Node {
+        width: Val::Percent(100.0),
+        height: Val::Percent(100.0),
+        align_items: AlignItems::Center,
+        justify_content: JustifyContent::Center,
+        ..Default::default()
     }
 }
 
@@ -179,139 +139,243 @@ pub fn load_next_scene(
     next_state.set(AppState::Transitioning);
 }
 
-pub fn spawn_curtain() {
-    // TODO: Make image node bundle ()
-    // - change color to black
-    // - set z index to highest (int max)
-    // - add curtain component (label)
+#[derive(Component)]
+pub struct Curtain;
+
+// On Enter Transitioning -> Starting Point
+pub fn spawn_curtain(fade_duration: Res<FadeDuration>, mut commands: Commands) {
+    let node = create_full_screen_node();
+    let mut black_image = ImageNode::default();
+    black_image.color = BLACK.into();
+
+    let curtain = (ImageNodeBundle::from_nodes(node, black_image), Curtain);
+    let curtain_z_index = ZIndex(i32::MAX);
+    let curtain_down_timer = CurtainDownTimer::new(&fade_duration);
+
+    commands
+        .spawn(curtain)
+        .insert(curtain_z_index)
+        .insert(curtain_down_timer);
 }
 
-// TODO: Refactor into curtain down
-pub fn fade_into(
-    mut query: Query<(&mut ImageNode, &mut FadeTimer)>,
+#[derive(Message)]
+pub struct CurtainIsDown;
+
+// TODO: Refactor
+pub fn curtain_down(
+    mut curtain_query: Query<(Entity, &mut ImageNode, &mut CurtainDownTimer)>,
     time: Res<Time>,
-    mut despawn_image_broadcaster: MessageWriter<ImageDespawn>,
+    mut despawn_image_broadcaster: MessageWriter<CurtainIsDown>,
+    mut commands: Commands,
 ) {
-    for (mut image_node, mut fade_timer) in query.iter_mut() {
-        fade_timer.get_timer().tick(time.delta());
+    for (curtain_entity, mut curtain_image, mut curtain_down_timer) in curtain_query.iter_mut() {
+        curtain_down_timer.get_timer().tick(time.delta());
 
-        image_node
+        curtain_image
             .color
-            .set_alpha(fade_timer.get_timer().fraction());
+            .set_alpha(curtain_down_timer.get_timer().fraction());
 
-        if fade_timer.get_timer().is_finished() {
-            despawn_image_broadcaster.write(ImageDespawn::new());
+        if curtain_down_timer.get_timer().is_finished() {
+            commands.entity(curtain_entity).remove::<CurtainDownTimer>();
+            despawn_image_broadcaster.write(CurtainIsDown);
+        }
+    }
+}
+
+#[derive(Message, PartialEq)]
+pub enum DespawnScene {
+    Image,
+    Map,
+}
+
+pub fn despawn_old_scene(
+    mut curtain_is_down_requests: MessageReader<CurtainIsDown>,
+    current_act: Single<&Act>,
+    mut despawn_notification: MessageWriter<DespawnScene>,
+) {
+    if curtain_is_down_requests.is_empty() {
+        return;
+    }
+
+    curtain_is_down_requests.read().next();
+
+    let current_scene = current_act.get_current_scene();
+    let scene_type = current_scene.get_scene_type();
+
+    match scene_type {
+        SceneType::ImageCutscene => {
+            despawn_notification.write(DespawnScene::Image);
+        }
+        SceneType::MapCutscene => {
+            despawn_notification.write(DespawnScene::Map);
         }
     }
 }
 
 #[derive(Message)]
-pub enum Despawn {
-    Image,
-    Map,
-}
-
-impl Despawn {
-    pub fn new() -> Self {
-        Self::Image // TODO: Figure out how to handle default
-    }
-}
-
-#[derive(Message)]
-pub struct DespawnDone {}
-
-impl DespawnDone {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-pub fn despawn_old_scene() {
-    // TODO: Switchboard
-    // - Read scene type
-    // - Call specailized despawn via event
-}
+pub struct DespawnDone;
 
 // TODO: Refactor
 pub fn despawn_image(
-    mut despawn_image_requests: MessageReader<ImageDespawn>,
-    scene_to_remove_query: Query<Entity, (With<SceneUI>, Without<FadeTimer>)>,
-    mut current_scene_query: Query<Entity, (With<SceneUI>, With<FadeTimer>)>,
+    mut despawn_image_requests: MessageReader<DespawnScene>,
+    scene_to_remove: Single<Entity, With<ImageCutscene>>,
     mut commands: Commands,
+    mut despawning_done_notification: MessageWriter<DespawnDone>,
 ) {
     if despawn_image_requests.is_empty() {
         return;
     }
 
-    despawn_image_requests.read().next();
+    let despawn_event = despawn_image_requests.read().next().unwrap();
 
-    // Despawn previous image
-    for entity in scene_to_remove_query.iter() {
-        commands.entity(entity).despawn();
-    }
-
-    // Remove new images Timer Componenet and set ZIndex to 0
-    for entity in current_scene_query.iter_mut() {
-        commands
-            .entity(entity)
-            .remove::<FadeTimer>()
-            .insert(ZIndex(0));
+    if *despawn_event == DespawnScene::Image {
+        commands.entity(*scene_to_remove).despawn();
+        despawning_done_notification.write(DespawnDone);
     }
 }
 
 pub fn despawn_map_cutscene() {
-    // TODO: We have a map despawn fn somewhere already
+    // TODO: Nearly the same as despawn_image
+    // Need to split change level into despawn_map and load_next_map (name pending)
 }
 
-#[derive(Message)]
-pub enum Spawn {
+#[derive(Message, PartialEq)]
+pub enum SpawnScene {
     Image,
     Map,
 }
 
-impl Spawn {
-    pub fn new() -> Self {
-        Self::Image // TODO: Figure out how to handle default
+pub fn spawn_new_scene(
+    mut despawn_done_requests: MessageReader<DespawnDone>,
+    mut current_act: Single<&mut Act>,
+    mut spawn_notification: MessageWriter<SpawnScene>,
+) {
+    if despawn_done_requests.is_empty() {
+        return;
+    }
+
+    despawn_done_requests.read().next();
+
+    current_act.move_to_next_scene();
+
+    let current_scene = current_act.get_current_scene();
+    let scene_type = current_scene.get_scene_type();
+
+    match scene_type {
+        SceneType::ImageCutscene => {
+            spawn_notification.write(SpawnScene::Image);
+        }
+        SceneType::MapCutscene => {
+            spawn_notification.write(SpawnScene::Map);
+        }
     }
 }
 
 #[derive(Message)]
-pub struct SpawnDone {}
+pub struct SpawnDone;
 
-impl SpawnDone {
-    pub fn new() -> Self {
-        Self {}
+/// Render an Image Cutscene into the game
+pub fn render_image_cutscene(
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+    current_act: Single<&Act>,
+    mut spawn_image_requests: MessageReader<SpawnScene>,
+    mut spawning_done_notification: MessageWriter<SpawnDone>,
+) {
+    if spawn_image_requests.is_empty() {
+        return;
+    }
+
+    let spawn_event = spawn_image_requests.read().next().unwrap();
+
+    if *spawn_event != SpawnScene::Image {
+        return;
+    }
+
+    let current_scene = current_act.get_current_scene();
+
+    if let SceneContents::ImageCutscene(image_path) = current_scene.get_scene_contents() {
+        let node = create_full_screen_node();
+        let scene_image = image_path.to_str().unwrap();
+
+        // Check image path is correct
+        let image = check_image_path(&asset_server, scene_image);
+
+        let ui_container = (ImageNodeBundle::from_nodes(node, image), ImageCutscene);
+
+        commands.spawn(ui_container);
+        spawning_done_notification.write(SpawnDone);
     }
 }
 
-pub fn spawn_new_scene() {
-    // TODO: Switchboard
-    // - Move to next scene
-    // - Read scene type
-    // - Call specialized spawn via event (we have these too, just need to modify)
-}
-
-pub fn set_curtain_to_raise() {
-    // TODO: Attach new timer to curtain here
-}
-
-pub fn curtain_up() {
-    // TODO: Inverse of curtain_down (currently fade_into)
-    // - Set state to InScene
-}
-
-pub fn despawn_curtain() {
-    // TODO: Despawn curtain as final clean-up on exit
-}
-
-pub fn create_full_screen_node() -> Node {
-    Node {
-        width: Val::Percent(100.0),
-        height: Val::Percent(100.0),
-        align_items: AlignItems::Center,
-        justify_content: JustifyContent::Center,
-        ..Default::default()
+/// Render a Map Cutscene into the game
+pub fn render_map_cutscene(
+    current_act: Single<&Act>,
+    mut load_level_broadcaster: MessageWriter<ChangeLevel>,
+    mut spawn_map_requests: MessageReader<SpawnScene>,
+    mut spawning_done_notification: MessageWriter<SpawnDone>,
+) {
+    if spawn_map_requests.is_empty() {
+        return;
     }
+
+    let spawn_event = spawn_map_requests.read().next().unwrap();
+
+    if *spawn_event != SpawnScene::Map {
+        return;
+    }
+
+    let current_scene = current_act.get_current_scene();
+
+    if let SceneContents::MapCutscene(map_path, map_actions) = current_scene.get_scene_contents() {
+        let level_name = map_path.to_str().unwrap();
+        load_level_broadcaster.write(ChangeLevel::new(level_name));
+
+        //TODO: Load path objects
+
+        spawning_done_notification.write(SpawnDone);
+    }
+}
+
+pub fn set_curtain_to_raise(
+    mut spawning_done_requests: MessageReader<SpawnDone>,
+    curtain_entity: Single<Entity, With<Curtain>>,
+    fade_duration: Res<FadeDuration>,
+    mut commands: Commands,
+) {
+    if spawning_done_requests.is_empty() {
+        return;
+    }
+
+    spawning_done_requests.read().next();
+
+    let curtain_up_timer = CurtainUpTimer::new(&fade_duration);
+    commands.entity(*curtain_entity).insert(curtain_up_timer);
+}
+
+pub fn curtain_up(
+    mut curtain_query: Query<(Entity, &mut ImageNode, &mut CurtainUpTimer)>,
+    time: Res<Time>,
+    mut commands: Commands,
+    mut next_state: ResMut<NextState<AppState>>,
+) {
+    for (curtain_entity, mut curtain_image, mut curtain_up_timer) in curtain_query.iter_mut() {
+        curtain_up_timer.get_timer().tick(time.delta());
+
+        let curtain_raised_percentage = 1.0 - curtain_up_timer.get_timer().fraction();
+
+        curtain_image.color.set_alpha(curtain_raised_percentage);
+
+        if curtain_up_timer.get_timer().is_finished() {
+            commands.entity(curtain_entity).remove::<CurtainUpTimer>();
+            next_state.set(AppState::InScene);
+        }
+    }
+}
+
+// On Exit Transitioning -> Ending Point
+pub fn despawn_curtain(curtain_entity: Single<Entity, With<Curtain>>, mut commands: Commands) {
+    commands.entity(*curtain_entity).despawn();
 }
 
 /// Progresses to the next image cutscene on any key or mouse button press
@@ -335,7 +399,7 @@ pub fn load_next_scene_on_player_input(
         if keyboard_input.get_just_pressed().next().is_some()
             || mouse_button_input.get_just_pressed().next().is_some()
         {
-            load_next_scene_broadcaster.write(LoadNextScene::new());
+            load_next_scene_broadcaster.write(LoadNextScene);
         }
     }
 }
