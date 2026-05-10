@@ -218,7 +218,7 @@ impl SceneContents {
 #[derive(Debug, Component, Clone)]
 pub struct Act {
     scenes: Vec<Scene>,
-    current_scene_idx: usize,
+    current_scene_id: usize,
     scene_locations: HashMap<String, usize>,
     scene_connections: Vec<Vec<usize>>,
 }
@@ -232,17 +232,17 @@ impl Act {
 
         Self {
             scenes,
-            current_scene_idx,
+            current_scene_id: current_scene_idx,
             scene_locations,
             scene_connections,
         }
     }
 
     pub fn get_current_scene(&self) -> &Scene {
-        &self.scenes.get(self.current_scene_idx).expect(
+        &self.scenes.get(self.current_scene_id).expect(
             &format!(
                 "get_current_scene: Scene {} does not exist in scenes. Did you call move_to_next_scene too many times?",
-                self.current_scene_idx,
+                self.current_scene_id,
             )
         )
     }
@@ -260,6 +260,10 @@ impl Act {
     pub fn get_scene_idx(&self, scene_to_find: &Scene) -> usize {
         let scene_location = self.scene_locations[&scene_to_find.get_title()];
         scene_location
+    }
+
+    pub fn get_current_scene_id(&self) -> usize {
+        self.current_scene_id
     }
 
     pub fn get_scene_connections(&self, scene_to_check: &Scene) -> Vec<&Scene> {
@@ -298,15 +302,15 @@ impl Act {
         self.scene_connections[first_scene_location].push(second_scene_location);
     }
 
-    pub fn move_to_next_scene(&mut self) {
+    pub fn set_to_scene(&mut self, next_scene_id: usize) {
         // TODO: Dynamically change scenes via scene connections + user input
-        self.current_scene_idx += 1
+        self.current_scene_id = next_scene_id;
     }
 
     pub fn has_more_scenes(&self) -> bool {
         // TODO: Should check if the current scene has any valid connections,
         // a node with no connections being a dead end thus the end of the act
-        self.current_scene_idx < self.scenes.len() - 1
+        self.current_scene_id < self.scenes.len() - 1
     }
 }
 

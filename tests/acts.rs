@@ -105,7 +105,8 @@ fn read_act_file(game: &mut GameWorld) {
 
 #[when("we move to the next scene,")]
 fn go_to_next_scene(game: &mut GameWorld) {
-    game.current_act.move_to_next_scene();
+    let new_scene_id = game.current_act.get_current_scene_id() + 1;
+    game.current_act.set_to_scene(new_scene_id);
 }
 
 #[then(regex = r"the current scene is '(.+)'.")]

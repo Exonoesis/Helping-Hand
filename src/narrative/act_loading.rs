@@ -122,6 +122,7 @@ pub fn load_next_scene(
     mut load_next_scene_requests: MessageReader<LoadNextScene>,
     mut current_act_query: Query<&mut Act>,
     mut next_state: ResMut<NextState<AppState>>,
+    mut next_scene_to_load: ResMut<NextSceneToLoad>,
 ) {
     if load_next_scene_requests.is_empty() {
         return;
@@ -135,6 +136,9 @@ pub fn load_next_scene(
         return;
     }
 
+    let new_scene_id = current_act.get_current_scene_id() + 1;
+    next_scene_to_load.set_scene_id(new_scene_id);
+
     // Go to transitioning state
     next_state.set(AppState::Transitioning);
 }
@@ -145,8 +149,7 @@ pub struct Curtain;
 // On Enter Transitioning -> Starting Point
 pub fn spawn_curtain(fade_duration: Res<FadeDuration>, mut commands: Commands) {
     let node = create_full_screen_node();
-    let mut black_image = ImageNode::default();
-    black_image.color = BLACK.into();
+    let black_image = ImageNode::solid_color(BLACK.into());
 
     let curtain = (ImageNodeBundle::from_nodes(node, black_image), Curtain);
     let curtain_z_index = ZIndex(i32::MAX);
@@ -161,7 +164,6 @@ pub fn spawn_curtain(fade_duration: Res<FadeDuration>, mut commands: Commands) {
 #[derive(Message)]
 pub struct CurtainIsDown;
 
-// TODO: Refactor
 pub fn curtain_down(
     mut curtain_query: Query<(Entity, &mut ImageNode, &mut CurtainDownTimer)>,
     time: Res<Time>,
@@ -218,7 +220,7 @@ pub struct DespawnDone;
 // TODO: Refactor
 pub fn despawn_image(
     mut despawn_image_requests: MessageReader<DespawnScene>,
-    scene_to_remove: Single<Entity, With<ImageCutscene>>,
+    scene_to_remove: Query<Entity, With<ImageCutscene>>,
     mut commands: Commands,
     mut despawning_done_notification: MessageWriter<DespawnDone>,
 ) {
@@ -228,10 +230,13 @@ pub fn despawn_image(
 
     let despawn_event = despawn_image_requests.read().next().unwrap();
 
-    if *despawn_event == DespawnScene::Image {
-        commands.entity(*scene_to_remove).despawn();
-        despawning_done_notification.write(DespawnDone);
+    for scene_entity in scene_to_remove {
+        if *despawn_event == DespawnScene::Image {
+            commands.entity(scene_entity).despawn();
+        }
     }
+
+    despawning_done_notification.write(DespawnDone);
 }
 
 pub fn despawn_map_cutscene() {
@@ -245,10 +250,26 @@ pub enum SpawnScene {
     Map,
 }
 
+#[derive(Resource, Default)]
+pub struct NextSceneToLoad {
+    next_scene_id: usize,
+}
+
+impl NextSceneToLoad {
+    pub fn get_scene_id(&self) -> usize {
+        self.next_scene_id
+    }
+
+    pub fn set_scene_id(&mut self, new_scene_id: usize) {
+        self.next_scene_id = new_scene_id;
+    }
+}
+
 pub fn spawn_new_scene(
     mut despawn_done_requests: MessageReader<DespawnDone>,
     mut current_act: Single<&mut Act>,
     mut spawn_notification: MessageWriter<SpawnScene>,
+    next_scene_to_load: Res<NextSceneToLoad>,
 ) {
     if despawn_done_requests.is_empty() {
         return;
@@ -256,7 +277,8 @@ pub fn spawn_new_scene(
 
     despawn_done_requests.read().next();
 
-    current_act.move_to_next_scene();
+    let next_scene_id = next_scene_to_load.get_scene_id();
+    current_act.set_to_scene(next_scene_id);
 
     let current_scene = current_act.get_current_scene();
     let scene_type = current_scene.get_scene_type();

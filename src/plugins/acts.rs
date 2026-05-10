@@ -13,14 +13,14 @@ impl Plugin for ActsPlugin {
     fn build(&self, app: &mut App) {
         let map_folder_path = PathBuf::from("assets/map/");
 
-        app.add_plugins(CoreActsPlugin::new(Duration::from_secs(3), map_folder_path))
+        app.add_plugins(CoreActsPlugin::new(Duration::from_secs(2), map_folder_path))
             .add_systems(
                 Update,
                 (load_next_scene_on_player_input,).run_if(in_state(AppState::InScene)),
             )
             .add_systems(
-                OnEnter(AppState::InScene),
-                load_starting_act.run_if(in_state(AppState::InScene)),
+                OnExit(AppState::MainMenu),
+                load_starting_act.run_if(in_state(AppState::Transitioning)),
             );
     }
 }
@@ -73,6 +73,7 @@ impl CoreActsPlugin {
 
 impl Plugin for CoreActsPlugin {
     fn build(&self, app: &mut App) {
+        app.insert_resource(NextSceneToLoad::default());
         app.insert_resource(self.time_to_fade);
         app.insert_resource(self.maps_path_folder.clone());
 
@@ -85,13 +86,11 @@ impl Plugin for CoreActsPlugin {
             .add_message::<SpawnDone>()
             .add_message::<ChangeLevel>()
             .add_systems(OnEnter(AppState::Transitioning), spawn_curtain)
-            .add_systems(
-                Update,
-                (load_act, load_next_scene).run_if(in_state(AppState::InScene)),
-            )
+            .add_systems(Update, load_next_scene.run_if(in_state(AppState::InScene)))
             .add_systems(
                 Update,
                 (
+                    load_act,
                     curtain_down,
                     despawn_old_scene,
                     despawn_image,

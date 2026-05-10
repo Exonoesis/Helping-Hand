@@ -28,7 +28,7 @@ pub fn button_system(
         }
 
         match button_type {
-            ButtonTypes::Play => next_state.set(AppState::InScene),
+            ButtonTypes::Play => next_state.set(AppState::Transitioning),
             ButtonTypes::Settings => next_state.set(AppState::SettingsMenu),
             ButtonTypes::Quit => {
                 exit_event.write(AppExit::Success);

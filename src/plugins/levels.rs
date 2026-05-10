@@ -34,11 +34,10 @@ impl Plugin for CoreLevelsPlugin {
         app.add_message::<LoadLevel>()
             .add_message::<ChangeLevel>()
             .add_message::<PlayerInteraction>()
+            .add_systems(Update, (load_map, change_to_new_level))
             .add_systems(
                 Update,
                 (
-                    load_map,
-                    change_to_new_level,
                     follow_player.after(move_player_on_key_press),
                     move_player_on_key_press,
                     change_level_from_marker,
