@@ -1,8 +1,8 @@
 use crate::map::interactions::map_changing::ChangeLevel;
 use crate::narrative::acts::{Act, SceneContents, SceneType};
 use crate::plugins::acts::{FadeDuration, MapsFolderPath};
+use crate::ui::menus::ImageNodeBundle;
 use crate::AppState;
-use crate::{map::interactions::map_changing::CameraBundle, ui::menus::ImageNodeBundle};
 use bevy::color::palettes::css::BLACK;
 use bevy::prelude::*;
 use std::path::{Path, PathBuf};
@@ -102,9 +102,6 @@ pub fn load_act(
     let loaded_act = act_loader.read_act_from();
 
     commands.spawn(loaded_act);
-
-    let the_camera = CameraBundle::default();
-    commands.spawn(the_camera);
 }
 
 pub fn create_full_screen_node() -> Node {
@@ -139,7 +136,6 @@ pub fn load_next_scene(
     let new_scene_id = current_act.get_current_scene_id() + 1;
     next_scene_to_load.set_scene_id(new_scene_id);
 
-    // Go to transitioning state
     next_state.set(AppState::Transitioning);
 }
 
@@ -335,7 +331,6 @@ pub fn render_map_cutscene(
     current_act: Single<&Act>,
     mut load_level_broadcaster: MessageWriter<ChangeLevel>,
     mut spawn_map_requests: MessageReader<SpawnScene>,
-    mut spawning_done_notification: MessageWriter<SpawnDone>,
 ) {
     if spawn_map_requests.is_empty() {
         return;
@@ -354,8 +349,6 @@ pub fn render_map_cutscene(
         load_level_broadcaster.write(ChangeLevel::new(level_name));
 
         //TODO: Load path objects
-
-        spawning_done_notification.write(SpawnDone);
     }
 }
 

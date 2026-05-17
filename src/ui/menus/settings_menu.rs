@@ -1,11 +1,7 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_kira_audio::{AudioChannel, AudioControl};
 
-use crate::{
-    audio::music::*,
-    map::{interactions::map_changing::CameraBundle, player::*},
-    AppState,
-};
+use crate::{audio::music::*, map::player::*, AppState};
 
 use super::{ButtonNodeBundle, ColoredNodeBundle, ImageNodeBundle, TextNodeBundle};
 
@@ -198,9 +194,6 @@ pub fn spawn_settings_menu(mut commands: Commands) {
 
     let cancel_button = create_button(ButtonTypes::Cancel);
     let cancel_text = create_button_text(String::from("Cancel"));
-
-    //Spawn UI Camera
-    commands.spawn((CameraBundle::default(), SettingsMenuUI));
 
     //UI Construction
     commands.spawn(ui_container).with_children(|ui_container| {

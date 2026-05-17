@@ -3,14 +3,17 @@ use std::path::PathBuf;
 use bevy::prelude::*;
 use tiled::{Loader, Map};
 
-use crate::map::{
-    movement::{
-        collision::{create_collision_collection_from, CollisionCollection},
-        grid_based_movement::{set_physical_destination, MovementDirection},
+use crate::{
+    map::{
+        movement::{
+            collision::{create_collision_collection_from, CollisionCollection},
+            grid_based_movement::{set_physical_destination, MovementDirection},
+        },
+        player::*,
+        render::RenderedMap,
+        GridCords3D, GridDimensions, PxCords, PxDimensions, TileType, Tilemap,
     },
-    player::*,
-    render::RenderedMap,
-    GridCords3D, GridDimensions, PxCords, PxDimensions, TileType, Tilemap,
+    narrative::act_loading::SpawnDone,
 };
 
 use super::interactives::{
@@ -81,6 +84,8 @@ pub fn load_map(
     mut commands: Commands,
     asset_spawner: Res<AssetServer>,
     mut texture_atlas_assets: ResMut<Assets<TextureAtlasLayout>>,
+    mut camera_position: Single<&mut Transform, With<Camera2d>>,
+    mut spawning_done_notification: MessageWriter<SpawnDone>,
 ) {
     if change_level_requests.is_empty() {
         return;
@@ -103,8 +108,7 @@ pub fn load_map(
         commands.spawn(render_tile);
     }
 
-    let camera_centered_to_map = create_centered_camera(&map);
-    commands.spawn(camera_centered_to_map);
+    center_camera_on_map(&map, &mut camera_position);
 
     // This section represents the Physical properties of the map.
     let map_size_in_px = *bevy_map.get_px_dimensions();
@@ -121,6 +125,7 @@ pub fn load_map(
     let logical_properties = (collision_collection, map_size_in_tiles);
 
     commands.spawn((physical_properties, logical_properties));
+    spawning_done_notification.write(SpawnDone);
 }
 
 pub fn change_to_new_level(
@@ -136,7 +141,6 @@ pub fn change_to_new_level(
             With<GridDimensions>,
         ),
     >,
-    camera: Query<Entity, With<Camera2d>>,
     mut commands: Commands,
 ) {
     if change_level_requests.is_empty() {
@@ -146,10 +150,6 @@ pub fn change_to_new_level(
     for loaded_tile in &loaded_level_tiles {
         let loaded_tile_entity = loaded_tile.0;
         commands.entity(loaded_tile_entity).despawn();
-    }
-
-    for camera_entity in &camera {
-        commands.entity(camera_entity).despawn();
     }
 
     for map_properties_entity in &map_properties {
@@ -168,32 +168,13 @@ pub fn load_tiled_map(map_location: PathBuf) -> Map {
     loader.load_tmx_map(map_location).unwrap()
 }
 
-#[derive(Bundle)]
-pub struct CameraBundle {
-    camera: Camera2d,
-    transform: Transform,
-}
-
-impl Default for CameraBundle {
-    fn default() -> Self {
-        Self {
-            camera: Camera2d::default(),
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
-        }
-    }
-}
-
-/// Returns a camera centered to some map.
-fn create_centered_camera(map: &Tilemap) -> CameraBundle {
-    let mut the_camera = CameraBundle::default();
-    let camera_position = &mut the_camera.transform;
-
+/// Centers the camera on a given map.
+fn center_camera_on_map(map: &Tilemap, camera_position: &mut Transform) {
     let horizontal_center = (map.get_px_dimensions().get_width() / 2) as f32;
     let vertical_center = (map.get_px_dimensions().get_height() / 2) as f32;
 
-    *camera_position = Transform::from_xyz(horizontal_center, vertical_center, 999.0);
-
-    the_camera
+    camera_position.translation.x = horizontal_center;
+    camera_position.translation.y = vertical_center;
 }
 
 /// Changes the level if there's a marker present in front of the player and it is transitional.

@@ -18,7 +18,7 @@ use cucumber::World;
 
 use helping_hand::{
     map::{movement::grid_based_movement::*, player::*, *},
-    plugins::playable_character::PlayableCharacterTestingPlugin,
+    plugins::{camera::CameraPlugin, playable_character::PlayableCharacterTestingPlugin},
     AppState,
 };
 
@@ -57,6 +57,7 @@ impl Game {
         app.add_plugins(PlayableCharacterTestingPlugin);
         app.add_plugins(MeshPlugin);
         app.add_plugins(TextPlugin);
+        app.add_plugins(CameraPlugin);
         app.insert_resource(ArrivalTime::new(Duration::from_secs_f32(0.0)));
 
         // NOTE: How dare you Bevy! We need this to ensure tests do not crash

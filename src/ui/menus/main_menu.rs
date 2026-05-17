@@ -1,4 +1,3 @@
-use crate::map::interactions::map_changing::CameraBundle;
 use crate::AppState;
 use bevy::app::AppExit;
 use bevy::prelude::*;
@@ -100,9 +99,6 @@ pub fn spawn_main_menu(mut commands: Commands) {
     let play_text = create_button_text(String::from("Play"));
     let settings_text = create_button_text(String::from("Settings"));
     let quit_text = create_button_text(String::from("Quit"));
-
-    //Spawn UI Camera
-    commands.spawn((CameraBundle::default(), MainMenuUI));
 
     //UI Construction
     commands.spawn(ui_container).with_children(|ui_container| {
