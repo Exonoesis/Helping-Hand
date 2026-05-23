@@ -143,11 +143,19 @@ pub fn load_next_scene(
 pub struct Curtain;
 
 // On Enter Transitioning -> Starting Point
-pub fn spawn_curtain(fade_duration: Res<FadeDuration>, mut commands: Commands) {
-    let node = create_full_screen_node();
-    let black_image = ImageNode::solid_color(BLACK.into());
+pub fn spawn_curtain(
+    fade_duration: Res<FadeDuration>,
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+) {
+    let curtain_node = create_full_screen_node();
+    let black_image = "curtain.png";
 
-    let curtain = (ImageNodeBundle::from_nodes(node, black_image), Curtain);
+    // Check image path is correct
+    let image = check_image_path(&asset_server, black_image);
+
+    let curtain = (ImageNodeBundle::from_nodes(curtain_node, image), Curtain);
+
     let curtain_z_index = ZIndex(i32::MAX);
     let curtain_down_timer = CurtainDownTimer::new(&fade_duration);
 
@@ -393,7 +401,7 @@ pub fn despawn_curtain(curtain_entity: Single<Entity, With<Curtain>>, mut comman
     commands.entity(*curtain_entity).despawn();
 }
 
-/// Progresses to the next image cutscene on any key or mouse button press
+/// Progresses to the next cutscene on any key or mouse button press
 pub fn load_next_scene_on_player_input(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mouse_button_input: Res<ButtonInput<MouseButton>>,
@@ -406,16 +414,10 @@ pub fn load_next_scene_on_player_input(
         return;
     }
 
-    let current_act = found_loaded_act.unwrap();
-    let current_scene = current_act.get_current_scene();
-    let current_scene_type = current_scene.get_scene_contents();
-
-    if matches!(current_scene_type, SceneContents::ImageCutscene(_)) {
-        if keyboard_input.get_just_pressed().next().is_some()
-            || mouse_button_input.get_just_pressed().next().is_some()
-        {
-            load_next_scene_broadcaster.write(LoadNextScene);
-        }
+    if keyboard_input.get_just_pressed().next().is_some()
+        || mouse_button_input.get_just_pressed().next().is_some()
+    {
+        load_next_scene_broadcaster.write(LoadNextScene);
     }
 }
 
