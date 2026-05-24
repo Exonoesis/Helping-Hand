@@ -3,9 +3,9 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use bevy::prelude::*;
+use bevy::{asset::UntypedAssetId, prelude::*};
 
-use crate::map::GridCords3D;
+use crate::{map::GridCords3D, narrative::act_loading::LoadStatus};
 
 use super::{flip_y_axis, GridDimensions, PxDimensions, Tile, TileType, Tilemap};
 
@@ -38,6 +38,7 @@ pub struct RenderTile {
     tile_type: TileType,
     tile_dimensions: PxDimensions,
     sprite_bundle: SpriteBundle,
+    load_status: LoadStatus,
 }
 
 impl RenderTile {
@@ -46,12 +47,14 @@ impl RenderTile {
         tile_type: TileType,
         tile_dimensions: PxDimensions,
         sprite_bundle: SpriteBundle,
+        load_status: LoadStatus,
     ) -> Self {
         Self {
             grid_coordinate,
             tile_type,
             tile_dimensions,
             sprite_bundle,
+            load_status,
         }
     }
 
@@ -147,6 +150,8 @@ fn get_render_tile_bundles(
         // Conversion to Bevy specific formatting happens right here
         // Our:RenderTileBundle -> Bevy's:SpritBundle and Bevy's:TextureAtlas
         let mut sprite_bundle = get_sprite_bundle(tile, asset_server, tilemap);
+        let asset_id = UntypedAssetId::from(&sprite_bundle.sprite.image);
+        let load_status = LoadStatus(asset_id);
 
         let texture_atlas = get_texture_atlas(tile, texture_atlas_assets);
         sprite_bundle.set_texture_atlas(texture_atlas);
@@ -160,6 +165,7 @@ fn get_render_tile_bundles(
             *render_tile_type,
             *render_tile_dimensions,
             sprite_bundle,
+            load_status,
         );
         render_tile_bundles.push(render_tile);
     }

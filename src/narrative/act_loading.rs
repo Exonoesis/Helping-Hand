@@ -3,6 +3,7 @@ use crate::narrative::acts::{Act, SceneContents, SceneType};
 use crate::plugins::acts::{FadeDuration, MapsFolderPath};
 use crate::ui::menus::ImageNodeBundle;
 use crate::AppState;
+use bevy::asset::{RecursiveDependencyLoadState, UntypedAssetId};
 use bevy::color::palettes::css::BLACK;
 use bevy::prelude::*;
 use std::path::{Path, PathBuf};
@@ -221,7 +222,6 @@ pub fn despawn_old_scene(
 #[derive(Message)]
 pub struct DespawnDone;
 
-// TODO: Refactor
 pub fn despawn_image(
     mut despawn_image_requests: MessageReader<DespawnScene>,
     scene_to_remove: Query<Entity, With<ImageCutscene>>,
@@ -306,7 +306,6 @@ pub fn render_image_cutscene(
     mut commands: Commands,
     current_act: Single<&Act>,
     mut spawn_image_requests: MessageReader<SpawnScene>,
-    mut spawning_done_notification: MessageWriter<SpawnDone>,
 ) {
     if spawn_image_requests.is_empty() {
         return;
@@ -327,10 +326,15 @@ pub fn render_image_cutscene(
         // Check image path is correct
         let image = check_image_path(&asset_server, scene_image);
 
-        let ui_container = (ImageNodeBundle::from_nodes(node, image), ImageCutscene);
+        let asset_id = UntypedAssetId::from(&image.image);
+
+        let ui_container = (
+            ImageNodeBundle::from_nodes(node, image),
+            ImageCutscene,
+            LoadStatus(asset_id),
+        );
 
         commands.spawn(ui_container);
-        spawning_done_notification.write(SpawnDone);
     }
 }
 
@@ -357,6 +361,38 @@ pub fn render_map_cutscene(
         load_level_broadcaster.write(ChangeLevel::new(level_name));
 
         //TODO: Load path objects
+    }
+}
+
+#[derive(Component, Clone)]
+pub struct LoadStatus(pub UntypedAssetId);
+
+pub fn wait_until_assets_loaded(
+    load_statuses: Query<(Entity, &LoadStatus)>,
+    mut commands: Commands,
+    mut spawning_done_notification: MessageWriter<SpawnDone>,
+    asset_server: Res<AssetServer>,
+) {
+    if load_statuses.is_empty() {
+        return;
+    }
+
+    let total_entities = load_statuses.count();
+    let mut loaded_entities = 0;
+
+    for (entity_loading_asset, status) in load_statuses {
+        let asset_state = asset_server.recursive_dependency_load_state(status.0);
+
+        let asset_is_loaded = !asset_state.is_loading();
+
+        if asset_is_loaded {
+            loaded_entities += 1;
+            commands.entity(entity_loading_asset).remove::<LoadStatus>();
+        }
+    }
+
+    if total_entities == loaded_entities {
+        spawning_done_notification.write(SpawnDone);
     }
 }
 

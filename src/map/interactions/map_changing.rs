@@ -85,7 +85,6 @@ pub fn load_map(
     asset_spawner: Res<AssetServer>,
     mut texture_atlas_assets: ResMut<Assets<TextureAtlasLayout>>,
     mut camera_position: Single<&mut Transform, With<Camera2d>>,
-    mut spawning_done_notification: MessageWriter<SpawnDone>,
 ) {
     if change_level_requests.is_empty() {
         return;
@@ -125,7 +124,6 @@ pub fn load_map(
     let logical_properties = (collision_collection, map_size_in_tiles);
 
     commands.spawn((physical_properties, logical_properties));
-    spawning_done_notification.write(SpawnDone);
 }
 
 pub fn change_to_new_level(

@@ -98,6 +98,7 @@ impl Plugin for CoreActsPlugin {
                     spawn_new_scene,
                     render_image_cutscene,
                     render_map_cutscene,
+                    wait_until_assets_loaded,
                     set_curtain_to_raise,
                     curtain_up,
                 )
