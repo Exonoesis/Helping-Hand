@@ -10,6 +10,7 @@ use helping_hand::narrative::act_loading::*;
 use helping_hand::narrative::acts::*;
 use helping_hand::plugins::acts::CoreActsPlugin;
 use helping_hand::plugins::levels::CoreLevelsPlugin;
+use helping_hand::AppState;
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -134,25 +135,34 @@ fn load_act(game: &mut Game, act_file_name: String) {
     );
 
     game.write_message(LoadAct::new(&act_file_path_name));
-
-    // Since we're manually broadcasting an event, we MUST manually tick for the act to be visible
     game.tick();
+
+    game.set_state(AppState::Transitioning);
+
+    while game.get_state() == &AppState::Transitioning {
+        game.tick();
+    }
 }
 
 #[when("the game transitions to the next scene,")]
 fn transition_to_next_scene(game: &mut Game) {
     game.write_message(LoadNextScene);
-
-    // Since we're manually broadcasting an event, we MUST manually tick for the next scene to be visible
     game.tick();
+
+    while game.get_state() == &AppState::Transitioning {
+        game.tick();
+    }
 }
 
 #[when(regex = r"the game transitions to scene ([0-9]+),")]
 fn transition_to_given_scene(game: &mut Game, given_scene_num: usize) {
     for _ in 0..(given_scene_num - 1) {
         game.write_message(LoadNextScene);
-        // Since we're manually broadcasting an event, we MUST manually tick each time for the next scene to be visible
         game.tick();
+
+        while game.get_state() == &AppState::Transitioning {
+            game.tick();
+        }
     }
 }
 

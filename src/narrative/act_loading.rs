@@ -3,8 +3,7 @@ use crate::narrative::acts::{Act, SceneContents, SceneType};
 use crate::plugins::acts::{FadeDuration, MapsFolderPath};
 use crate::ui::menus::ImageNodeBundle;
 use crate::AppState;
-use bevy::asset::{RecursiveDependencyLoadState, UntypedAssetId};
-use bevy::color::palettes::css::BLACK;
+use bevy::asset::UntypedAssetId;
 use bevy::prelude::*;
 use std::path::{Path, PathBuf};
 

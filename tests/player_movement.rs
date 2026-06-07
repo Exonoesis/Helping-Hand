@@ -37,6 +37,7 @@ fn given_some_tiled_map(game: &mut Game, tiled_map_name: String) {
         tiled_map_name
     );
     game.write_message(LoadLevel::new(&map_path));
+    game.tick();
 }
 
 #[given(regex = r"the Player is at ([0-9]+),([0-9]+),([0-9]+),")]
@@ -117,6 +118,6 @@ fn verify_player_facing_direction(game: &mut Game, facing_direction: String) {
 // This runs before everything else, so you can setup things here.
 fn main() {
     futures::executor::block_on(Game::run(
-        "tests/feature_files/in-practice/grid-based-movement.feature",
+        "tests/feature_files/in-practice/player_movement.feature",
     ));
 }

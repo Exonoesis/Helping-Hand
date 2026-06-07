@@ -3,17 +3,14 @@ use std::path::PathBuf;
 use bevy::prelude::*;
 use tiled::{Loader, Map};
 
-use crate::{
-    map::{
-        movement::{
-            collision::{create_collision_collection_from, CollisionCollection},
-            grid_based_movement::{set_physical_destination, MovementDirection},
-        },
-        player::*,
-        render::RenderedMap,
-        GridCords3D, GridDimensions, PxCords, PxDimensions, TileType, Tilemap,
+use crate::map::{
+    movement::{
+        collision::{create_collision_collection_from, CollisionCollection},
+        grid_based_movement::{set_physical_destination, MovementDirection},
     },
-    narrative::act_loading::SpawnDone,
+    player::*,
+    render::RenderedMap,
+    GridCords3D, GridDimensions, PxCords, PxDimensions, TileType, Tilemap,
 };
 
 use super::interactives::{
@@ -69,13 +66,6 @@ impl ChangeLevel {
     pub fn get_level_path(&self) -> &PathBuf {
         &self.level_path
     }
-}
-
-/// Loads some predetermined map when clicking the "Play" button.
-pub fn load_starting_map(mut change_level_requester: MessageWriter<LoadLevel>) {
-    let tiled_map_name = "test_map_with_collision.tmx";
-    let map_path = format!("tests/test-assets/maps/{}", tiled_map_name);
-    change_level_requester.write(LoadLevel::new(&map_path));
 }
 
 /// Loads the Tiled test map with a Camera into the game at the center of the map.

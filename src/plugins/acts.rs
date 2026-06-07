@@ -16,7 +16,11 @@ impl Plugin for ActsPlugin {
         app.add_plugins(CoreActsPlugin::new(Duration::from_secs(2), map_folder_path))
             .add_systems(
                 Update,
-                (load_next_scene_on_player_input,).run_if(in_state(AppState::InScene)),
+                load_next_scene_on_player_input.run_if(in_state(AppState::InScene)),
+            )
+            .add_systems(
+                Update,
+                wait_until_assets_loaded.run_if(in_state(AppState::Transitioning)),
             )
             .add_systems(
                 OnExit(AppState::MainMenu),
@@ -86,11 +90,11 @@ impl Plugin for CoreActsPlugin {
             .add_message::<SpawnDone>()
             .add_message::<ChangeLevel>()
             .add_systems(OnEnter(AppState::Transitioning), spawn_curtain)
+            .add_systems(Update, load_act)
             .add_systems(Update, load_next_scene.run_if(in_state(AppState::InScene)))
             .add_systems(
                 Update,
                 (
-                    load_act,
                     curtain_down,
                     despawn_old_scene,
                     despawn_image,
@@ -98,7 +102,6 @@ impl Plugin for CoreActsPlugin {
                     spawn_new_scene,
                     render_image_cutscene,
                     render_map_cutscene,
-                    wait_until_assets_loaded,
                     set_curtain_to_raise,
                     curtain_up,
                 )

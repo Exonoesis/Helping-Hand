@@ -33,6 +33,7 @@ fn given_some_tiled_map(game: &mut Game, tiled_map_name: String) {
 
     let map_path = format!("tests/test_assets/maps/camera/{}", tiled_map_name);
     game.write_message(LoadLevel::new(&map_path));
+    game.tick();
 }
 
 #[given(regex = r"a custom game resolution of ([0-9]+) x ([0-9]+),")]

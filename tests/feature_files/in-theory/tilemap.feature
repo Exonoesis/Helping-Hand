@@ -10,7 +10,7 @@ Feature: Load Tilemap from Tiled.
         Then there are 16 tiles loaded.
         And the tiles are in a 4x4 grid.
 
-        #   Tiled  ->    Bevy
+    #   Tiled  ->    Bevy
     #    0  1        0  1
     # 0 [1][2]    1 [3][4]
     # 1 [3][4]    0 [1][2]

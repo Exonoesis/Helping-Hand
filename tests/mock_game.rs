@@ -10,7 +10,7 @@ use bevy::{
     prelude::*,
     render::{settings::WgpuSettings, view::screenshot::CapturedScreenshots, RenderPlugin},
     sprite::SpritePlugin,
-    state::app::StatesPlugin,
+    state::{app::StatesPlugin, state::FreelyMutableState},
     text::TextPlugin,
     window::WindowResolution,
 };
@@ -18,6 +18,7 @@ use cucumber::World;
 
 use helping_hand::{
     map::{movement::grid_based_movement::*, player::*, *},
+    narrative::act_loading::{LoadStatus, SpawnDone},
     plugins::{camera::CameraPlugin, playable_character::PlayableCharacterTestingPlugin},
     AppState,
 };
@@ -59,13 +60,17 @@ impl Game {
         app.add_plugins(TextPlugin);
         app.add_plugins(CameraPlugin);
         app.insert_resource(ArrivalTime::new(Duration::from_secs_f32(0.0)));
+        app.add_systems(
+            Update,
+            bypass_waiting_for_assets.run_if(in_state(AppState::Transitioning)),
+        );
 
         // NOTE: How dare you Bevy! We need this to ensure tests do not crash
         // starting in 0.15. Maybe we can remove these two lines in the future.
         let (_, rx) = std::sync::mpsc::channel();
         app.insert_resource(CapturedScreenshots(Arc::new(Mutex::new(rx))));
 
-        app.insert_state(AppState::Transitioning);
+        app.insert_state(AppState::InScene);
 
         Self { app }
     }
@@ -81,6 +86,28 @@ impl Game {
     /// Advances the game by one frame.
     pub fn tick(&mut self) {
         self.app.update();
+    }
+
+    /// Sets the window dimensions of the game to the specified width and height.
+    pub fn set_window_resolution(&mut self, window_width: u32, window_height: u32) {
+        let mut window = self.get_mut::<Window>();
+
+        window.resolution = WindowResolution::new(window_width, window_height);
+    }
+
+    ///Sets the state for the game to be in
+    pub fn set_state<S>(&mut self, state: S)
+    where
+        S: FreelyMutableState,
+    {
+        self.app.insert_state(state);
+    }
+
+    /// Gets the current state the game is in
+    pub fn get_state(&mut self) -> &AppState {
+        let game_state = self.get_res::<State<AppState>>();
+
+        game_state.get()
     }
 
     /// Returns the pixel coordinates for some tile found at some grid coordinates loaded in the game.
@@ -143,7 +170,7 @@ impl Game {
             .query::<&mut C>()
             .iter_mut(self.app.world_mut())
             .next()
-            .unwrap()
+            .expect("Could not find specified component.")
     }
 
     /// Returns a Component C that has some other Component D associated with it, or panics otherwise.
@@ -243,13 +270,6 @@ impl Game {
         self.tick();
     }
 
-    /// Sets the window dimensions of the game to the specified width and height.
-    pub fn set_window_resolution(&mut self, window_width: u32, window_height: u32) {
-        let mut window = self.get_mut::<Window>();
-
-        window.resolution = WindowResolution::new(window_width, window_height);
-    }
-
     /// Returns a specified Resource
     pub fn get_res<R>(&mut self) -> &R
     where
@@ -264,5 +284,27 @@ impl Game {
         R: Resource,
     {
         self.app.world_mut().resource_mut::<R>()
+    }
+}
+
+pub fn bypass_waiting_for_assets(
+    load_statuses: Query<(Entity, &LoadStatus)>,
+    mut commands: Commands,
+    mut spawning_done_notification: MessageWriter<SpawnDone>,
+) {
+    if load_statuses.is_empty() {
+        return;
+    }
+
+    let total_entities = load_statuses.count();
+    let mut loaded_entities = 0;
+
+    for (entity_loading_asset, _) in load_statuses {
+        loaded_entities += 1;
+        commands.entity(entity_loading_asset).remove::<LoadStatus>();
+    }
+
+    if total_entities == loaded_entities {
+        spawning_done_notification.write(SpawnDone);
     }
 }
