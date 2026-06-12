@@ -201,7 +201,7 @@ fn verify_image_opacity(game: &mut Game) {
     assert_eq!(1.0, opacity);
 }
 
-#[then(regex = r"the map size should be ([0-9]+) x ([0-9]+) tiles.")]
+#[then(regex = r"the map size should be ([0-9]+)x([0-9]+) tiles.")]
 fn verify_map_size(game: &mut Game, expected_map_width: u32, expected_map_height: u32) {
     game.tick();
 
@@ -253,7 +253,7 @@ fn verify_instruction_data(
     assert!(character_and_location_or_path_found);
 }
 
-#[then(regex = r"the location '(.+)' is at tile ([0-9]+), ([0-9]+).")]
+#[then(regex = r"the location '(.+)' is at tile ([0-9]+),([0-9]+).")]
 fn verify_location_at_tile(game: &mut Game, location_name: String, tile_x: usize, tile_y: usize) {
     let current_act = game.get_mut::<Act>();
     let current_scene = current_act.get_current_scene();
@@ -287,7 +287,7 @@ fn verify_path_length(
     assert_eq!(expected_path_length, actual_path_length);
 }
 
-#[then(regex = r"tile ([0-9]+) of (.+) path '(.+)' is tile ([0-9]+), ([0-9]+).")]
+#[then(regex = r"tile ([0-9]+) of (.+) path '(.+)' is tile ([0-9]+),([0-9]+).")]
 fn verify_path_tile_cords(
     game: &mut Game,
     tile_index: usize,
