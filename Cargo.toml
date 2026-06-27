@@ -26,6 +26,10 @@ name = "player_movement"
 harness = false
 
 [[test]]
+name = "npc_movement"
+harness = false
+
+[[test]]
 name = "tilemap"
 harness = false
 
