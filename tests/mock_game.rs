@@ -17,7 +17,7 @@ use bevy::{
 use cucumber::World;
 
 use helping_hand::{
-    map::{movement::grid_based_movement::*, player::*, *},
+    map::{movement::grid_based_movement::*, npc::NPC, player::*, *},
     narrative::act_loading::{LoadStatus, SpawnDone},
     plugins::{camera::CameraPlugin, playable_character::PlayableCharacterTestingPlugin},
     AppState,
@@ -124,6 +124,17 @@ impl Game {
         let player_position = self.get_of::<Transform, Player>();
 
         player_position
+    }
+
+    /// Returns the pixel coordinates for a given npc in the game.
+    pub fn get_npc_position(&mut self, npc_name: &String) -> Transform {
+        let npc_label = NPC::new(npc_name.clone());
+
+        let npc_position = self
+            .find_containing(&npc_label)
+            .expect("get_npc_position: Could not find Transform of given NPC.");
+
+        npc_position
     }
 
     /// Returns the pixel coordinates for the player's center in the game.
@@ -240,9 +251,17 @@ impl Game {
     pub fn find_coordinates_of_player(&mut self) -> GridCords3D {
         let player_tile_coordinate = self
             .find_containing(&TileType::Player)
-            .expect("find_coordinates_of_player: Could not find XyzCords from player.");
+            .expect("find_coordinates_of_player: Could not find GridCords3D from player.");
 
         player_tile_coordinate
+    }
+
+    /// Returns the grid coordinates for a given NPC in the game.
+    pub fn get_npc_coordinate(&mut self, npc_name: &String) -> GridCords3D {
+        let npc_label = NPC::new(npc_name.clone());
+
+        self.find_containing(&npc_label)
+            .expect("get_npc_coordinate: Could not find coordinates of NPC.")
     }
 
     /// Returns the grid dimensions of the currently loaded level.

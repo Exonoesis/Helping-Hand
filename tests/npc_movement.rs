@@ -6,7 +6,8 @@ use crate::mock_game::Game;
 
 use cucumber::{given, then, when, World};
 use helping_hand::{
-    narrative::act_loading::LoadAct,
+    map::GridCords3D,
+    narrative::act_loading::{LoadAct, LoadNextScene},
     plugins::{acts::CoreActsPlugin, levels::CoreLevelsPlugin},
     AppState,
 };
@@ -36,6 +37,52 @@ fn load_plugin_and_act(game: &mut Game, act_file_name: String) {
     while game.get_state() == &AppState::Transitioning {
         game.tick();
     }
+}
+
+#[when(regex = r"the map cutscene '(.+)' is loaded,")]
+fn load_scene(game: &mut Game, scene_name: String) {
+    //game.write_message(LoadNextScene::new(scene_name));
+    game.tick();
+}
+
+#[when(regex = r"([0-9]+) steps have taken place,")]
+fn take_number_of_steps(game: &mut Game, number_of_steps: usize) {
+    for _ in 0..number_of_steps {
+        game.tick();
+    }
+}
+
+#[then(
+    regex = r"the NPC '(.+)' has pixel coordinates equivalent to tile ([0-9]+),([0-9]+),([0-9]+)."
+)]
+fn verify_npc_at_tile_pixel_coordinates(
+    game: &mut Game,
+    npc_name: String,
+    tile_x: u32,
+    tile_y: u32,
+    tile_z: usize,
+) {
+    let tile_grid_coordinates = GridCords3D::new_u32(tile_x, tile_y, tile_z);
+
+    let expected_npc_position = game.get_position_from_tile(&tile_grid_coordinates);
+    let actual_npc_position = game.get_npc_position(&npc_name);
+    assert_eq!(expected_npc_position, actual_npc_position);
+}
+
+#[then(regex = r"the NPC '(.+)' has grid coordinates set to tile ([0-9]+),([0-9]+),([0-9]+).")]
+fn verify_npc_at_tile_grid_coordinates(
+    game: &mut Game,
+    npc_name: String,
+    tile_x: u32,
+    tile_y: u32,
+    tile_z: usize,
+) {
+    let expected_npc_tile_grid_coordinate = GridCords3D::new_u32(tile_x, tile_y, tile_z);
+    let actual_npc_tile_grid_coordinate = game.get_npc_coordinate(&npc_name);
+    assert_eq!(
+        expected_npc_tile_grid_coordinate,
+        actual_npc_tile_grid_coordinate
+    );
 }
 
 // This runs before everything else, so you can setup things here.

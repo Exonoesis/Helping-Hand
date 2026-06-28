@@ -8,22 +8,22 @@ Feature: NPC Movements
         Given the game is loaded with the act 'npc_movement_act.json',
         When the map cutscene 'Simple Line' is loaded,
         And 0 steps have taken place,
-        Then the NPC 'Iye' has pixel coordinates equivalent to tile 0,1,1.
-        And the NPC 'Iye" has grid coordinates set to tile 1,0,1.
+        Then the NPC 'Iye' has pixel coordinates equivalent to tile 1,0,1.
+        And the NPC 'Iye' has grid coordinates set to tile 1,0,1.
 
     Scenario: An NPC's location in pixel coordinates is equivalent to grid coordinates after one step
         Given the game is loaded with the act 'npc_movement_act.json',
         When the map cutscene 'Simple Line' is loaded,
         And 1 steps have taken place,
-        Then the NPC 'Iye' has pixel coordinates equivalent to tile 0,2,1.
-        And the NPC 'Iye" has grid coordinates set to tile 2,0,1.
+        Then the NPC 'Iye' has pixel coordinates equivalent to tile 2,0,1.
+        And the NPC 'Iye' has grid coordinates set to tile 2,0,1.
 
     Scenario: An NPC's location in pixel coordinates is equivalent to grid coordinates after two steps
         Given the game is loaded with the act 'npc_movement_act.json',
         When the map cutscene 'Simple Line' is loaded,
         And 2 steps have taken place,
-        Then the NPC 'Iye' has pixel coordinates equivalent to tile 0,3,1.
-        And the NPC 'Iye" has grid coordinates set to tile 3,0,1.
+        Then the NPC 'Iye' has pixel coordinates equivalent to tile 3,0,1.
+        And the NPC 'Iye' has grid coordinates set to tile 3,0,1.
 
     ##################################################################################
     #                               Placement Tests                                  #

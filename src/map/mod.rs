@@ -1,5 +1,6 @@
 use std::{ffi::OsString, path::PathBuf};
 
+pub mod npc;
 pub mod player;
 pub mod render;
 

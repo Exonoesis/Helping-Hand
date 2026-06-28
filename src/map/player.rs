@@ -17,19 +17,3 @@ pub enum PlayerMovementActions {
     Walking,
     Bumping,
 }
-
-// #[derive(Default, Component)]
-// pub enum DirectionFacing {
-//     #[default]
-//     Up,
-//     Down,
-//     Left,
-//     Right,
-// }
-
-// #[derive(Default, Component, PartialEq)]
-// pub enum MovementIntent {
-//     #[default]
-//     Idle,
-//     Moving,
-// }
