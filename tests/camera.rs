@@ -60,7 +60,7 @@ fn when_map_spawned(game: &mut Game) {
 
         let expected_num_tiles_loaded = (level_width * level_height * level_depth) as usize;
 
-        let has_map_loaded = game.get_number_of::<TileType>() == expected_num_tiles_loaded;
+        let has_map_loaded = game.get_number_of::<GridCords3D>() == expected_num_tiles_loaded;
         if has_map_loaded {
             break;
         }

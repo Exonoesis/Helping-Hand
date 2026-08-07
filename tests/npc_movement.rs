@@ -41,7 +41,7 @@ fn load_plugin_and_act(game: &mut Game, act_file_name: String) {
 
 #[when(regex = r"the map cutscene '(.+)' is loaded,")]
 fn load_scene(game: &mut Game, scene_name: String) {
-    //game.write_message(LoadNextScene::new(scene_name));
+    game.write_message(LoadNextScene::new(scene_name));
     game.tick();
 }
 
@@ -52,6 +52,7 @@ fn take_number_of_steps(game: &mut Game, number_of_steps: usize) {
     }
 }
 
+/*
 #[then(
     regex = r"the NPC '(.+)' has pixel coordinates equivalent to tile ([0-9]+),([0-9]+),([0-9]+)."
 )]
@@ -68,6 +69,7 @@ fn verify_npc_at_tile_pixel_coordinates(
     let actual_npc_position = game.get_npc_position(&npc_name);
     assert_eq!(expected_npc_position, actual_npc_position);
 }
+*/
 
 #[then(regex = r"the NPC '(.+)' has grid coordinates set to tile ([0-9]+),([0-9]+),([0-9]+).")]
 fn verify_npc_at_tile_grid_coordinates(

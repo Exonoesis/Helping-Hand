@@ -8,9 +8,10 @@ use crate::map::{
         collision::{create_collision_collection_from, CollisionCollection},
         grid_based_movement::{set_physical_destination, MovementDirection},
     },
+    npc::NPC,
     player::*,
-    render::RenderedMap,
-    GridCords3D, GridDimensions, PxCords, PxDimensions, TileType, Tilemap,
+    render::{get_sprite_bundle, EnvironmentalTile, NPCTile, PlayerTile},
+    GridCords3D, GridDimensions, PxCords, PxDimensions, Tile, Tilemap,
 };
 
 use super::interactives::{
@@ -68,6 +69,69 @@ impl ChangeLevel {
     }
 }
 
+fn is_environmental(tile: &Tile) -> bool {
+    tile.get_properties().get("type").unwrap() == "Environmental"
+}
+
+fn render_environmental_tile(
+    tile: &Tile,
+    tilemap_dimensions: &PxDimensions,
+    asset_server: &AssetServer,
+    texture_atlas_assets: &mut Assets<TextureAtlasLayout>,
+) -> EnvironmentalTile {
+    let tile_size = tile.get_tile_dimensions();
+    let tile_location = tile.get_grid_coordinates();
+    let tile_sprite =
+        get_sprite_bundle(tile, tilemap_dimensions, asset_server, texture_atlas_assets);
+    let parsed_environmental_tile = EnvironmentalTile::new(*tile_size, *tile_location, tile_sprite);
+    return parsed_environmental_tile;
+}
+
+fn is_player(tile: &Tile) -> bool {
+    tile.get_properties().get("type").unwrap() == "Player"
+}
+
+fn render_player_tile(
+    tile: &Tile,
+    tilemap_dimensions: &PxDimensions,
+    asset_server: &AssetServer,
+    texture_atlas_assets: &mut Assets<TextureAtlasLayout>,
+) -> PlayerTile {
+    let tile_size = tile.get_tile_dimensions();
+    let tile_location = tile.get_grid_coordinates();
+    let tile_sprite =
+        get_sprite_bundle(tile, tilemap_dimensions, asset_server, texture_atlas_assets);
+    let player = Player::new(tile.get_properties().get("name").unwrap().clone());
+    let movement_direction = MovementDirection::Left;
+    let parsed_player_tile = PlayerTile::new(
+        *tile_size,
+        *tile_location,
+        tile_sprite,
+        player,
+        movement_direction,
+    );
+    return parsed_player_tile;
+}
+
+fn is_npc(tile: &Tile) -> bool {
+    tile.get_properties().get("type").unwrap() == "NPC"
+}
+
+fn render_npc_tile(
+    tile: &Tile,
+    tilemap_dimensions: &PxDimensions,
+    asset_server: &AssetServer,
+    texture_atlas_assets: &mut Assets<TextureAtlasLayout>,
+) -> NPCTile {
+    let tile_size = tile.get_tile_dimensions();
+    let tile_location = tile.get_grid_coordinates();
+    let tile_sprite =
+        get_sprite_bundle(tile, tilemap_dimensions, asset_server, texture_atlas_assets);
+    let npc = NPC::new(tile.get_properties().get("name").unwrap().clone());
+    let parsed_npc_tile = NPCTile::new(*tile_size, *tile_location, tile_sprite, npc);
+    return parsed_npc_tile;
+}
+
 /// Loads the Tiled test map with a Camera into the game at the center of the map.
 pub fn load_map(
     mut change_level_requests: MessageReader<LoadLevel>,
@@ -83,25 +147,57 @@ pub fn load_map(
     let change_level_request = change_level_requests.read().next().unwrap();
     let tiled_map = load_tiled_map(PathBuf::from(change_level_request.get_level_path()));
     let map = Tilemap::from_tiled(&tiled_map);
-    let bevy_map = RenderedMap::new(&map, &asset_spawner, &mut texture_atlas_assets);
+    let map_dimensions = map.get_px_dimensions();
 
-    let rendered_tiles = bevy_map.get_bevy_tiles();
+    let map_tiles = map.get_tiles();
 
-    for render_tile in rendered_tiles {
-        let render_tile = render_tile.clone();
-        if render_tile.get_tile_type() == &TileType::Player {
-            commands.spawn((render_tile, Player, MovementDirection::Left));
+    /*
+     * let environmental_tiles: Vec<EnvironmentalTile> = render_environment_tiles(map_tiles, &map, &asset_spawner, &mut texture_atlas_assets)
+     * commands.spawn_batch(environment_tiles)
+     *
+     * let npc_tiles: Vec<NPCTile> = render_npc_tiles(...)
+     * commands.spawn_batch(npc_tiles)
+     */
+    for tile in map_tiles {
+        if is_environmental(tile) {
+            let rendered_environment_tile: EnvironmentalTile = render_environmental_tile(
+                tile,
+                &map_dimensions,
+                &asset_spawner,
+                &mut texture_atlas_assets,
+            );
+            commands.spawn(rendered_environment_tile);
             continue;
         }
 
-        commands.spawn(render_tile);
+        if is_player(tile) {
+            let rendered_player_tile: PlayerTile = render_player_tile(
+                tile,
+                &map_dimensions,
+                &asset_spawner,
+                &mut texture_atlas_assets,
+            );
+            commands.spawn(rendered_player_tile);
+            continue;
+        }
+
+        if is_npc(tile) {
+            let rendered_npc_tile: NPCTile = render_npc_tile(
+                tile,
+                &map_dimensions,
+                &asset_spawner,
+                &mut texture_atlas_assets,
+            );
+            commands.spawn(rendered_npc_tile);
+            continue;
+        }
     }
 
     center_camera_on_map(&map, &mut camera_position);
 
     // This section represents the Physical properties of the map.
-    let map_size_in_px = *bevy_map.get_px_dimensions();
-    let map_grid_dimenions = *bevy_map.get_grid_dimensions();
+    let map_size_in_px = *map.get_px_dimensions();
+    let map_grid_dimenions = *map.get_grid_dimensions();
     let mut interactives = get_interactives_from(&tiled_map);
     // We have to flip the y-axis of all tiles, since they're physical coordinates.
     interactives = flip_interactives_on_y_axis(interactives, map_size_in_px, map_grid_dimenions);
@@ -109,8 +205,8 @@ pub fn load_map(
     let physical_properties = (map_size_in_px, interactive_collection);
 
     // This section represents all of the Logical properties of the map.
-    let collision_collection = create_collision_collection_from(&bevy_map);
-    let map_size_in_tiles = *bevy_map.get_grid_dimensions();
+    let collision_collection = create_collision_collection_from(&map);
+    let map_size_in_tiles = *map.get_grid_dimensions();
     let logical_properties = (collision_collection, map_size_in_tiles);
 
     commands.spawn((physical_properties, logical_properties));
@@ -119,7 +215,7 @@ pub fn load_map(
 pub fn change_to_new_level(
     mut change_level_requests: MessageReader<ChangeLevel>,
     mut load_level_broadcaster: MessageWriter<LoadLevel>,
-    loaded_level_tiles: Query<(Entity, &GridCords3D, &TileType, &PxDimensions)>,
+    loaded_level_tiles: Query<(Entity, &GridCords3D, &PxDimensions)>,
     map_properties: Query<
         Entity,
         (

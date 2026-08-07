@@ -1,7 +1,19 @@
 use bevy::prelude::*;
 
-#[derive(Default, Component)]
-pub struct Player;
+#[derive(Component, PartialEq)]
+pub struct Player {
+    name: String,
+}
+
+impl Player {
+    pub fn new(name: String) -> Self {
+        Player { name }
+    }
+
+    pub fn get_name(&self) -> &String {
+        &self.name
+    }
+}
 
 #[derive(Default, Message)]
 pub struct PlayerInteraction;

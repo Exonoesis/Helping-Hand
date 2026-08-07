@@ -3,9 +3,6 @@ mod mock_game;
 use std::fmt::Debug;
 
 use bevy::prelude::*;
-use bevy::render::settings::WgpuSettings;
-use bevy::render::RenderPlugin;
-use bevy::sprite::SpritePlugin;
 
 use cucumber::{given, then, when, World};
 use helping_hand::map::interactions::map_changing::load_tiled_map;
@@ -15,32 +12,23 @@ use helping_hand::map::*;
 use std::ffi::OsString;
 use std::path::PathBuf;
 
-use crate::mock_game::Game;
-
 #[derive(Debug, Default, World)]
 #[world(init = Self::new)]
 struct GameWorld {
-    pub app: Game,
     pub map_location: PathBuf,
     pub assets_folder_path: PathBuf,
     pub loaded_map: Tilemap,
-    pub bevy_map: RenderedMap,
 }
 
 impl GameWorld {
     pub fn new() -> Self {
         let map_location = PathBuf::new();
         let loaded_map = Tilemap::default();
-        let bevy_map = RenderedMap::default();
         let absolute_assets_folder_path = PathBuf::new();
 
-        let app = Game::new();
-
         Self {
-            app,
             map_location,
             loaded_map,
-            bevy_map,
             assets_folder_path: absolute_assets_folder_path,
         }
     }
@@ -110,16 +98,6 @@ fn trim_to_bevy_path(world: &mut GameWorld) {
     world.assets_folder_path = trimmed_path;
 }
 
-#[when("the Tiled map has been converted to a rendered map,")]
-fn tiled_map_to_bevy_tiles(world: &mut GameWorld) {
-    let tilemap = &world.loaded_map;
-    let asset_server = world.app.get_res::<AssetServer>().clone();
-    let mut texture_atlas_layout = world.app.get_res_mut::<Assets<TextureAtlasLayout>>();
-
-    let rendered_bevy_map = RenderedMap::new(tilemap, &asset_server, &mut texture_atlas_layout);
-    world.bevy_map = rendered_bevy_map;
-}
-
 #[then(regex = r"there are ([0-9]+) tiles loaded.")]
 fn verify_num_loaded_tiles(world: &mut GameWorld, expected_num_tiles: usize) {
     let actual_num_tiles = world.loaded_map.get_tiles().len();
@@ -161,7 +139,7 @@ fn verify_player_tile_spritesheet(world: &mut GameWorld, spritesheet_name: Strin
 
     let mut player_index = 0;
     for i in 0..tiles.len() {
-        if *tiles[i].get_tile_type() == TileType::Player {
+        if tiles[i].get_properties().get("type").unwrap() == "Player" {
             player_index = i;
             break;
         }
@@ -215,7 +193,7 @@ fn verify_player_tile_image(world: &mut GameWorld, image_index: usize) {
 
     let mut player_index = 0;
     for i in 0..tiles.len() {
-        if *tiles[i].get_tile_type() == TileType::Player {
+        if *tiles[i].get_properties().get("type").unwrap() == "Player" {
             player_index = i;
             break;
         }
@@ -287,42 +265,6 @@ fn verify_overlapping_tiles(
     assert!(is_overlapping);
 }
 
-#[then(
-    regex = r"Tiled tile ([0-9]+),([0-9]+),([0-9]+) is equivalent to Bevy tile ([0-9]+),([0-9]+),([0-9]+)"
-)]
-fn verify_y_axis_flip(
-    world: &mut GameWorld,
-    tiled_tile_x_cord: u32,
-    tiled_tile_y_cord: u32,
-    tiled_tile_z_cord: u32,
-    bevy_tile_x_cord: u32,
-    bevy_tile_y_cord: u32,
-    bevy_tile_z_cord: u32,
-) {
-    let tiled_map = &world.loaded_map;
-
-    let tiled_tile = GridDimensions::new(tiled_tile_x_cord, tiled_tile_y_cord, tiled_tile_z_cord);
-    let tiled_tile_index =
-        three_d_to_one_d_cords(&tiled_tile, tiled_map.get_grid_dimensions()) as usize;
-
-    let bevy_tile = GridDimensions::new(bevy_tile_x_cord, bevy_tile_y_cord, bevy_tile_z_cord);
-    let bevy_tile_index =
-        three_d_to_one_d_cords(&bevy_tile, tiled_map.get_grid_dimensions()) as usize;
-
-    let cross_map_overlap =
-        world
-            .bevy_map
-            .tiled_map_overlap(tiled_map, tiled_tile_index, bevy_tile_index);
-
-    assert!(cross_map_overlap);
-}
-
-#[then(regex = r"there should be ([0-9]+) rendered tiles created.")]
-fn verify_number_of_rendered_tiles(world: &mut GameWorld, expected_number_of_tiles: usize) {
-    let actual_number_of_tiles = world.bevy_map.get_bevy_tiles().len();
-    assert_eq!(expected_number_of_tiles, actual_number_of_tiles);
-}
-
 #[then(regex = r"the trimmed path should be (.+\.png).")]
 fn verify_trimmed_path(world: &mut GameWorld, desired_asset_path: String) {
     let expected_path = PathBuf::from(desired_asset_path);
@@ -338,18 +280,6 @@ fn verify_number_of_players(world: &mut GameWorld, expected_player_amount: usize
     assert_eq!(expected_player_amount, actual_player_amount)
 }
 
-#[then(regex = r"there is ([0-9]+) players? in the Rendered map.")]
-fn verify_number_of_players_on_rendered_map(world: &mut GameWorld, expected_player_amount: usize) {
-    let actual_player_amount = world
-        .bevy_map
-        .get_bevy_tiles()
-        .iter()
-        .filter(|tile| tile.get_tile_type() == &TileType::Player)
-        .count();
-
-    assert_eq!(expected_player_amount, actual_player_amount)
-}
-
 #[then(regex = r"that player is at tile ([0-9]+),([0-9]+),([0-9]+).")]
 fn verify_player_location(
     world: &mut GameWorld,
@@ -361,24 +291,7 @@ fn verify_player_location(
 
     let player_at_tile = world.loaded_map.get_tiles().iter().any(|tile| {
         tile.get_grid_coordinates() == &expected_tile_grid_coordinates
-            && tile.get_tile_type() == &TileType::Player
-    });
-
-    assert!(player_at_tile);
-}
-
-#[then(regex = r"that player on the Rendered map is at tile ([0-9]+),([0-9]+),([0-9]+).")]
-fn verify_player_location_on_render_map(
-    world: &mut GameWorld,
-    tile_x_cord: usize,
-    tile_y_cord: usize,
-    tile_z_cord: usize,
-) {
-    let expected_tile_grid_coordinates = GridCords3D::new(tile_x_cord, tile_y_cord, tile_z_cord);
-
-    let player_at_tile = world.bevy_map.get_bevy_tiles().iter().any(|tile| {
-        tile.get_grid_coordinates() == &expected_tile_grid_coordinates
-            && tile.get_tile_type() == &TileType::Player
+            && tile.get_properties().get("type").unwrap() == "Player"
     });
 
     assert!(player_at_tile);

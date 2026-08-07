@@ -144,9 +144,9 @@ fn load_act(game: &mut Game, act_file_name: String) {
     }
 }
 
-#[when("the game transitions to the next scene,")]
-fn transition_to_next_scene(game: &mut Game) {
-    game.write_message(LoadNextScene);
+#[when(regex = r"the game transitions to the next scene called '(.+)',")]
+fn transition_to_next_scene(game: &mut Game, given_scene_name: String) {
+    game.write_message(LoadNextScene::new(given_scene_name));
     game.tick();
 
     while game.get_state() == &AppState::Transitioning {
@@ -154,15 +154,13 @@ fn transition_to_next_scene(game: &mut Game) {
     }
 }
 
-#[when(regex = r"the game transitions to scene ([0-9]+),")]
-fn transition_to_given_scene(game: &mut Game, given_scene_num: usize) {
-    for _ in 0..(given_scene_num - 1) {
-        game.write_message(LoadNextScene);
-        game.tick();
+#[when(regex = r"the game transitions to scene '(.+)',")]
+fn transition_to_given_scene(game: &mut Game, given_scene_name: String) {
+    game.write_message(LoadNextScene::new(given_scene_name));
+    game.tick();
 
-        while game.get_state() == &AppState::Transitioning {
-            game.tick();
-        }
+    while game.get_state() == &AppState::Transitioning {
+        game.tick();
     }
 }
 
@@ -223,7 +221,7 @@ fn verify_instruction_data(
 ) {
     let current_act = game.get_mut::<Act>();
     let current_scene = current_act.get_current_scene();
-    let scene_contents = current_scene.get_scene_contents();
+    let scene_contents = current_scene.get_contents();
 
     let mut character_and_location_or_path_found = false;
 
@@ -257,7 +255,7 @@ fn verify_instruction_data(
 fn verify_location_at_tile(game: &mut Game, location_name: String, tile_x: usize, tile_y: usize) {
     let current_act = game.get_mut::<Act>();
     let current_scene = current_act.get_current_scene();
-    let scene_contents = current_scene.get_scene_contents();
+    let scene_contents = current_scene.get_contents();
 
     let instructions = get_all_instructions(scene_contents);
 
@@ -278,7 +276,7 @@ fn verify_path_length(
 
     let current_act = game.get_mut::<Act>();
     let current_scene = current_act.get_current_scene();
-    let scene_contents = current_scene.get_scene_contents();
+    let scene_contents = current_scene.get_contents();
 
     let instructions = get_all_instructions(scene_contents);
 
@@ -300,7 +298,7 @@ fn verify_path_tile_cords(
 
     let current_act = game.get_mut::<Act>();
     let current_scene = current_act.get_current_scene();
-    let scene_contents = current_scene.get_scene_contents();
+    let scene_contents = current_scene.get_contents();
 
     let instructions = get_all_instructions(scene_contents);
 

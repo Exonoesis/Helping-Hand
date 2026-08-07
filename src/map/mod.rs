@@ -1,4 +1,4 @@
-use std::{ffi::OsString, path::PathBuf};
+use std::{collections::HashMap, ffi::OsString, path::PathBuf};
 
 pub mod npc;
 pub mod player;
@@ -23,8 +23,9 @@ impl Tilemap {
         let num_layers = tiled_map.layers().len() as u32;
 
         let px_dimensions = Self::get_map_in_px(&tiled_map);
-        let mut tiled_tiles = get_environment_tiles(&tiled_map);
+        let mut tiled_tiles = get_environmental_tiles(&tiled_map);
         let found_player = get_player(&tiled_map);
+        let npcs = get_npcs(tiled_map);
 
         // There exist map cutscenes. Some map cutscenes can not have a
         // player on it, such as showing something that happened in the past
@@ -32,6 +33,8 @@ impl Tilemap {
         if let Some(player) = found_player {
             tiled_tiles.push(player);
         }
+
+        tiled_tiles.extend(npcs);
 
         let num_rows = get_num_rows_from_map(&tiled_tiles);
         let num_columns = get_num_columns_from_map(&tiled_tiles);
@@ -75,8 +78,10 @@ impl Tilemap {
         let mut found_players = Vec::new();
 
         for tile in &self.tiled_tiles {
-            if *tile.get_tile_type() == TileType::Player {
-                found_players.push(tile);
+            if let Some(tile_type) = tile.get_properties().get("type") {
+                if tile_type == "Player" {
+                    found_players.push(tile);
+                }
             }
         }
 
@@ -100,8 +105,7 @@ pub struct Tile {
     px_cords: PxCords,
     grid_cords: GridCords3D,
     tile_texture: Option<TileTexture>,
-    //layer_number: usize,
-    tile_type: TileType,
+    tile_properties: HashMap<String, String>,
 }
 
 impl Tile {
@@ -110,16 +114,14 @@ impl Tile {
         px_cords: PxCords,
         grid_cords: GridCords3D,
         tile_texture: Option<TileTexture>,
-        //layer_number: usize,
-        tile_type: TileType,
+        tile_properties: HashMap<String, String>,
     ) -> Tile {
         Tile {
             tile_dimensions,
             px_cords,
             grid_cords,
             tile_texture,
-            //layer_number,
-            tile_type,
+            tile_properties,
         }
     }
 
@@ -151,8 +153,8 @@ impl Tile {
         &self.tile_texture
     }
 
-    pub fn get_tile_type(&self) -> &TileType {
-        &self.tile_type
+    pub fn get_properties(&self) -> &HashMap<String, String> {
+        &self.tile_properties
     }
 }
 
@@ -208,7 +210,7 @@ impl PxDimensions {
     }
 }
 
-fn get_environment_tiles(tiled_map: &Map) -> Vec<Tile> {
+fn get_environmental_tiles(tiled_map: &Map) -> Vec<Tile> {
     let tile_width = tiled_map.tile_width;
     let tile_height = tiled_map.tile_height;
 
@@ -229,16 +231,14 @@ fn get_environment_tiles(tiled_map: &Map) -> Vec<Tile> {
                 let px_cords = PxCords::new_u32(x * tile_width, y * tile_height, z);
                 let grid_cords = GridCords3D::new_u32(x, y, z);
                 let tile_texture = get_environmental_tile_texture(&tiled_map, x, y, z);
-                //let layer_number = z;
-                let tile_type = get_environmental_tile_type(&tiled_map, x, y, z);
+                let tile_properties = get_environmental_tile_properties(&tiled_map, x, y, z);
 
                 let tile = Tile::new(
                     tile_dimensions,
                     px_cords,
                     grid_cords,
                     tile_texture,
-                    //layer_number,
-                    tile_type,
+                    tile_properties,
                 );
                 tiles.push(tile);
             }
@@ -277,23 +277,74 @@ fn get_player(tiled_map: &Map) -> Option<Tile> {
                 // We have to subtract 1 from the y due to the y position tiled reports for image
                 // tiles being the bottom of the tile, while we consider it the top of the tile
                 let grid_cords = GridCords3D::new_u32(x / tile_width, (y / tile_height) - 1, z);
-                let tile_texture = Some(get_player_tile_texture(&object));
-                //let layer_number = z;
-                let tile_type = TileType::Player;
+                let tile_texture = Some(get_tile_texture(&object));
+                let tile_properties = HashMap::from([
+                    (String::from("type"), String::from("Player")),
+                    (String::from("name"), object.name.clone()),
+                ]);
 
                 return Some(Tile::new(
                     tile_dimensions,
                     px_cords,
                     grid_cords,
                     tile_texture,
-                    //layer_number,
-                    tile_type,
+                    tile_properties,
                 ));
             }
         }
     }
 
     None
+}
+
+/// Returns a vector containing all npcs found on the map from the Interaction layer.
+/// If no npcs exist the vector will be empty.
+fn get_npcs(tiled_map: &Map) -> Vec<Tile> {
+    let tile_width = tiled_map.tile_width;
+    let tile_height = tiled_map.tile_height;
+
+    let tile_dimensions = PxDimensions::new(tile_width, tile_height);
+    let mut npcs: Vec<Tile> = Vec::new();
+
+    for z in 0..tiled_map.layers().len() {
+        let is_object_layer = is_object_layer(&tiled_map, z);
+        if !is_object_layer {
+            continue;
+        }
+
+        let layer = tiled_map.get_layer(z).unwrap();
+        if layer.name != "Interaction" {
+            continue;
+        }
+
+        let object_layer = layer.as_object_layer().unwrap();
+
+        for object in object_layer.objects() {
+            if object.user_type == "NPC" {
+                let x = object.x as u32;
+                let y = object.y as u32;
+                let px_cords = PxCords::new_u32(x, y - tile_height, z);
+                // We have to subtract 1 from the y due to the y position tiled reports for image
+                // tiles being the bottom of the tile, while we consider it the top of the tile
+                let grid_cords = GridCords3D::new_u32(x / tile_width, (y / tile_height) - 1, z);
+                let tile_texture = Some(get_tile_texture(&object));
+                let tile_properties = HashMap::from([
+                    (String::from("type"), String::from("NPC")),
+                    (String::from("name"), object.name.clone()),
+                ]);
+
+                npcs.push(Tile::new(
+                    tile_dimensions,
+                    px_cords,
+                    grid_cords,
+                    tile_texture,
+                    tile_properties,
+                ));
+            }
+        }
+    }
+
+    npcs
 }
 
 fn get_num_columns_from_map(tiles: &[Tile]) -> u32 {
@@ -324,14 +375,6 @@ fn get_num_rows_from_map(tiles: &[Tile]) -> u32 {
     }
 
     ((highest_y / tile_height) + 1) as u32
-}
-
-#[derive(Component, Clone, Copy, Debug, PartialEq)]
-pub enum TileType {
-    Empty,
-    Normal,
-    Player,
-    Collision,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
@@ -435,7 +478,7 @@ pub fn is_object_layer(tiled_map: &Map, idx: usize) -> bool {
     found_object_layer.is_some()
 }
 
-fn get_player_tile_texture(object: &Object) -> TileTexture {
+fn get_tile_texture(object: &Object) -> TileTexture {
     let tile = object
         .get_tile()
         .expect("get_player_tile_texture: Player does not have a tile.");
@@ -483,12 +526,12 @@ fn get_environmental_tile_texture(
     }
 }
 
-fn get_environmental_tile_type(
+fn get_environmental_tile_properties(
     tiled_map: &Map,
     x_grid_cord: u32,
     y_grid_cord: u32,
     layer_num: usize,
-) -> TileType {
+) -> HashMap<String, String> {
     let tile_layer = tiled_map.get_layer(layer_num).unwrap();
     let layer_name = tile_layer.name.clone();
 
@@ -506,14 +549,24 @@ fn get_environmental_tile_type(
     let has_tile_at_layer = tile_layer
         .get_tile(x_grid_cord as i32, y_grid_cord as i32)
         .is_some();
+
+    let mut properties = HashMap::new();
+
     if !has_tile_at_layer {
-        return TileType::Empty;
+        properties.insert(String::from("type"), String::from("Empty"));
+        return properties;
     }
 
-    match layer_name.as_str() {
-        "Collision" => TileType::Collision,
-        _ => TileType::Normal,
-    }
+    return match layer_name.as_str() {
+        "Collision" => {
+            properties.insert(String::from("type"), String::from("Collision"));
+            properties
+        }
+        _ => {
+            properties.insert(String::from("type"), String::from("Environmental"));
+            properties
+        }
+    };
 }
 
 pub fn flip_y_axis(map_height: usize, tile_y: f32, tile_height: usize) -> f32 {

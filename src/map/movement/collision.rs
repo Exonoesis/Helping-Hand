@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use bevy::prelude::*;
 
-use crate::map::{render::RenderedMap, GridCords3D, TileType};
+use crate::map::{GridCords3D, Tilemap};
 
 #[derive(Component, Debug, Default)]
 pub struct CollisionCollection {
@@ -29,16 +29,20 @@ impl CollisionCollection {
     }
 }
 
-pub fn create_collision_collection_from(bevy_map: &RenderedMap) -> CollisionCollection {
+// pub fn create_collision_collection_from(tiled_tiles: &Tilemap) -> CollisionCollection {
+// }
+pub fn create_collision_collection_from(tiled_tiles: &Tilemap) -> CollisionCollection {
     let mut collision_collection = CollisionCollection::new();
 
-    let rendered_tiles = bevy_map.get_bevy_tiles();
-    for rendered_tile in rendered_tiles {
-        if rendered_tile.get_tile_type() != &TileType::Collision {
-            continue;
+    let all_tiles = tiled_tiles.get_tiles();
+    for tile in all_tiles {
+        if let Some(tile_type) = tile.get_properties().get("type") {
+            if tile_type != "Collision" {
+                continue;
+            }
         }
 
-        let rendered_tile_coord = rendered_tile.get_grid_coordinates();
+        let rendered_tile_coord = tile.get_grid_coordinates();
         collision_collection.add(rendered_tile_coord);
     }
 

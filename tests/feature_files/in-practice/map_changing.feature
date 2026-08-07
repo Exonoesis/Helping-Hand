@@ -14,3 +14,27 @@ Feature: Map Changing
         When the player interacts with the tile ahead of them,
         Then the map size should be 3 x 3 tiles,
         And the Player should be at 2,1.
+
+    Scenario: A map with no gaps renders correctly
+        Given a Tiled map called single_sprite_sheet.tmx,
+        When the Tiled map is loaded,
+        Then the map size should be 2 x 2 tiles,
+        And there should be 4 tiles
+
+    Scenario: A map with a gap renders correctly
+        Given a Tiled map called one_blank.tmx,
+        When the Tiled map is loaded,
+        Then the map size should be 2 x 2 tiles,
+        And there should be 3 tiles
+
+    #   Tiled  ->    Bevy
+    #    0  1        0  1
+    # 0 [1][2]    1 [3][4]
+    # 1 [3][4]    0 [1][2]
+    Scenario: Tiled (Y-Down) tiles are converted to Bevy (Y-Up) axis alignment.
+        Given a Tiled map called single_sprite_sheet.tmx,
+        When the Tiled map is loaded,
+        Then the tile at grid coordinate 0,0,0 has a pixel coordinate of 0,64,0.
+        And the tile at grid coordinate 1,0,0 has a pixel coordinate of 64,64,0.
+        And the tile at grid coordinate 0,1,0 has a pixel coordinate of 0,0,0.
+        And the tile at grid coordinate 1,1,0 has a pixel coordinate of 64,0,0.

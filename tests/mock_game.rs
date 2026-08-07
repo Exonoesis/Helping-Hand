@@ -250,7 +250,7 @@ impl Game {
     /// Returns the grid coordinates for the player in the game.
     pub fn find_coordinates_of_player(&mut self) -> GridCords3D {
         let player_tile_coordinate = self
-            .find_containing(&TileType::Player)
+            .find_with::<GridCords3D, Player>()
             .expect("find_coordinates_of_player: Could not find GridCords3D from player.");
 
         player_tile_coordinate
@@ -274,7 +274,7 @@ impl Game {
     /// Returns the direction the player is currently facing.
     pub fn get_player_facing_direction(&mut self) -> MovementDirection {
         let facing_direction = self
-            .find_containing(&TileType::Player)
+            .find_with::<MovementDirection, Player>()
             .expect("get_player_facing_direction: Could not find direction facing from player.");
 
         facing_direction

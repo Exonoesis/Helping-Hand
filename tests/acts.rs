@@ -105,7 +105,7 @@ fn read_act_file(game: &mut GameWorld) {
 
 #[when("we move to the next scene,")]
 fn go_to_next_scene(game: &mut GameWorld) {
-    let new_scene_id = game.current_act.get_current_scene_id() + 1;
+    let new_scene_id = game.current_act.get_current_scene_idx() + 1;
     game.current_act.set_to_scene(new_scene_id);
 }
 
@@ -136,9 +136,9 @@ fn verify_image_cutscene(game: &mut GameWorld, scene_title: String, image_path: 
     let act = &game.current_act;
 
     let actual_scene = act.get_scene_by_title(&scene_title);
-    let actual_contents = actual_scene.get_scene_contents();
+    let actual_contents = actual_scene.get_contents();
 
-    let actual_scene_type = actual_scene.get_scene_type();
+    let actual_scene_type = actual_scene.get_type();
     let actual_image_path = actual_contents.get_image_path();
 
     let expected_scene_type = SceneType::ImageCutscene;
@@ -155,9 +155,9 @@ fn verify_map_cutscene(game: &mut GameWorld, scene_title: String, map_file_path:
     let act = &game.current_act;
 
     let actual_scene = act.get_scene_by_title(&scene_title);
-    let actual_contents = actual_scene.get_scene_contents();
+    let actual_contents = actual_scene.get_contents();
 
-    let actual_scene_type = actual_scene.get_scene_type();
+    let actual_scene_type = actual_scene.get_type();
     let actual_map_path = actual_contents.get_map_path();
 
     let expected_scene_type = SceneType::MapCutscene;
@@ -173,7 +173,7 @@ fn verify_number_of_map_actions(game: &mut GameWorld, scene_title: String, num_m
     let act = &game.current_act;
 
     let actual_scene = act.get_scene_by_title(&scene_title);
-    let actual_contents = actual_scene.get_scene_contents();
+    let actual_contents = actual_scene.get_contents();
     let actual_map_actions = actual_contents.get_map_actions();
 
     let actual_action_num = actual_map_actions.len();
@@ -198,7 +198,7 @@ fn verify_map_action_contents(
     let act = &game.current_act;
 
     let actual_scene = act.get_scene_by_title(&map_cutscene_name);
-    let actual_contents = actual_scene.get_scene_contents();
+    let actual_contents = actual_scene.get_contents();
     let actual_map_actions = actual_contents.get_map_actions();
     let actual_map_action = actual_map_actions[map_action_index - 1].clone();
     let actual_instructions = actual_map_action.get_instructions();

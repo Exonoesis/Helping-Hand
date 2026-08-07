@@ -1,222 +1,187 @@
-use std::{
-    fmt::Debug,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 use bevy::{asset::UntypedAssetId, prelude::*};
 
-use crate::{map::GridCords3D, narrative::act_loading::LoadStatus};
+use crate::{
+    map::{
+        movement::grid_based_movement::MovementDirection, npc::NPC, player::Player, GridCords3D,
+    },
+    narrative::act_loading::LoadStatus,
+};
 
-use super::{flip_y_axis, GridDimensions, PxDimensions, Tile, TileType, Tilemap};
+use super::{flip_y_axis, PxDimensions, Tile};
 
 #[derive(Bundle, Clone)]
 pub struct SpriteBundle {
     sprite: Sprite,
     visibility: Visibility,
     transform: Transform,
-}
-
-impl SpriteBundle {
-    pub fn set_texture_atlas(&mut self, texture_atlas: TextureAtlas) {
-        self.sprite.texture_atlas = Some(texture_atlas);
-    }
-}
-
-impl Default for SpriteBundle {
-    fn default() -> Self {
-        Self {
-            sprite: Sprite::default(),
-            visibility: Visibility::Visible,
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
-        }
-    }
-}
-
-#[derive(Bundle, Clone)]
-pub struct RenderTile {
-    grid_coordinate: GridCords3D,
-    tile_type: TileType,
-    tile_dimensions: PxDimensions,
-    sprite_bundle: SpriteBundle,
     load_status: LoadStatus,
 }
 
-impl RenderTile {
+impl SpriteBundle {
     pub fn new(
-        grid_coordinate: GridCords3D,
-        tile_type: TileType,
-        tile_dimensions: PxDimensions,
-        sprite_bundle: SpriteBundle,
+        sprite: Sprite,
+        visibility: Visibility,
+        transform: Transform,
         load_status: LoadStatus,
     ) -> Self {
         Self {
-            grid_coordinate,
-            tile_type,
-            tile_dimensions,
-            sprite_bundle,
+            sprite,
+            visibility,
+            transform,
             load_status,
         }
     }
+}
 
-    pub fn get_tile_type(&self) -> &TileType {
-        &self.tile_type
+pub struct Environment;
+
+#[derive(Bundle)]
+pub struct EnvironmentalTile {
+    tile_dimensions: PxDimensions,
+    grid_coordinate: GridCords3D,
+    sprite_bundle: SpriteBundle,
+}
+
+impl EnvironmentalTile {
+    pub fn new(
+        tile_dimensions: PxDimensions,
+        grid_coordinate: GridCords3D,
+        sprite_bundle: SpriteBundle,
+    ) -> Self {
+        Self {
+            tile_dimensions,
+            grid_coordinate,
+            sprite_bundle,
+        }
     }
 
-    pub fn is_invisible(&self) -> bool {
-        let is_invisible = self.sprite_bundle.visibility == Visibility::Hidden;
+    pub fn get_tile_dimensions(&self) -> &PxDimensions {
+        &self.tile_dimensions
+    }
 
-        is_invisible
+    pub fn get_grid_coordinates(&self) -> &GridCords3D {
+        &self.grid_coordinate
+    }
+}
+
+#[derive(Bundle)]
+pub struct PlayerTile {
+    tile_dimensions: PxDimensions,
+    grid_coordinate: GridCords3D,
+    sprite_bundle: SpriteBundle,
+    player: Player,
+    movement_direction: MovementDirection,
+}
+
+impl PlayerTile {
+    pub fn new(
+        tile_dimensions: PxDimensions,
+        grid_coordinate: GridCords3D,
+        sprite_bundle: SpriteBundle,
+        player: Player,
+        movement_direction: MovementDirection,
+    ) -> Self {
+        Self {
+            tile_dimensions,
+            grid_coordinate,
+            sprite_bundle,
+            player,
+            movement_direction,
+        }
+    }
+
+    pub fn get_tile_dimensions(&self) -> &PxDimensions {
+        &self.tile_dimensions
     }
 
     pub fn get_grid_coordinates(&self) -> &GridCords3D {
         &self.grid_coordinate
     }
 
-    pub fn get_tile_dimensions(&self) -> &PxDimensions {
-        &self.tile_dimensions
+    pub fn get_name(&self) -> &String {
+        &self.player.get_name()
     }
 }
 
-#[derive(Default)]
-pub struct RenderedMap {
-    map_dimensions_in_px: PxDimensions,
-    grid_dimensions: GridDimensions,
-    bevy_tiles: Vec<RenderTile>,
+#[derive(Bundle)]
+pub struct NPCTile {
+    tile_dimensions: PxDimensions,
+    grid_coordinate: GridCords3D,
+    sprite_bundle: SpriteBundle,
+    npc: NPC,
 }
 
-impl Debug for RenderedMap {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RenderedMap")
-            .field("bevy_tiles", &format_args!("{}", self.bevy_tiles.len()))
-            .finish()
-    }
-}
-
-impl RenderedMap {
+impl NPCTile {
     pub fn new(
-        tilemap: &Tilemap,
-        asset_server: &AssetServer,
-        texture_atlas_assets: &mut Assets<TextureAtlasLayout>,
+        tile_dimensions: PxDimensions,
+        grid_coordinate: GridCords3D,
+        sprite_bundle: SpriteBundle,
+        npc: NPC,
     ) -> Self {
-        let map_dimensions_in_px = *tilemap.get_px_dimensions();
-        let grid_dimensions = *tilemap.get_grid_dimensions();
-        RenderedMap {
-            map_dimensions_in_px,
-            grid_dimensions,
-            bevy_tiles: get_render_tile_bundles(tilemap, asset_server, texture_atlas_assets),
+        Self {
+            tile_dimensions,
+            grid_coordinate,
+            sprite_bundle,
+            npc,
         }
     }
 
-    pub fn tiled_map_overlap(
-        &self,
-        tiled_map: &Tilemap,
-        tiled_tile_index: usize,
-        bevy_tile_index: usize,
-    ) -> bool {
-        let tiled_tile_px_position = &tiled_map.get_tiles()[tiled_tile_index].px_cords;
-        let bevy_tile_px_position = &self.bevy_tiles[bevy_tile_index]
-            .sprite_bundle
-            .transform
-            .translation;
-
-        tiled_tile_px_position.px_x == bevy_tile_px_position.x as usize
-            && tiled_tile_px_position.px_y == bevy_tile_px_position.y as usize
+    pub fn get_tile_dimensions(&self) -> &PxDimensions {
+        &self.tile_dimensions
     }
 
-    pub fn get_bevy_tiles(&self) -> &Vec<RenderTile> {
-        &self.bevy_tiles
+    pub fn get_grid_coordinates(&self) -> &GridCords3D {
+        &self.grid_coordinate
     }
 
-    pub fn get_px_dimensions(&self) -> &PxDimensions {
-        &self.map_dimensions_in_px
+    pub fn get_name(&self) -> &String {
+        &self.npc.get_name()
     }
-
-    pub fn get_grid_dimensions(&self) -> &GridDimensions {
-        &self.grid_dimensions
-    }
-}
-
-/// Returns a list of RenderTileBundles to be spawned by Bevy for the given list of tiles.
-fn get_render_tile_bundles(
-    tilemap: &Tilemap,
-    asset_server: &AssetServer,
-    texture_atlas_assets: &mut Assets<TextureAtlasLayout>,
-) -> Vec<RenderTile> {
-    let mut render_tile_bundles = Vec::new();
-
-    let tiles = tilemap.get_tiles();
-
-    for tile in tiles {
-        // Conversion to Bevy specific formatting happens right here
-        // Our:RenderTileBundle -> Bevy's:SpritBundle and Bevy's:TextureAtlas
-        let mut sprite_bundle = get_sprite_bundle(tile, asset_server, tilemap);
-        let asset_id = UntypedAssetId::from(&sprite_bundle.sprite.image);
-        let load_status = LoadStatus(asset_id);
-
-        let texture_atlas = get_texture_atlas(tile, texture_atlas_assets);
-        sprite_bundle.set_texture_atlas(texture_atlas);
-
-        let render_tile_coordinate = tile.get_grid_coordinates();
-        let render_tile_dimensions = tile.get_tile_dimensions();
-        let render_tile_type = tile.get_tile_type();
-
-        let render_tile = RenderTile::new(
-            *render_tile_coordinate,
-            *render_tile_type,
-            *render_tile_dimensions,
-            sprite_bundle,
-            load_status,
-        );
-        render_tile_bundles.push(render_tile);
-    }
-    render_tile_bundles
 }
 
 // Returns a SpriteBundle for some tile
-fn get_sprite_bundle(tile: &Tile, asset_server: &AssetServer, tilemap: &Tilemap) -> SpriteBundle {
-    let mut sprite_bundle = SpriteBundle::default();
-
-    if tile.get_tile_texture().is_none() {
-        sprite_bundle.transform = Transform::from_xyz(
-            tile.px_cords.px_x as f32,
-            // Y-axis flip, because Bevy is Y-Up while Tiled is Y-Down
-            flip_y_axis(
-                tilemap.get_px_dimensions().px_height,
-                tile.px_cords.px_y as f32,
-                tile.tile_dimensions.px_height,
-            ),
-            tile.px_cords.px_z as f32,
-        );
-        sprite_bundle.visibility = Visibility::Hidden;
-
-        return sprite_bundle;
-    }
-
+pub fn get_sprite_bundle(
+    tile: &Tile,
+    map_dimensions: &PxDimensions,
+    asset_server: &AssetServer,
+    texture_atlas_assets: &mut Assets<TextureAtlasLayout>,
+) -> SpriteBundle {
     // We have to trim our path from being absolute to having root at assets
     let bevy_path = to_bevy_path(&tile.tile_texture.as_ref().unwrap().spritesheet);
     let texture = asset_server.load(bevy_path);
 
     // Set the physical coordinates.
-    sprite_bundle.transform = Transform::from_xyz(
+    let transform = Transform::from_xyz(
         tile.px_cords.px_x as f32,
         //y-axis flip because Bevy is Y-Up while Tiled is Y-Down
         flip_y_axis(
-            tilemap.get_px_dimensions().px_height,
+            map_dimensions.px_height,
             tile.px_cords.px_y as f32,
             tile.tile_dimensions.px_height,
         ),
         tile.px_cords.px_z as f32,
     );
 
-    // Then we point to the spritesheet file to use as reference.
-    sprite_bundle.sprite.image = texture;
+    let mut sprite = Sprite::default();
 
-    let tile_type = tile.get_tile_type();
+    sprite.image = texture;
 
-    if tile_type == &TileType::Collision {
-        sprite_bundle.visibility = Visibility::Hidden;
+    let mut visibility = Visibility::Visible;
+    let tile_type = tile.get_properties().get("type").unwrap();
+
+    if *tile_type == String::from("Collision") {
+        visibility = Visibility::Hidden;
     }
 
+    let asset_id = UntypedAssetId::from(&sprite.image);
+    let load_status = LoadStatus(asset_id);
+
+    let texture_atlas = get_texture_atlas(tile, texture_atlas_assets);
+    sprite.texture_atlas = Some(texture_atlas);
+
+    let sprite_bundle = SpriteBundle::new(sprite, visibility, transform, load_status);
     sprite_bundle
 }
 

@@ -35,14 +35,14 @@ impl SceneNode {
 pub struct Scene {
     title: String,
     scene_type: SceneType,
-    scene_contents: SceneContents,
+    contents: SceneContents,
 }
 impl Scene {
     pub fn make_scene(title: String, scene_type: SceneType, scene_contents: SceneContents) -> Self {
         Scene {
             title,
             scene_type,
-            scene_contents,
+            contents: scene_contents,
         }
     }
 
@@ -50,11 +50,11 @@ impl Scene {
         self.title.clone()
     }
 
-    pub fn get_scene_contents(&self) -> &SceneContents {
-        &self.scene_contents
+    pub fn get_contents(&self) -> &SceneContents {
+        &self.contents
     }
 
-    pub fn get_scene_type(&self) -> &SceneType {
+    pub fn get_type(&self) -> &SceneType {
         &self.scene_type
     }
 }
@@ -218,7 +218,7 @@ impl SceneContents {
 #[derive(Debug, Component, Clone)]
 pub struct Act {
     scenes: Vec<Scene>,
-    current_scene_id: usize,
+    current_scene_idx: usize,
     scene_locations: HashMap<String, usize>,
     scene_connections: Vec<Vec<usize>>,
 }
@@ -232,17 +232,17 @@ impl Act {
 
         Self {
             scenes,
-            current_scene_id: current_scene_idx,
+            current_scene_idx,
             scene_locations,
             scene_connections,
         }
     }
 
     pub fn get_current_scene(&self) -> &Scene {
-        &self.scenes.get(self.current_scene_id).expect(
+        &self.scenes.get(self.current_scene_idx).expect(
             &format!(
                 "get_current_scene: Scene {} does not exist in scenes. Did you call move_to_next_scene too many times?",
-                self.current_scene_id,
+                self.current_scene_idx,
             )
         )
     }
@@ -262,8 +262,8 @@ impl Act {
         scene_location
     }
 
-    pub fn get_current_scene_id(&self) -> usize {
-        self.current_scene_id
+    pub fn get_current_scene_idx(&self) -> usize {
+        self.current_scene_idx
     }
 
     pub fn get_scene_connections(&self, scene_to_check: &Scene) -> Vec<&Scene> {
@@ -304,13 +304,13 @@ impl Act {
 
     pub fn set_to_scene(&mut self, next_scene_id: usize) {
         // TODO: Dynamically change scenes via scene connections + user input
-        self.current_scene_id = next_scene_id;
+        self.current_scene_idx = next_scene_id;
     }
 
     pub fn has_more_scenes(&self) -> bool {
         // TODO: Should check if the current scene has any valid connections,
         // a node with no connections being a dead end thus the end of the act
-        self.current_scene_id < self.scenes.len() - 1
+        self.current_scene_idx < self.scenes.len() - 1
     }
 }
 

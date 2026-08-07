@@ -69,7 +69,19 @@ impl LoadAct {
 }
 
 #[derive(Message)]
-pub struct LoadNextScene;
+pub struct LoadNextScene {
+    title: String,
+}
+
+impl LoadNextScene {
+    pub fn new(title: String) -> Self {
+        Self { title }
+    }
+
+    pub fn get_title(&self) -> &String {
+        &self.title
+    }
+}
 
 /// Loads initial act of the game
 pub fn load_starting_act(mut load_act_broadcaster: MessageWriter<LoadAct>) {
@@ -125,7 +137,7 @@ pub fn load_next_scene(
         return;
     }
 
-    load_next_scene_requests.read().next();
+    let scene_title = load_next_scene_requests.read().next().unwrap().get_title();
 
     let current_act = current_act_query.single_mut().unwrap();
 
@@ -133,8 +145,9 @@ pub fn load_next_scene(
         return;
     }
 
-    let new_scene_id = current_act.get_current_scene_id() + 1;
-    next_scene_to_load.set_scene_id(new_scene_id);
+    let target_scene = current_act.get_scene_by_title(scene_title);
+    let new_scene_idx = current_act.get_scene_idx(target_scene);
+    next_scene_to_load.set_scene_idx(new_scene_idx);
 
     next_state.set(AppState::Transitioning);
 }
@@ -206,7 +219,7 @@ pub fn despawn_old_scene(
     curtain_is_down_requests.read().next();
 
     let current_scene = current_act.get_current_scene();
-    let scene_type = current_scene.get_scene_type();
+    let scene_type = current_scene.get_type();
 
     match scene_type {
         SceneType::ImageCutscene => {
@@ -255,16 +268,16 @@ pub enum SpawnScene {
 
 #[derive(Resource, Default)]
 pub struct NextSceneToLoad {
-    next_scene_id: usize,
+    next_scene_idx: usize,
 }
 
 impl NextSceneToLoad {
-    pub fn get_scene_id(&self) -> usize {
-        self.next_scene_id
+    pub fn get_scene_idx(&self) -> usize {
+        self.next_scene_idx
     }
 
-    pub fn set_scene_id(&mut self, new_scene_id: usize) {
-        self.next_scene_id = new_scene_id;
+    pub fn set_scene_idx(&mut self, new_scene_id: usize) {
+        self.next_scene_idx = new_scene_id;
     }
 }
 
@@ -280,11 +293,11 @@ pub fn spawn_new_scene(
 
     despawn_done_requests.read().next();
 
-    let next_scene_id = next_scene_to_load.get_scene_id();
-    current_act.set_to_scene(next_scene_id);
+    let next_scene_idx = next_scene_to_load.get_scene_idx();
+    current_act.set_to_scene(next_scene_idx);
 
     let current_scene = current_act.get_current_scene();
-    let scene_type = current_scene.get_scene_type();
+    let scene_type = current_scene.get_type();
 
     match scene_type {
         SceneType::ImageCutscene => {
@@ -318,7 +331,7 @@ pub fn render_image_cutscene(
 
     let current_scene = current_act.get_current_scene();
 
-    if let SceneContents::ImageCutscene(image_path) = current_scene.get_scene_contents() {
+    if let SceneContents::ImageCutscene(image_path) = current_scene.get_contents() {
         let node = create_full_screen_node();
         let scene_image = image_path.to_str().unwrap();
 
@@ -355,7 +368,7 @@ pub fn render_map_cutscene(
 
     let current_scene = current_act.get_current_scene();
 
-    if let SceneContents::MapCutscene(map_path, map_actions) = current_scene.get_scene_contents() {
+    if let SceneContents::MapCutscene(map_path, map_actions) = current_scene.get_contents() {
         let level_name = map_path.to_str().unwrap();
         load_level_broadcaster.write(ChangeLevel::new(level_name));
 
@@ -449,10 +462,21 @@ pub fn load_next_scene_on_player_input(
         return;
     }
 
+    let loaded_act = found_loaded_act.unwrap();
+
     if keyboard_input.get_just_pressed().next().is_some()
         || mouse_button_input.get_just_pressed().next().is_some()
     {
-        load_next_scene_broadcaster.write(LoadNextScene);
+        let current_scene = loaded_act.get_current_scene();
+        let connections = loaded_act.get_scene_connections(current_scene);
+
+        if connections.len() != 1 {
+            return;
+        }
+
+        let target_scene_title = connections[0].get_title();
+
+        load_next_scene_broadcaster.write(LoadNextScene::new(target_scene_title));
     }
 }
 

@@ -7,7 +7,7 @@ Feature: An Act's Scenes can be traversed in the game.
     Scenario: The game can transition to the next scene.
         Given the game is capable of handling acts,
         When the act called 'image_cutscene_act.json' is loaded,
-        And the game transitions to the next scene,
+        And the game transitions to the next scene called 'Intro Image 2',
         Then the title of the current scene loaded is called 'Intro Image 2'.
 
     ##################################################################################
@@ -23,7 +23,7 @@ Feature: An Act's Scenes can be traversed in the game.
     Scenario: Image cutscenes can fade between one another.
         Given the game is capable of handling acts,
         When the act called 'image_cutscene_act.json' is loaded,
-        And the game transitions to the next scene,
+        And the game transitions to the next scene called 'Intro Image 2',
         Then there is only one image loaded.
         And the image at 'acts/images/PI2.png' is displayed on the screen.
         And the loaded image's opacity is 100%.
@@ -48,7 +48,7 @@ Feature: An Act's Scenes can be traversed in the game.
     Scenario: The character and each tile is found properly on a complex line path.
         Given the game is capable of handling acts,
         When the act called 'map_cutscene_act.json' is loaded,
-        And the game transitions to scene 2,
+        And the game transitions to scene 'Multiline Test',
         Then the title of the current scene loaded is called 'Multiline Test'.
         And the character 'Jay' will be moved along the line path 'Combo'.
         And the line path 'Combo' has a path length of 10 tiles.
@@ -66,7 +66,7 @@ Feature: An Act's Scenes can be traversed in the game.
     Scenario: The character and each tile is found properly in a looping path.
         Given the game is capable of handling acts,
         When the act called 'map_cutscene_act.json' is loaded,
-        And the game transitions to scene 3,
+        And the game transitions to scene 'Looping Test',
         Then the title of the current scene loaded is called 'Looping Test'.
         And the character 'Jay' will be moved along the looping path 'LoopingPath'.
         #And the looping path 'LoopingPath' has a path length of 12 tiles.
