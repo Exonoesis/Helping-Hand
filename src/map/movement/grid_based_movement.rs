@@ -1,10 +1,208 @@
+use super::collision::CollisionCollection;
+use crate::map::{
+    interactions::map_changing::set_physical_destination, player::*, GridCords3D, GridDimensions,
+    PxDimensions,
+};
+use bevy::prelude::*;
 use std::time::Duration;
 
-use bevy::prelude::*;
+pub fn move_player_on_key_press(
+    input: Res<ButtonInput<KeyCode>>,
+    mut move_player_requester: MessageWriter<MovementDirection>,
+) {
+    if input.pressed(KeyCode::KeyW) {
+        move_player_requester.write(MovementDirection::Up);
+    } else if input.pressed(KeyCode::KeyS) {
+        move_player_requester.write(MovementDirection::Down);
+    } else if input.pressed(KeyCode::KeyA) {
+        move_player_requester.write(MovementDirection::Left);
+    } else if input.pressed(KeyCode::KeyD) {
+        move_player_requester.write(MovementDirection::Right);
+    }
+}
 
-use crate::map::{player::*, GridCords3D, GridDimensions, PxDimensions};
+/// Sets the target location of the player on the map.
+pub fn set_player_target(
+    mut requests_to_move: MessageReader<MovementDirection>,
+    mut movement_notifications: MessageWriter<PlayerMovementActions>,
+    mut commands: Commands,
+    mut player: Query<
+        (
+            Entity,
+            &PxDimensions,
+            &Transform,
+            &GridCords3D,
+            &mut MovementDirection,
+        ),
+        (With<Player>, Without<Target>, Without<ArrivalTimer>),
+    >,
+    world: Query<(&CollisionCollection, &GridDimensions, &PxDimensions)>,
+    arrival_time: Res<ArrivalTime>,
+) {
+    // Pre-reqs Check
+    if player.is_empty() {
+        return;
+    }
+    if requests_to_move.is_empty() {
+        return;
+    }
+    if world.is_empty() {
+        return;
+    }
 
-use super::collision::CollisionCollection;
+    // Unpack information into named variables we can use
+    let (collision_tiles, map_grid_dimensions, map_px_dimensions) = world.single().unwrap();
+    let (
+        player_entity,
+        player_tile_dimensions,
+        current_player_position,
+        current_player_grid_coordinate,
+        mut player_direction,
+    ) = player.single_mut().unwrap();
+    let direction = requests_to_move
+        .read()
+        .next()
+        .expect("set_player_target: There are no requests to move.");
+    // We update the player direction here because we used to use this for changing the direction
+    // the player was facing but we don't have that anymore, now they're just a single static sprite
+    *player_direction = *direction;
+
+    // Here we're bound checking to ensure that we aren't trying to move outside the map
+    // If the movement would go out of bounds then we play the bump noise and do not move
+    if is_out_of_bounds_pixel(
+        current_player_position,
+        player_tile_dimensions,
+        map_px_dimensions,
+        direction,
+    ) {
+        movement_notifications.write(PlayerMovementActions::Bumping);
+        return;
+    }
+    if is_out_of_bounds_grid(
+        current_player_grid_coordinate,
+        map_grid_dimensions,
+        direction,
+        collision_tiles,
+    ) {
+        movement_notifications.write(PlayerMovementActions::Bumping);
+        return;
+    }
+
+    // Now that we know we won't go out of bounds, get the new positions for the move
+    let new_physical_position = set_physical_destination(
+        current_player_position,
+        player_tile_dimensions,
+        map_px_dimensions,
+        direction,
+    )
+    .unwrap();
+    let new_logical_position = set_logical_destination(
+        current_player_grid_coordinate,
+        map_grid_dimensions,
+        direction,
+    )
+    .unwrap();
+
+    // Here we're gathering all the information needed to start moving
+    let starting_position = StartingPosition::new(*current_player_position);
+    let new_target = Target::new(new_physical_position, new_logical_position);
+
+    // These control the speed at which the movement happens
+    let timer = Timer::new(*arrival_time.get_duration(), TimerMode::Once);
+    let arrival_timer = ArrivalTimer::new(timer);
+
+    // Play the Walking noise since we are moving
+    movement_notifications.write(PlayerMovementActions::Walking);
+
+    // And set the movement in motion
+    commands
+        .entity(player_entity)
+        .insert((starting_position, new_target, arrival_timer));
+}
+
+/// Moves some entity towards a Target position.
+pub fn move_entity_to_target(
+    mut movable_entities: Query<(
+        Entity,
+        &mut Transform,
+        &mut GridCords3D,
+        &StartingPosition,
+        &PxDimensions,
+        &Target,
+        &mut ArrivalTimer,
+    )>,
+    mut commands: Commands,
+    time: Res<Time>,
+) {
+    for (
+        entity,
+        mut entity_physical_position,
+        mut entity_logical_position,
+        entity_starting_position,
+        entity_dimensions,
+        entity_target,
+        mut time_to_reach_destination,
+    ) in &mut movable_entities
+    {
+        time_to_reach_destination.advance(time.delta());
+
+        if time_to_reach_destination.timer.is_finished() {
+            *entity_physical_position = *entity_target.get_position();
+            *entity_logical_position = *entity_target.get_grid_coordinate();
+
+            commands.entity(entity).remove::<Target>();
+            commands.entity(entity).remove::<ArrivalTimer>();
+            commands.entity(entity).remove::<StartingPosition>();
+            continue;
+        }
+
+        *entity_physical_position = move_towards(
+            entity_starting_position.get_position(),
+            entity_target,
+            entity_dimensions,
+            time_to_reach_destination.as_ref(),
+        );
+    }
+}
+
+pub fn is_out_of_bounds_pixel(
+    current_player_position: &Transform,
+    player_tile_dimensions: &PxDimensions,
+    map_px_dimensions: &PxDimensions,
+    direction: &MovementDirection,
+) -> bool {
+    let found_new_physical_position = set_physical_destination(
+        current_player_position,
+        player_tile_dimensions,
+        map_px_dimensions,
+        direction,
+    );
+    if found_new_physical_position.is_none() {
+        return true;
+    } else {
+        false
+    }
+}
+
+pub fn is_out_of_bounds_grid(
+    current_player_grid_coordinate: &GridCords3D,
+    map_grid_dimensions: &GridDimensions,
+    direction: &MovementDirection,
+    collision_tiles: &CollisionCollection,
+) -> bool {
+    let found_new_logical_position = set_logical_destination(
+        current_player_grid_coordinate,
+        map_grid_dimensions,
+        direction,
+    );
+    if found_new_logical_position.is_none() {
+        return true;
+    } else if collision_tiles.has(&found_new_logical_position.unwrap()) {
+        return true;
+    } else {
+        false
+    }
+}
 
 #[derive(Message, Copy, Clone, Debug, PartialEq, Component)]
 pub enum MovementDirection {
@@ -35,92 +233,6 @@ impl Target {
     pub fn get_grid_coordinate(&self) -> &GridCords3D {
         &self.grid_coordinate
     }
-}
-
-/// Sets the target location of the player on the map.
-pub fn set_player_target(
-    mut requests_to_move: MessageReader<MovementDirection>,
-    mut movement_notifications: MessageWriter<PlayerMovementActions>,
-    mut commands: Commands,
-    mut player: Query<
-        (
-            Entity,
-            &PxDimensions,
-            &Transform,
-            &GridCords3D,
-            &mut MovementDirection,
-        ),
-        (With<Player>, Without<Target>, Without<ArrivalTimer>),
-    >,
-    world: Query<(&CollisionCollection, &GridDimensions, &PxDimensions)>,
-    arrival_time: Res<ArrivalTime>,
-) {
-    if player.is_empty() {
-        return;
-    }
-
-    if requests_to_move.is_empty() {
-        return;
-    }
-
-    if world.is_empty() {
-        return;
-    }
-
-    let (collision_tiles, map_grid_dimensions, map_px_dimensions) = world.single().unwrap();
-
-    let (
-        player_entity,
-        player_tile_dimensions,
-        current_player_position,
-        current_player_grid_coordinate,
-        mut player_direction,
-    ) = player.single_mut().unwrap();
-
-    let direction = requests_to_move
-        .read()
-        .next()
-        .expect("set_player_target: There are no requests to move.");
-
-    *player_direction = *direction;
-
-    let found_new_physical_position = set_physical_destination(
-        current_player_position,
-        player_tile_dimensions,
-        map_px_dimensions,
-        direction,
-    );
-    if found_new_physical_position.is_none() {
-        movement_notifications.write(PlayerMovementActions::Bumping);
-        return;
-    }
-    let new_physical_position = found_new_physical_position.unwrap();
-
-    let found_new_logical_position = set_logical_destination(
-        current_player_grid_coordinate,
-        map_grid_dimensions,
-        direction,
-    );
-    if found_new_logical_position.is_none() {
-        movement_notifications.write(PlayerMovementActions::Bumping);
-        return;
-    }
-    let new_logical_position = found_new_logical_position.unwrap();
-
-    if collision_tiles.has(&new_logical_position) {
-        movement_notifications.write(PlayerMovementActions::Bumping);
-        return;
-    }
-    let starting_position = StartingPosition::new(*current_player_position);
-    let new_target = Target::new(new_physical_position, new_logical_position);
-
-    movement_notifications.write(PlayerMovementActions::Walking);
-    let timer = Timer::new(*arrival_time.get_duration(), TimerMode::Once);
-    let arrival_timer = ArrivalTimer::new(timer);
-
-    commands
-        .entity(player_entity)
-        .insert((starting_position, new_target, arrival_timer));
 }
 
 #[derive(Resource)]
@@ -159,55 +271,6 @@ impl ArrivalTimer {
     pub fn advance(&mut self, time_passed: Duration) {
         self.timer.tick(time_passed);
     }
-}
-
-/// Returns a new pixel position shifted away from a starting position in a given direction
-pub fn set_physical_destination(
-    current_position: &Transform,
-    tile_dimensions: &PxDimensions,
-    map_px_dimensions: &PxDimensions,
-    direction: &MovementDirection,
-) -> Option<Transform> {
-    let current_px_position = current_position.translation;
-    let mut current_x = current_px_position.x;
-    let mut current_y = current_px_position.y;
-    let current_z = current_px_position.z;
-
-    let level_width = map_px_dimensions.get_width() as f32;
-    let level_height = map_px_dimensions.get_height() as f32;
-
-    match direction {
-        MovementDirection::Left => {
-            if current_x == 0.0 {
-                return None;
-            }
-
-            current_x -= tile_dimensions.get_width() as f32;
-        }
-        MovementDirection::Right => {
-            if current_x == level_width - 1.0 {
-                return None;
-            }
-
-            current_x += tile_dimensions.get_width() as f32;
-        }
-        MovementDirection::Up => {
-            if current_y == level_height - 1.0 {
-                return None;
-            }
-
-            current_y += tile_dimensions.get_height() as f32;
-        }
-        MovementDirection::Down => {
-            if current_y == 0.0 {
-                return None;
-            }
-
-            current_y -= tile_dimensions.get_height() as f32;
-        }
-    }
-
-    Some(Transform::from_xyz(current_x, current_y, current_z))
 }
 
 /// Returns a new grid coordinate shifted away from a starting coordinate in a given direction,
@@ -268,51 +331,6 @@ impl StartingPosition {
 
     pub fn get_position(&self) -> &Transform {
         &self.position
-    }
-}
-
-/// Moves some entity towards a Target position.
-pub fn move_entity_to_target(
-    mut movable_entities: Query<(
-        Entity,
-        &mut Transform,
-        &mut GridCords3D,
-        &StartingPosition,
-        &PxDimensions,
-        &Target,
-        &mut ArrivalTimer,
-    )>,
-    mut commands: Commands,
-    time: Res<Time>,
-) {
-    for (
-        entity,
-        mut entity_physical_position,
-        mut entity_logical_position,
-        entity_starting_position,
-        entity_dimensions,
-        entity_target,
-        mut time_to_reach_destination,
-    ) in &mut movable_entities
-    {
-        time_to_reach_destination.advance(time.delta());
-
-        if time_to_reach_destination.timer.is_finished() {
-            *entity_physical_position = *entity_target.get_position();
-            *entity_logical_position = *entity_target.get_grid_coordinate();
-
-            commands.entity(entity).remove::<Target>();
-            commands.entity(entity).remove::<ArrivalTimer>();
-            commands.entity(entity).remove::<StartingPosition>();
-            continue;
-        }
-
-        *entity_physical_position = move_towards(
-            entity_starting_position.get_position(),
-            entity_target,
-            entity_dimensions,
-            time_to_reach_destination.as_ref(),
-        );
     }
 }
 
@@ -395,19 +413,4 @@ fn calculate_current_distance(
     };
 
     current_distance
-}
-
-pub fn move_player_on_key_press(
-    input: Res<ButtonInput<KeyCode>>,
-    mut move_player_requester: MessageWriter<MovementDirection>,
-) {
-    if input.pressed(KeyCode::KeyW) {
-        move_player_requester.write(MovementDirection::Up);
-    } else if input.pressed(KeyCode::KeyS) {
-        move_player_requester.write(MovementDirection::Down);
-    } else if input.pressed(KeyCode::KeyA) {
-        move_player_requester.write(MovementDirection::Left);
-    } else if input.pressed(KeyCode::KeyD) {
-        move_player_requester.write(MovementDirection::Right);
-    }
 }

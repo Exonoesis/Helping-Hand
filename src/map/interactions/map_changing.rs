@@ -6,7 +6,7 @@ use tiled::{Loader, Map};
 use crate::map::{
     movement::{
         collision::{create_collision_collection_from, CollisionCollection},
-        grid_based_movement::{set_physical_destination, MovementDirection},
+        grid_based_movement::MovementDirection,
     },
     npc::NPC,
     player::*,
@@ -314,6 +314,63 @@ pub fn change_level_from_marker(
         let level_name = ChangeLevel::new(&marker.get_path().to_str().unwrap());
         change_level_requests.write(level_name);
     }
+}
+
+/// Returns a new pixel position shifted away from a starting position in a given direction
+pub fn set_physical_destination(
+    current_position: &Transform,
+    tile_dimensions: &PxDimensions,
+    map_px_dimensions: &PxDimensions,
+    direction: &MovementDirection,
+) -> Option<Transform> {
+    // We need to get the pixel location where we currently are to
+    // do any sort of bounds checking
+    let current_px_position = current_position.translation;
+    let mut current_x = current_px_position.x;
+    let mut current_y = current_px_position.y;
+    let current_z = current_px_position.z;
+
+    // Since we're checking the bounds of the map, we need the map dimensions
+    let level_width = map_px_dimensions.get_width() as f32;
+    let level_height = map_px_dimensions.get_height() as f32;
+
+    // We also need to know what direction to look in from our current position
+    // Each branch checks if the move we're about to do would go outside the map
+    //
+    // If so then it denies it by not giving back a new pixel location
+    //
+    // Otherwise it gives a new pixel location shifted in the given direction
+    match direction {
+        MovementDirection::Left => {
+            if current_x == 0.0 {
+                return None;
+            }
+
+            current_x -= tile_dimensions.get_width() as f32;
+        }
+        MovementDirection::Right => {
+            if current_x == level_width - 1.0 {
+                return None;
+            }
+
+            current_x += tile_dimensions.get_width() as f32;
+        }
+        MovementDirection::Up => {
+            if current_y == level_height - 1.0 {
+                return None;
+            }
+
+            current_y += tile_dimensions.get_height() as f32;
+        }
+        MovementDirection::Down => {
+            if current_y == 0.0 {
+                return None;
+            }
+
+            current_y -= tile_dimensions.get_height() as f32;
+        }
+    }
+    Some(Transform::from_xyz(current_x, current_y, current_z))
 }
 
 // This function loses floating point accuracy
