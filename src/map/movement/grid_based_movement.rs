@@ -13,7 +13,7 @@ pub struct PlayerInformation<'world> {
     size: &'world PxDimensions,
     physical_position: &'world Transform,
     grid_position: &'world GridCords3D,
-    face_direction: &'world mut MovementDirection,
+    facing_direction: &'world mut MovementDirection,
 }
 
 #[derive(QueryFilter)]
@@ -22,7 +22,7 @@ pub struct IdlePlayerIdentifiers {
 }
 
 #[derive(QueryData)]
-pub struct WorldCollisionLocations<'world> {
+pub struct WorldCollisionInfo<'world> {
     map_collision_locations: &'world CollisionCollection,
     map_grid_dimensions: &'world GridDimensions,
     map_pixel_dimensions: &'world PxDimensions,
@@ -36,7 +36,7 @@ struct MovementPotential<'world> {
 impl<'world> MovementPotential<'world> {
     pub fn new(
         movement_direction: &'world MovementDirection,
-        map_info: &'world WorldCollisionLocationsItem,
+        map_info: &'world WorldCollisionInfoItem,
     ) -> Self {
         let world_collision = map_info.map_collision_locations;
 
@@ -65,13 +65,18 @@ impl<'world> PlayerToMove<'world> {
 }
 
 struct WorldSpace<'world> {
+    px_dimensions: &'world PxDimensions,
     grid_dimensions: &'world GridDimensions,
 }
 
 impl<'world> WorldSpace<'world> {
-    pub fn new(world_size: &'world WorldCollisionLocationsItem) -> Self {
+    pub fn new(world_size: &'world WorldCollisionInfoItem) -> Self {
+        let px_dimensions = world_size.map_pixel_dimensions;
         let grid_dimensions = world_size.map_grid_dimensions;
-        Self { grid_dimensions }
+        Self {
+            px_dimensions,
+            grid_dimensions,
+        }
     }
 }
 
@@ -81,7 +86,12 @@ struct PositionalData<'world> {
 }
 
 impl<'world> PositionalData<'world> {
-    pub fn new(player_to_move: PlayerToMove<'world>, world_space: WorldSpace<'world>) -> Self {
+    pub fn new(
+        player: &'world PlayerInformationItem,
+        world: &'world WorldCollisionInfoItem,
+    ) -> Self {
+        let player_to_move = PlayerToMove::new(player);
+        let world_space = WorldSpace::new(world);
         Self {
             player_to_move,
             world_space,
@@ -92,29 +102,26 @@ impl<'world> PositionalData<'world> {
 struct ReferencedPlayerToMove<'world> {
     entity: Entity,
     player_to_move: PlayerToMove<'world>,
-    new_position: GridCords3D,
+    new_pixel_position: Transform,
+    new_grid_position: GridCords3D,
 }
 
 impl<'world> ReferencedPlayerToMove<'world> {
-    pub fn new(player: &'world PlayerInformationItem, new_position: GridCords3D) -> Self {
+    pub fn new(
+        player: &'world PlayerInformationItem,
+        new_position: (GridCords3D, Transform),
+    ) -> Self {
         let entity = player.entity;
         let player_to_move = PlayerToMove::new(&player);
+        let new_grid_position = new_position.0;
+        let new_pixel_position = new_position.1;
 
         Self {
             entity,
             player_to_move,
-            new_position,
+            new_pixel_position,
+            new_grid_position,
         }
-    }
-}
-
-struct MovementSetter<'world> {
-    arrival_time: Res<'world, ArrivalTime>,
-}
-
-impl<'world> MovementSetter<'world> {
-    pub fn new(arrival_time: Res<'world, ArrivalTime>) -> Self {
-        Self { arrival_time }
     }
 }
 
@@ -132,16 +139,24 @@ pub enum MovementDirection {
 
 #[derive(Component)]
 pub struct Target {
-    position: GridCords3D,
+    pixel_position: Transform,
+    grid_coordinate: GridCords3D,
 }
 
 impl Target {
-    pub fn new(position: GridCords3D) -> Self {
-        Self { position }
+    pub fn new(pixel_position: Transform, grid_coordinate: GridCords3D) -> Self {
+        Self {
+            pixel_position,
+            grid_coordinate,
+        }
+    }
+
+    pub fn get_pixel_position(&self) -> &Transform {
+        &self.pixel_position
     }
 
     pub fn get_grid_coordinate(&self) -> &GridCords3D {
-        &self.position
+        &self.grid_coordinate
     }
 }
 
@@ -222,7 +237,7 @@ pub fn set_player_target(
     mut movement_notifications: MessageWriter<PlayerMovementActions>,
     commands: Commands,
     mut player: Single<PlayerInformation, IdlePlayerIdentifiers>,
-    world: Single<WorldCollisionLocations>,
+    world: Single<WorldCollisionInfo>,
     arrival_time: Res<ArrivalTime>,
 ) {
     if !time_to_move(&requests_to_move) {
@@ -230,19 +245,13 @@ pub fn set_player_target(
     }
 
     let movement_direction = requests_to_move.read().next().unwrap();
-    *player.face_direction = *movement_direction;
+    *player.facing_direction = *movement_direction;
 
     let player_information = &player.into_inner();
     let world_collisions_locations = &world.into_inner();
-
     let movement_potential =
         MovementPotential::new(&movement_direction, world_collisions_locations);
-    let player_to_move = PlayerToMove::new(player_information);
-    let world_space = WorldSpace::new(world_collisions_locations);
-    let positional_data = PositionalData::new(player_to_move, world_space);
-    // let positional_data = PositionalData::from(&player, &world)
-    // -> let world_space = WorldSpace::new(&world)
-    // -> let player_to_move = PlayerToMove::new(&player)
+    let positional_data = PositionalData::new(&player_information, &world_collisions_locations);
 
     let projected_position = able_to_move(movement_potential, positional_data);
     let is_able_to_move = projected_position.is_some();
@@ -253,9 +262,8 @@ pub fn set_player_target(
 
     let new_position = projected_position.unwrap();
     let referenced_player_to_move = ReferencedPlayerToMove::new(player_information, new_position);
-    let movement_setter = MovementSetter::new(arrival_time);
     movement_notifications.write(PlayerMovementActions::Walking);
-    do_the_move(referenced_player_to_move, movement_setter, commands);
+    do_the_move(referenced_player_to_move, arrival_time, commands);
 }
 
 //
@@ -291,6 +299,7 @@ pub fn move_entity_to_target(
         time_to_reach_destination.advance(time.delta());
 
         if time_to_reach_destination.timer.is_finished() {
+            *entity_physical_position = *entity_target.get_pixel_position();
             *entity_logical_position = *entity_target.get_grid_coordinate();
 
             commands.entity(entity).remove::<Target>();
@@ -301,7 +310,6 @@ pub fn move_entity_to_target(
 
         *entity_physical_position = move_towards(
             entity_starting_position.get_position(),
-            entity_target,
             entity_dimensions,
             time_to_reach_destination.as_ref(),
             *movement_direction,
@@ -309,7 +317,7 @@ pub fn move_entity_to_target(
     }
 }
 
-// TODO: Description
+/// Returns true is there are movements to process
 fn time_to_move(requests_to_move: &MessageReader<MovementDirection>) -> bool {
     if requests_to_move.is_empty() {
         return false;
@@ -317,11 +325,12 @@ fn time_to_move(requests_to_move: &MessageReader<MovementDirection>) -> bool {
     true
 }
 
-// TODO: Description
+/// Returns the grid and pixel position to move to if valid
+/// Returns None if the movement would collide with something or go off the map
 fn able_to_move(
     movement_potential: MovementPotential,
     positional_data: PositionalData,
-) -> Option<GridCords3D> {
+) -> Option<(GridCords3D, Transform)> {
     let player = positional_data.player_to_move;
     let movement_direction = movement_potential.movement_direction;
     let world_space = positional_data.world_space;
@@ -331,7 +340,7 @@ fn able_to_move(
     if let Some(projected_position) = found_projected_position {
         let world_collisions = movement_potential.world_collision;
 
-        if is_going_to_collide(&projected_position, world_collisions) {
+        if is_going_to_collide(&projected_position.0, world_collisions) {
             return None;
         }
         return Some(projected_position);
@@ -340,20 +349,20 @@ fn able_to_move(
     None
 }
 
-// TODO: Description
+/// Attaches the required components to preform a movement
 fn do_the_move(
     referenced_player_to_move: ReferencedPlayerToMove,
-    movement_setter: MovementSetter,
+    arrival_time: Res<ArrivalTime>,
     mut commands: Commands,
 ) {
     let player = referenced_player_to_move.player_to_move;
-    let new_position = referenced_player_to_move.new_position;
+    let new_pixel_position = referenced_player_to_move.new_pixel_position;
+    let new_grid_position = referenced_player_to_move.new_grid_position;
     let player_entity = referenced_player_to_move.entity;
 
     let starting_position = StartingPosition::new(*player.pixel_position);
-    let new_target = Target::new(new_position);
+    let new_target = Target::new(new_pixel_position, new_grid_position);
 
-    let arrival_time = movement_setter.arrival_time;
     let timer = Timer::new(*arrival_time.get_duration(), TimerMode::Once);
     let arrival_timer = ArrivalTimer::new(timer);
 
@@ -362,33 +371,59 @@ fn do_the_move(
         .insert((starting_position, new_target, arrival_timer));
 }
 
-/// Returns a new grid coordinate shifted away from a starting coordinate in a given direction
+/// Returns a new grid and pixel position shifted away from a starting coordinate in a given direction
 /// if valid to do so
 fn get_projected_position(
     player: &PlayerToMove,
     movement_direction: &MovementDirection,
     world_space: WorldSpace,
-) -> Option<GridCords3D> {
+) -> Option<(GridCords3D, Transform)> {
     let current_grid_coordinate = player.grid_coordinates;
-    let mut current_x = current_grid_coordinate.get_x();
-    let mut current_y = current_grid_coordinate.get_y();
-    let current_z = current_grid_coordinate.get_z();
+    let mut current_grid_x = current_grid_coordinate.get_x();
+    let mut current_grid_y = current_grid_coordinate.get_y();
+    let current_grid_z = current_grid_coordinate.get_z();
+
+    let current_px_coordinate = player.pixel_position;
+    let mut current_px_x = current_px_coordinate.translation.x;
+    let mut current_px_y = current_px_coordinate.translation.y;
+    let current_px_z = current_px_coordinate.translation.z;
+
+    let tile_width =
+        world_space.px_dimensions.get_width() / world_space.grid_dimensions.columns as usize;
+    let tile_height =
+        world_space.px_dimensions.get_height() / world_space.grid_dimensions.rows as usize;
 
     if will_be_out_of_map_bounds(current_grid_coordinate, world_space, movement_direction) {
         return None;
     }
 
     match movement_direction {
-        MovementDirection::Left => current_x -= 1,
-        MovementDirection::Right => current_x += 1,
-        MovementDirection::Up => current_y -= 1,
-        MovementDirection::Down => current_y += 1,
+        MovementDirection::Left => {
+            current_grid_x -= 1;
+            current_px_x -= tile_width as f32;
+        }
+        MovementDirection::Right => {
+            current_grid_x += 1;
+            current_px_x += tile_width as f32
+        }
+        MovementDirection::Up => {
+            current_grid_y -= 1;
+            current_px_y += tile_height as f32
+        }
+        MovementDirection::Down => {
+            current_grid_y += 1;
+            current_px_y -= tile_height as f32
+        }
     }
 
-    Some(GridCords3D::new(current_x, current_y, current_z))
+    Some((
+        GridCords3D::new(current_grid_x, current_grid_y, current_grid_z),
+        Transform::from_xyz(current_px_x, current_px_y, current_px_z),
+    ))
 }
 
-// TODO: Function Description
+/// Checks if a given position, shifted in a given
+/// direction, will go out of map boundaries
 fn will_be_out_of_map_bounds(
     current_position: &GridCords3D,
     world_space: WorldSpace,
@@ -419,7 +454,7 @@ fn will_be_out_of_map_bounds(
     false
 }
 
-// TODO: Function Description
+/// Checks if a given position intersects a tile marked as collision
 fn is_going_to_collide(
     projected_position: &GridCords3D,
     world_collisions: &CollisionCollection,
@@ -437,16 +472,11 @@ fn is_going_to_collide(
 /// Moves some entities's position towards a target in a given amount of time.
 fn move_towards(
     starting_position: &Transform,
-    target: &Target,
     distance: &PxDimensions,
     time_to_reach_destination: &ArrivalTimer,
     movement_direction: MovementDirection,
 ) -> Transform {
     let mut new_position = *starting_position;
-
-    // I think we do this because we need to know what direction this entity is supposed to be moving
-    // However, the player has a facing direction we can directly access (as will NPCs)
-    //let direction_facing = get_direction(starting_position, target);
 
     match movement_direction {
         MovementDirection::Left => {
@@ -474,6 +504,7 @@ fn move_towards(
     new_position
 }
 
+// NPCs will need to calculate the direction they're going, this code may be useful for that
 /*
 /// Returns a direction for some starting and target position.
 fn get_direction(position: &Transform, target: &Target) -> MovementDirection {

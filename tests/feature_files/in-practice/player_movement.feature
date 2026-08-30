@@ -1,4 +1,4 @@
-Feature: Grid-based Movement
+Feature: Player Movement
     Scenario: A Player is requested to move to the right
         Given a Tiled map called player_3x3.tmx,
         And the Player is at 1,1,1,
