@@ -317,6 +317,7 @@ pub fn change_level_from_marker(
 }
 
 /// Returns a new pixel position shifted away from a starting position in a given direction
+/// | Returns None if the new position would be out of bounds
 pub fn set_physical_destination(
     current_position: &Transform,
     tile_dimensions: &PxDimensions,
