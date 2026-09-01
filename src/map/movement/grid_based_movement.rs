@@ -102,25 +102,18 @@ impl<'world> PositionalData<'world> {
 struct ReferencedPlayerToMove<'world> {
     entity: Entity,
     player_to_move: PlayerToMove<'world>,
-    new_pixel_position: Transform,
-    new_grid_position: GridCords3D,
+    target: Target,
 }
 
 impl<'world> ReferencedPlayerToMove<'world> {
-    pub fn new(
-        player: &'world PlayerInformationItem,
-        new_position: (GridCords3D, Transform),
-    ) -> Self {
+    pub fn new(player: &'world PlayerInformationItem, target: Target) -> Self {
         let entity = player.entity;
         let player_to_move = PlayerToMove::new(&player);
-        let new_grid_position = new_position.0;
-        let new_pixel_position = new_position.1;
 
         Self {
             entity,
             player_to_move,
-            new_pixel_position,
-            new_grid_position,
+            target,
         }
     }
 }
@@ -330,7 +323,7 @@ fn time_to_move(requests_to_move: &MessageReader<MovementDirection>) -> bool {
 fn able_to_move(
     movement_potential: MovementPotential,
     positional_data: PositionalData,
-) -> Option<(GridCords3D, Transform)> {
+) -> Option<Target> {
     let player = positional_data.player_to_move;
     let movement_direction = movement_potential.movement_direction;
     let world_space = positional_data.world_space;
@@ -340,7 +333,7 @@ fn able_to_move(
     if let Some(projected_position) = found_projected_position {
         let world_collisions = movement_potential.world_collision;
 
-        if is_going_to_collide(&projected_position.0, world_collisions) {
+        if is_going_to_collide(projected_position.get_grid_coordinate(), world_collisions) {
             return None;
         }
         return Some(projected_position);
@@ -356,12 +349,10 @@ fn do_the_move(
     mut commands: Commands,
 ) {
     let player = referenced_player_to_move.player_to_move;
-    let new_pixel_position = referenced_player_to_move.new_pixel_position;
-    let new_grid_position = referenced_player_to_move.new_grid_position;
     let player_entity = referenced_player_to_move.entity;
 
     let starting_position = StartingPosition::new(*player.pixel_position);
-    let new_target = Target::new(new_pixel_position, new_grid_position);
+    let new_target = referenced_player_to_move.target;
 
     let timer = Timer::new(*arrival_time.get_duration(), TimerMode::Once);
     let arrival_timer = ArrivalTimer::new(timer);
@@ -377,7 +368,7 @@ fn get_projected_position(
     player: &PlayerToMove,
     movement_direction: &MovementDirection,
     world_space: WorldSpace,
-) -> Option<(GridCords3D, Transform)> {
+) -> Option<Target> {
     let current_grid_coordinate = player.grid_coordinates;
     let mut current_grid_x = current_grid_coordinate.get_x();
     let mut current_grid_y = current_grid_coordinate.get_y();
@@ -416,10 +407,10 @@ fn get_projected_position(
         }
     }
 
-    Some((
-        GridCords3D::new(current_grid_x, current_grid_y, current_grid_z),
-        Transform::from_xyz(current_px_x, current_px_y, current_px_z),
-    ))
+    let new_grid_cords = GridCords3D::new(current_grid_x, current_grid_y, current_grid_z);
+    let new_px_position = Transform::from_xyz(current_px_x, current_px_y, current_px_z);
+
+    Some(Target::new(new_px_position, new_grid_cords))
 }
 
 /// Checks if a given position, shifted in a given
