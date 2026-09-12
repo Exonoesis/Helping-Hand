@@ -28,6 +28,19 @@ pub struct WorldCollisionInfo<'world> {
     map_pixel_dimensions: &'world PxDimensions,
 }
 
+#[derive(QueryData)]
+#[query_data(mutable)]
+pub struct MoveableEntity<'world> {
+    entity: Entity,
+    physical_position: &'world mut Transform,
+    grid_position: &'world mut GridCords3D,
+    starting_position: &'world StartingPosition,
+    size: &'world PxDimensions,
+    target: &'world Target,
+    time_to_reach_destination: &'world mut ArrivalTimer,
+    movement_direction: &'world MovementDirection,
+}
+
 struct MovementPotential<'world> {
     movement_direction: &'world MovementDirection,
     world_collision: &'world CollisionCollection,
@@ -108,7 +121,7 @@ struct ReferencedPlayerToMove<'world> {
 impl<'world> ReferencedPlayerToMove<'world> {
     pub fn new(player: &'world PlayerInformationItem, target: Target) -> Self {
         let entity = player.entity;
-        let player_to_move = PlayerToMove::new(&player);
+        let player_to_move = PlayerToMove::new(player);
 
         Self {
             entity,
@@ -118,9 +131,68 @@ impl<'world> ReferencedPlayerToMove<'world> {
     }
 }
 
-//
-// Pre-refactor Structs
-//
+struct ReferencedEntityToMove<'world> {
+    entity: Entity,
+    pixel_position: &'world mut Transform,
+    grid_coordinates: &'world mut GridCords3D,
+    target: &'world Target,
+}
+
+impl<'world> ReferencedEntityToMove<'world> {
+    pub fn new(
+        entity: Entity,
+        pixel_position: &'world mut Transform,
+        grid_coordinates: &'world mut GridCords3D,
+        target: &'world Target,
+    ) -> Self {
+        Self {
+            entity,
+            pixel_position,
+            grid_coordinates,
+            target,
+        }
+    }
+}
+
+struct MovementData<'world> {
+    starting_position: &'world StartingPosition,
+    entity_size: PxDimensions,
+    movement_direction: MovementDirection,
+}
+
+impl<'world> MovementData<'world> {
+    pub fn new(
+        starting_position: &'world StartingPosition,
+        entity_size: PxDimensions,
+        movement_direction: MovementDirection,
+    ) -> Self {
+        Self {
+            starting_position,
+            entity_size,
+            movement_direction,
+        }
+    }
+}
+
+struct MoveableEntityInfo<'world> {
+    time_to_reach_destination: &'world mut ArrivalTimer,
+    referenced_entity_to_move: ReferencedEntityToMove<'world>,
+    movement_data: MovementData<'world>,
+}
+
+impl<'world> MoveableEntityInfo<'world> {
+    pub fn new(
+        time_to_reach_destination: &'world mut ArrivalTimer,
+        referenced_entity_to_move: ReferencedEntityToMove<'world>,
+        movement_data: MovementData<'world>,
+    ) -> Self {
+        Self {
+            time_to_reach_destination,
+            referenced_entity_to_move,
+            movement_data,
+        }
+    }
+}
 
 #[derive(Message, Copy, Clone, Debug, PartialEq, Component)]
 pub enum MovementDirection {
@@ -189,6 +261,10 @@ impl ArrivalTimer {
     pub fn advance(&mut self, time_passed: Duration) {
         self.timer.tick(time_passed);
     }
+
+    pub fn is_finished(&self) -> bool {
+        self.timer.is_finished()
+    }
 }
 
 #[derive(Component)]
@@ -246,76 +322,44 @@ pub fn set_player_target(
         MovementPotential::new(&movement_direction, world_collisions_locations);
     let positional_data = PositionalData::new(&player_information, &world_collisions_locations);
 
-    let projected_position = able_to_move(movement_potential, positional_data);
-    let is_able_to_move = projected_position.is_some();
-    if !is_able_to_move {
+    let Some(new_position) = able_to_move(movement_potential, positional_data) else {
         movement_notifications.write(PlayerMovementActions::Bumping);
         return;
-    }
+    };
 
-    let new_position = projected_position.unwrap();
     let referenced_player_to_move = ReferencedPlayerToMove::new(player_information, new_position);
     movement_notifications.write(PlayerMovementActions::Walking);
-    do_the_move(referenced_player_to_move, arrival_time, commands);
+    start_the_move(referenced_player_to_move, &arrival_time, commands);
 }
-
-//
-// Pre-refactor Main Functions
-//
 
 /// Moves some entity towards a Target position.
 pub fn move_entity_to_target(
-    mut movable_entities: Query<(
-        Entity,
-        &mut Transform,
-        &mut GridCords3D,
-        &StartingPosition,
-        &PxDimensions,
-        &Target,
-        &mut ArrivalTimer,
-        &MovementDirection,
-    )>,
+    moveable_entities: Query<MoveableEntity>,
     mut commands: Commands,
     time: Res<Time>,
 ) {
-    for (
-        entity,
-        mut entity_physical_position,
-        mut entity_logical_position,
-        entity_starting_position,
-        entity_dimensions,
-        entity_target,
-        mut time_to_reach_destination,
-        movement_direction,
-    ) in &mut movable_entities
-    {
-        time_to_reach_destination.advance(time.delta());
+    for mut moveable_entity in moveable_entities {
+        let moveable_entity_info = parse_moveable_entity(&mut moveable_entity);
 
-        if time_to_reach_destination.timer.is_finished() {
-            *entity_physical_position = *entity_target.get_pixel_position();
-            *entity_logical_position = *entity_target.get_grid_coordinate();
-
-            commands.entity(entity).remove::<Target>();
-            commands.entity(entity).remove::<ArrivalTimer>();
-            commands.entity(entity).remove::<StartingPosition>();
+        if are_we_there_yet(&mut *moveable_entity_info.time_to_reach_destination, &time) {
+            movement_clean_up(
+                moveable_entity_info.referenced_entity_to_move,
+                &mut commands,
+            );
             continue;
         }
 
-        *entity_physical_position = move_towards(
-            entity_starting_position.get_position(),
-            entity_dimensions,
-            time_to_reach_destination.as_ref(),
-            *movement_direction,
+        do_the_move(
+            moveable_entity_info.time_to_reach_destination,
+            moveable_entity_info.referenced_entity_to_move,
+            moveable_entity_info.movement_data,
         );
     }
 }
 
 /// Returns true is there are movements to process
 fn time_to_move(requests_to_move: &MessageReader<MovementDirection>) -> bool {
-    if requests_to_move.is_empty() {
-        return false;
-    }
-    true
+    !requests_to_move.is_empty()
 }
 
 /// Returns the grid and pixel position to move to if valid
@@ -343,9 +387,9 @@ fn able_to_move(
 }
 
 /// Attaches the required components to preform a movement
-fn do_the_move(
+fn start_the_move(
     referenced_player_to_move: ReferencedPlayerToMove,
-    arrival_time: Res<ArrivalTime>,
+    arrival_time: &ArrivalTime,
     mut commands: Commands,
 ) {
     let player = referenced_player_to_move.player_to_move;
@@ -360,6 +404,64 @@ fn do_the_move(
     commands
         .entity(player_entity)
         .insert((starting_position, new_target, arrival_timer));
+}
+
+/// Extracts information needed to move the entity
+fn parse_moveable_entity<'world>(
+    moveable_entity: &'world mut MoveableEntityItem,
+) -> MoveableEntityInfo<'world> {
+    let referenced_entity_to_move = ReferencedEntityToMove::new(
+        moveable_entity.entity,
+        &mut moveable_entity.physical_position,
+        &mut moveable_entity.grid_position,
+        moveable_entity.target,
+    );
+
+    let movement_data = MovementData::new(
+        moveable_entity.starting_position,
+        *moveable_entity.size,
+        *moveable_entity.movement_direction,
+    );
+
+    MoveableEntityInfo::new(
+        &mut moveable_entity.time_to_reach_destination,
+        referenced_entity_to_move,
+        movement_data,
+    )
+}
+
+/// Progresses time forward and checks if entity should be at the target by now
+fn are_we_there_yet(time_to_reach_destination: &mut ArrivalTimer, time: &Res<Time>) -> bool {
+    time_to_reach_destination.advance(time.delta());
+    time_to_reach_destination.is_finished()
+}
+
+/// Places the entity exactly at the target (to avoid floating point errors)
+/// then removes components needed for the movement
+fn movement_clean_up(referenced_entity_to_move: ReferencedEntityToMove, commands: &mut Commands) {
+    let entity_target = referenced_entity_to_move.target;
+    *referenced_entity_to_move.pixel_position = *entity_target.get_pixel_position();
+    *referenced_entity_to_move.grid_coordinates = *entity_target.get_grid_coordinate();
+
+    commands
+        .entity(referenced_entity_to_move.entity)
+        .remove::<Target>()
+        .remove::<ArrivalTimer>()
+        .remove::<StartingPosition>();
+}
+
+/// Moves entity towards target based on how much time has passed
+fn do_the_move(
+    time_to_reach_destination: &mut ArrivalTimer,
+    referenced_entity_to_move: ReferencedEntityToMove,
+    movement_data: MovementData,
+) {
+    *referenced_entity_to_move.pixel_position = move_towards(
+        movement_data.starting_position.get_position(),
+        &movement_data.entity_size,
+        time_to_reach_destination,
+        movement_data.movement_direction,
+    );
 }
 
 /// Returns a new grid and pixel position shifted away from a starting coordinate in a given direction
@@ -426,23 +528,12 @@ fn will_be_out_of_map_bounds(
     let level_width = world_space.grid_dimensions.get_columns() as usize;
     let level_height = world_space.grid_dimensions.get_rows() as usize;
 
-    if current_x == 0 && *movement_direction == MovementDirection::Left {
-        return true;
-    }
-
-    if current_x == level_width - 1 && *movement_direction == MovementDirection::Right {
-        return true;
-    }
-
-    if current_y == 0 && *movement_direction == MovementDirection::Up {
-        return true;
-    }
-
-    if current_y == level_height - 1 && *movement_direction == MovementDirection::Down {
-        return true;
-    }
-
-    false
+    return match movement_direction {
+        MovementDirection::Left => current_x == 0,
+        MovementDirection::Right => current_x == level_width - 1,
+        MovementDirection::Up => current_y == 0,
+        MovementDirection::Down => current_y == level_height - 1,
+    };
 }
 
 /// Checks if a given position intersects a tile marked as collision
@@ -450,15 +541,8 @@ fn is_going_to_collide(
     projected_position: &GridCords3D,
     world_collisions: &CollisionCollection,
 ) -> bool {
-    if world_collisions.has(projected_position) {
-        return true;
-    }
-    false
+    world_collisions.has(projected_position)
 }
-
-//
-// Pre-refactor Helper Functions
-//
 
 /// Moves some entities's position towards a target in a given amount of time.
 fn move_towards(
@@ -531,8 +615,7 @@ fn calculate_current_distance(
     let elapsed_time = time_to_reach_destination.elapsed();
     let total_time = time_to_reach_destination.total();
 
-    let current_distance = if total_time.is_zero() || time_to_reach_destination.timer.is_finished()
-    {
+    let current_distance = if total_time.is_zero() || time_to_reach_destination.is_finished() {
         total_distance as f32
     } else {
         (total_distance as f32 * elapsed_time.as_secs_f32()) / total_time.as_secs_f32()
