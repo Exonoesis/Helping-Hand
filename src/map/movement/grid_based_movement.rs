@@ -349,11 +349,7 @@ pub fn move_entity_to_target(
             continue;
         }
 
-        do_the_move(
-            moveable_entity_info.time_to_reach_destination,
-            moveable_entity_info.referenced_entity_to_move,
-            moveable_entity_info.movement_data,
-        );
+        do_the_move(moveable_entity_info);
     }
 }
 
@@ -451,11 +447,11 @@ fn movement_clean_up(referenced_entity_to_move: ReferencedEntityToMove, commands
 }
 
 /// Moves entity towards target based on how much time has passed
-fn do_the_move(
-    time_to_reach_destination: &mut ArrivalTimer,
-    referenced_entity_to_move: ReferencedEntityToMove,
-    movement_data: MovementData,
-) {
+fn do_the_move(moveable_entity_info: MoveableEntityInfo) {
+    let time_to_reach_destination = moveable_entity_info.time_to_reach_destination;
+    let referenced_entity_to_move = moveable_entity_info.referenced_entity_to_move;
+    let movement_data = moveable_entity_info.movement_data;
+
     *referenced_entity_to_move.pixel_position = move_towards(
         movement_data.starting_position.get_position(),
         &movement_data.entity_size,
