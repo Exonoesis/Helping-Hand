@@ -128,7 +128,14 @@ fn render_npc_tile(
     let tile_sprite =
         get_sprite_bundle(tile, tilemap_dimensions, asset_server, texture_atlas_assets);
     let npc = NPC::new(tile.get_properties().get("name").unwrap().clone());
-    let parsed_npc_tile = NPCTile::new(*tile_size, *tile_location, tile_sprite, npc);
+    let movement_direction = MovementDirection::Left;
+    let parsed_npc_tile = NPCTile::new(
+        *tile_size,
+        *tile_location,
+        tile_sprite,
+        npc,
+        movement_direction,
+    );
     return parsed_npc_tile;
 }
 

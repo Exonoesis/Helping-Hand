@@ -18,7 +18,12 @@ impl Plugin for PlayableCharacterPlugin {
 
         app.add_systems(
             Update,
-            (set_player_target, move_entity_to_target).run_if(in_state(AppState::InScene)),
+            (
+                set_player_target,
+                move_entity_to_target,
+                process_npc_path_actions,
+            )
+                .run_if(in_state(AppState::InScene)),
         )
         .add_systems(
             Update,
@@ -46,7 +51,12 @@ impl Plugin for PlayableCharacterTestingPlugin {
 
         app.add_systems(
             Update,
-            (set_player_target, move_entity_to_target).run_if(in_state(AppState::InScene)),
+            (
+                set_player_target,
+                move_entity_to_target,
+                process_npc_path_actions,
+            )
+                .run_if(in_state(AppState::InScene)),
         )
         .add_message::<PlayerMovementActions>();
     }

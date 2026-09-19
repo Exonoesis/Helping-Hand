@@ -97,8 +97,8 @@ impl Plugin for CoreActsPlugin {
                 (
                     curtain_down,
                     despawn_old_scene,
-                    despawn_image,
-                    despawn_map_cutscene,
+                    despawn_image_scene,
+                    despawn_map_scene,
                     spawn_new_scene,
                     render_image_cutscene,
                     render_map_cutscene,

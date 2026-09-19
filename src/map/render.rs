@@ -111,6 +111,7 @@ pub struct NPCTile {
     grid_coordinate: GridCords3D,
     sprite_bundle: SpriteBundle,
     npc: NPC,
+    movement_direction: MovementDirection,
 }
 
 impl NPCTile {
@@ -119,12 +120,14 @@ impl NPCTile {
         grid_coordinate: GridCords3D,
         sprite_bundle: SpriteBundle,
         npc: NPC,
+        movement_direction: MovementDirection,
     ) -> Self {
         Self {
             tile_dimensions,
             grid_coordinate,
             sprite_bundle,
             npc,
+            movement_direction,
         }
     }
 

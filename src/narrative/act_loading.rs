@@ -1,11 +1,13 @@
 use crate::map::interactions::map_changing::ChangeLevel;
-use crate::narrative::acts::{Act, SceneContents, SceneType};
+use crate::narrative::acts::{Act, MapAction, MapInstruction, SceneContents, SceneType};
 use crate::plugins::acts::{FadeDuration, MapsFolderPath};
 use crate::ui::menus::ImageNodeBundle;
 use crate::AppState;
 use bevy::asset::UntypedAssetId;
 use bevy::prelude::*;
+use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 use super::acts::ActLoader;
 
@@ -234,7 +236,7 @@ pub fn despawn_old_scene(
 #[derive(Message)]
 pub struct DespawnDone;
 
-pub fn despawn_image(
+pub fn despawn_image_scene(
     mut despawn_image_requests: MessageReader<DespawnScene>,
     scene_to_remove: Query<Entity, With<ImageCutscene>>,
     mut commands: Commands,
@@ -246,18 +248,41 @@ pub fn despawn_image(
 
     let despawn_event = despawn_image_requests.read().next().unwrap();
 
+    if *despawn_event != DespawnScene::Image {
+        return;
+    }
+
     for scene_entity in scene_to_remove {
-        if *despawn_event == DespawnScene::Image {
-            commands.entity(scene_entity).despawn();
-        }
+        commands.entity(scene_entity).despawn();
     }
 
     despawning_done_notification.write(DespawnDone);
 }
 
-pub fn despawn_map_cutscene() {
-    // TODO: Nearly the same as despawn_image
-    // Need to split change level into despawn_map and load_next_map (name pending)
+// TODO: This doesn't currently despawn the map itself, only the director
+// Need to split change level into despawn_map and load_next_map (name pending)
+// so we can call despawn_map here as well
+pub fn despawn_map_scene(
+    mut despawn_map_requests: MessageReader<DespawnScene>,
+    script_to_remove: Query<Entity, With<MapCutsceneDirector>>,
+    mut commands: Commands,
+    mut despawning_done_notification: MessageWriter<DespawnDone>,
+) {
+    if despawn_map_requests.is_empty() {
+        return;
+    }
+
+    let despawn_event = despawn_map_requests.read().next().unwrap();
+
+    if *despawn_event != DespawnScene::Map {
+        return;
+    }
+
+    for scene_script in script_to_remove {
+        commands.entity(scene_script).despawn();
+    }
+
+    despawning_done_notification.write(DespawnDone);
 }
 
 #[derive(Message, PartialEq)]
@@ -350,11 +375,51 @@ pub fn render_image_cutscene(
     }
 }
 
+pub struct PendingBatch {
+    pub delay: Option<Duration>,
+    pub actions: Vec<MapInstruction>,
+}
+
+pub struct ActiveBatch {
+    pub delay: Option<Timer>,
+    pub actions: Vec<MapInstruction>,
+    pub moving_npcs: Vec<String>,
+}
+
+#[derive(Component)]
+pub struct MapCutsceneDirector {
+    pub pending_batches: VecDeque<PendingBatch>,
+    pub active_batch: Option<ActiveBatch>,
+}
+
+fn create_batches_from(map_actions: &Vec<MapAction>) -> VecDeque<PendingBatch> {
+    let mut batches = VecDeque::new();
+
+    for map_action in map_actions {
+        let mut delay = None;
+        let mut actions = Vec::new();
+
+        for instruction in map_action.get_instructions() {
+            match instruction {
+                MapInstruction::Wait(duration) => delay = Some(*duration),
+                MapInstruction::Place(..) | MapInstruction::Move(..) | MapInstruction::Loop(..) => {
+                    actions.push(instruction.clone());
+                }
+            }
+        }
+
+        batches.push_back(PendingBatch { delay, actions });
+    }
+
+    batches
+}
+
 /// Render a Map Cutscene into the game
 pub fn render_map_cutscene(
     current_act: Single<&Act>,
     mut load_level_broadcaster: MessageWriter<ChangeLevel>,
     mut spawn_map_requests: MessageReader<SpawnScene>,
+    mut commands: Commands,
 ) {
     if spawn_map_requests.is_empty() {
         return;
@@ -372,7 +437,10 @@ pub fn render_map_cutscene(
         let level_name = map_path.to_str().unwrap();
         load_level_broadcaster.write(ChangeLevel::new(level_name));
 
-        //TODO: Load path objects
+        commands.spawn(MapCutsceneDirector {
+            pending_batches: create_batches_from(map_actions),
+            active_batch: None,
+        });
     }
 }
 
