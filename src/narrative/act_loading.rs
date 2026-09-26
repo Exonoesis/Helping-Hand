@@ -375,24 +375,18 @@ pub fn render_image_cutscene(
     }
 }
 
-pub struct PendingBatch {
+pub struct ActionBatch {
     pub delay: Option<Duration>,
     pub actions: Vec<MapInstruction>,
 }
 
-pub struct ActiveBatch {
-    pub delay: Option<Timer>,
-    pub actions: Vec<MapInstruction>,
-    pub moving_npcs: Vec<String>,
-}
-
 #[derive(Component)]
 pub struct MapCutsceneDirector {
-    pub pending_batches: VecDeque<PendingBatch>,
-    pub active_batch: Option<ActiveBatch>,
+    pub batches: VecDeque<ActionBatch>,
+    pub active_batch: Option<ActionBatch>,
 }
 
-fn create_batches_from(map_actions: &Vec<MapAction>) -> VecDeque<PendingBatch> {
+fn create_batches_from(map_actions: &Vec<MapAction>) -> VecDeque<ActionBatch> {
     let mut batches = VecDeque::new();
 
     for map_action in map_actions {
@@ -408,7 +402,7 @@ fn create_batches_from(map_actions: &Vec<MapAction>) -> VecDeque<PendingBatch> {
             }
         }
 
-        batches.push_back(PendingBatch { delay, actions });
+        batches.push_back(ActionBatch { delay, actions });
     }
 
     batches
@@ -438,7 +432,7 @@ pub fn render_map_cutscene(
         load_level_broadcaster.write(ChangeLevel::new(level_name));
 
         commands.spawn(MapCutsceneDirector {
-            pending_batches: create_batches_from(map_actions),
+            batches: create_batches_from(map_actions),
             active_batch: None,
         });
     }
