@@ -1,5 +1,6 @@
 use super::collision::CollisionCollection;
-use crate::map::{player::*, GridCords3D, GridDimensions, PxDimensions};
+use crate::map::{flip_y_axis, player::*, GridCords2D, GridCords3D, GridDimensions, PxDimensions};
+
 use bevy::{
     ecs::query::{QueryData, QueryFilter},
     prelude::*,
@@ -89,6 +90,22 @@ impl<'world> WorldSpace<'world> {
         Self {
             px_dimensions,
             grid_dimensions,
+        }
+    }
+}
+
+struct TileMeasurements {
+    tile_width: usize,
+    tile_height: usize,
+    map_px_height: usize,
+}
+
+impl TileMeasurements {
+    pub fn new(map_px_size: &PxDimensions, map_grid_size: &GridDimensions) -> Self {
+        Self {
+            tile_width: map_px_size.get_width() / map_grid_size.get_columns() as usize,
+            tile_height: map_px_size.get_height() / map_grid_size.get_rows() as usize,
+            map_px_height: map_px_size.get_height(),
         }
     }
 }
@@ -353,6 +370,11 @@ pub fn move_entity_to_target(
     }
 }
 
+/// TODO: Function description
+pub fn process_npc_path_actions() {
+    // TODO: Oh boy...
+}
+
 /// Returns true is there are movements to process
 fn time_to_move(requests_to_move: &MessageReader<MovementDirection>) -> bool {
     !requests_to_move.is_empty()
@@ -436,8 +458,12 @@ fn are_we_there_yet(time_to_reach_destination: &mut ArrivalTimer, time: &Res<Tim
 /// then removes components needed for the movement
 fn movement_clean_up(referenced_entity_to_move: ReferencedEntityToMove, commands: &mut Commands) {
     let entity_target = referenced_entity_to_move.target;
-    *referenced_entity_to_move.pixel_position = *entity_target.get_pixel_position();
-    *referenced_entity_to_move.grid_coordinates = *entity_target.get_grid_coordinate();
+
+    snap_to(
+        entity_target,
+        referenced_entity_to_move.pixel_position,
+        referenced_entity_to_move.grid_coordinates,
+    );
 
     commands
         .entity(referenced_entity_to_move.entity)
@@ -477,10 +503,8 @@ fn get_projected_position(
     let mut current_px_y = current_px_coordinate.translation.y;
     let current_px_z = current_px_coordinate.translation.z;
 
-    let tile_width =
-        world_space.px_dimensions.get_width() / world_space.grid_dimensions.columns as usize;
-    let tile_height =
-        world_space.px_dimensions.get_height() / world_space.grid_dimensions.rows as usize;
+    let tile_measurements =
+        TileMeasurements::new(world_space.px_dimensions, world_space.grid_dimensions);
 
     if will_be_out_of_map_bounds(current_grid_coordinate, world_space, movement_direction) {
         return None;
@@ -489,19 +513,19 @@ fn get_projected_position(
     match movement_direction {
         MovementDirection::Left => {
             current_grid_x -= 1;
-            current_px_x -= tile_width as f32;
+            current_px_x -= tile_measurements.tile_width as f32;
         }
         MovementDirection::Right => {
             current_grid_x += 1;
-            current_px_x += tile_width as f32
+            current_px_x += tile_measurements.tile_width as f32
         }
         MovementDirection::Up => {
             current_grid_y -= 1;
-            current_px_y += tile_height as f32
+            current_px_y += tile_measurements.tile_height as f32
         }
         MovementDirection::Down => {
             current_grid_y += 1;
-            current_px_y -= tile_height as f32
+            current_px_y -= tile_measurements.tile_height as f32
         }
     }
 
@@ -575,31 +599,6 @@ fn move_towards(
     new_position
 }
 
-// NPCs will need to calculate the direction they're going, this code may be useful for that
-/*
-/// Returns a direction for some starting and target position.
-fn get_direction(position: &Transform, target: &Target) -> MovementDirection {
-    let x_difference = target.get_position().translation.x - position.translation.x;
-    let y_difference = target.get_position().translation.y - position.translation.y;
-
-    if x_difference != 0.0 {
-        return match x_difference.is_sign_positive() {
-            true => MovementDirection::Right,
-            false => MovementDirection::Left,
-        };
-    }
-
-    if y_difference != 0.0 {
-        return match y_difference.is_sign_positive() {
-            true => MovementDirection::Up,
-            false => MovementDirection::Down,
-        };
-    }
-
-    panic!("get_direction: There's no difference in the starting and ending position.");
-}
-*/
-
 /// Returns the current distance relative to the current time elapsed.
 ///
 /// This calculates the following ratio:
@@ -618,4 +617,45 @@ fn calculate_current_distance(
     };
 
     current_distance
+}
+
+/// Converts a waypoint into a Target
+fn grid_to_target(
+    waypoint: &GridCords2D,
+    z: usize,
+    tile_measurements: &TileMeasurements,
+) -> Target {
+    let px_x = (waypoint.get_x() * tile_measurements.tile_width) as f32;
+
+    // Since paths come from Tiled which is Y-down; we need to flip them to Y-up for Bevy
+    let grid_y = (waypoint.get_y() * tile_measurements.tile_height) as f32;
+    let px_y = flip_y_axis(
+        tile_measurements.map_px_height,
+        grid_y,
+        tile_measurements.tile_height,
+    );
+
+    Target::new(
+        Transform::from_xyz(px_x, px_y, z as f32),
+        GridCords3D::new(waypoint.get_x(), waypoint.get_y(), z),
+    )
+}
+
+///Calculates movement direction from one tile to another
+fn get_direction(current: &GridCords3D, next: &GridCords2D) -> MovementDirection {
+    if next.get_x() > current.get_x() {
+        MovementDirection::Right
+    } else if next.get_x() < current.get_x() {
+        MovementDirection::Left
+    } else if next.get_y() > current.get_y() {
+        MovementDirection::Down
+    } else {
+        MovementDirection::Up
+    }
+}
+
+/// Places an entity exactly on a tile to avoid floating point error
+fn snap_to(target: &Target, transform: &mut Transform, grid_position: &mut GridCords3D) {
+    *transform = *target.get_pixel_position();
+    *grid_position = *target.get_grid_coordinate();
 }
