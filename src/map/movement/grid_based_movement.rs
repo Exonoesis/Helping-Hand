@@ -1,5 +1,13 @@
 use super::collision::CollisionCollection;
-use crate::map::{flip_y_axis, player::*, GridCords2D, GridCords3D, GridDimensions, PxDimensions};
+use crate::{
+    map::{
+        flip_y_axis, npc::NPC, player::*, GridCords2D, GridCords3D, GridDimensions, PxDimensions,
+    },
+    narrative::{
+        act_loading::MapCutsceneDirector,
+        acts::{Character, MapInstruction},
+    },
+};
 
 use bevy::{
     ecs::query::{QueryData, QueryFilter},
@@ -371,8 +379,46 @@ pub fn move_entity_to_target(
 }
 
 /// TODO: Function description
-pub fn process_npc_path_actions() {
-    // TODO: Oh boy...
+pub fn process_npc_path_actions(
+    mut director: Single<&mut MapCutsceneDirector>,
+    mut npcs: Query<(&NPC, &mut Transform, &mut GridCords3D)>,
+    map: Single<WorldCollisionInfo>,
+) {
+    if npcs.is_empty() {
+        return;
+    }
+
+    // [For Wait] If director has a timer that hasn't finished yet, then don't do anything
+    // [For Move] If there's NPCs that are still moving, then don't do anything
+
+    if !director.has_next_batch() {
+        return;
+    }
+    let action_batch = director.get_next_batch();
+
+    let tile_measurements =
+        TileMeasurements::new(map.map_pixel_dimensions, map.map_grid_dimensions);
+
+    // [For Wait] if wait then call set_scene_delay
+    // > which will get the wait duration and set the delay on the director
+    for instruction in action_batch.get_instructions() {
+        match instruction {
+            MapInstruction::Wait(duration) => { /* TODO */ }
+            MapInstruction::Place(character, map_location) => place_npc(
+                &mut npcs,
+                character,
+                map_location.get_cords(),
+                &tile_measurements,
+            ),
+            MapInstruction::Move(character, map_path) => {
+                let map_location = map_path.get_path()[0].clone();
+                place_npc(&mut npcs, character, &map_location, &tile_measurements);
+
+                // TODO: move_npc helper function that attaches the needed components
+            }
+            MapInstruction::Loop(character, map_path) => { /* TODO */ }
+        }
+    }
 }
 
 /// Returns true is there are movements to process
@@ -619,6 +665,26 @@ fn calculate_current_distance(
     current_distance
 }
 
+// Places the given NPC at a given location
+fn place_npc(
+    npc_list: &mut Query<(&NPC, &mut Transform, &mut GridCords3D)>,
+    character: &Character,
+    map_location: &GridCords2D,
+    tile_measurements: &TileMeasurements,
+) {
+    for (npc, mut transform, mut grid_position) in npc_list.iter_mut() {
+        if npc.get_name() != character.get_name() {
+            continue;
+        }
+
+        let npc_z = transform.translation.z as usize;
+        let target = grid_to_target(map_location, npc_z, tile_measurements);
+
+        snap_to(&target, &mut transform, &mut grid_position);
+        break;
+    }
+}
+
 /// Converts a waypoint into a Target
 fn grid_to_target(
     waypoint: &GridCords2D,
@@ -641,6 +707,13 @@ fn grid_to_target(
     )
 }
 
+/// Places an entity exactly on a tile to avoid floating point error
+fn snap_to(target: &Target, transform: &mut Transform, grid_position: &mut GridCords3D) {
+    *transform = *target.get_pixel_position();
+    *grid_position = *target.get_grid_coordinate();
+}
+
+/*
 ///Calculates movement direction from one tile to another
 fn get_direction(current: &GridCords3D, next: &GridCords2D) -> MovementDirection {
     if next.get_x() > current.get_x() {
@@ -653,9 +726,4 @@ fn get_direction(current: &GridCords3D, next: &GridCords2D) -> MovementDirection
         MovementDirection::Up
     }
 }
-
-/// Places an entity exactly on a tile to avoid floating point error
-fn snap_to(target: &Target, transform: &mut Transform, grid_position: &mut GridCords3D) {
-    *transform = *target.get_pixel_position();
-    *grid_position = *target.get_grid_coordinate();
-}
+*/

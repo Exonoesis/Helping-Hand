@@ -204,10 +204,10 @@ pub fn load_map(
 
     // This section represents the Physical properties of the map.
     let map_size_in_px = *map.get_px_dimensions();
-    let map_grid_dimenions = *map.get_grid_dimensions();
+    let map_grid_dimensions = *map.get_grid_dimensions();
     let mut interactives = get_interactives_from(&tiled_map);
     // We have to flip the y-axis of all tiles, since they're physical coordinates.
-    interactives = flip_interactives_on_y_axis(interactives, map_size_in_px, map_grid_dimenions);
+    interactives = flip_interactives_on_y_axis(interactives, map_size_in_px, map_grid_dimensions);
     let interactive_collection = InteractiveCollection::from_markers(interactives);
     let physical_properties = (map_size_in_px, interactive_collection);
 

@@ -1,5 +1,5 @@
 use crate::map::interactions::map_changing::ChangeLevel;
-use crate::narrative::acts::{Act, MapAction, MapInstruction, SceneContents, SceneType};
+use crate::narrative::acts::{Act, MapAction, SceneContents, SceneType};
 use crate::plugins::acts::{FadeDuration, MapsFolderPath};
 use crate::ui::menus::ImageNodeBundle;
 use crate::AppState;
@@ -7,7 +7,6 @@ use bevy::asset::UntypedAssetId;
 use bevy::prelude::*;
 use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
-use std::time::Duration;
 
 use super::acts::ActLoader;
 
@@ -375,37 +374,21 @@ pub fn render_image_cutscene(
     }
 }
 
-pub struct ActionBatch {
-    pub delay: Option<Duration>,
-    pub actions: Vec<MapInstruction>,
-}
-
 #[derive(Component)]
 pub struct MapCutsceneDirector {
-    pub batches: VecDeque<ActionBatch>,
-    pub active_batch: Option<ActionBatch>,
+    pub batches: VecDeque<MapAction>,
 }
 
-fn create_batches_from(map_actions: &Vec<MapAction>) -> VecDeque<ActionBatch> {
-    let mut batches = VecDeque::new();
-
-    for map_action in map_actions {
-        let mut delay = None;
-        let mut actions = Vec::new();
-
-        for instruction in map_action.get_instructions() {
-            match instruction {
-                MapInstruction::Wait(duration) => delay = Some(*duration),
-                MapInstruction::Place(..) | MapInstruction::Move(..) | MapInstruction::Loop(..) => {
-                    actions.push(instruction.clone());
-                }
-            }
-        }
-
-        batches.push_back(ActionBatch { delay, actions });
+impl MapCutsceneDirector {
+    pub fn has_next_batch(&self) -> bool {
+        !self.batches.is_empty()
     }
 
-    batches
+    pub fn get_next_batch(&mut self) -> MapAction {
+        self.batches
+            .pop_front()
+            .expect("MapCutsceneDirector has no next batch.")
+    }
 }
 
 /// Render a Map Cutscene into the game
@@ -432,8 +415,7 @@ pub fn render_map_cutscene(
         load_level_broadcaster.write(ChangeLevel::new(level_name));
 
         commands.spawn(MapCutsceneDirector {
-            batches: create_batches_from(map_actions),
-            active_batch: None,
+            batches: VecDeque::from(map_actions.clone()),
         });
     }
 }

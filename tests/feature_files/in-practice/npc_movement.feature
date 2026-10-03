@@ -32,7 +32,8 @@ Feature: NPC Movements
     Scenario: An NPC can be placed in a specified location
         Given the game is loaded with the act 'npc_movement_act.json',
         When the map cutscene 'NPC Placement' is loaded,
-        Then the NPC 'Iye' is at tile 0, 0.
+        And 0 steps have taken place,
+        Then the NPC 'Iye' is at tile 0,0.
 
     ##################################################################################
     #                               Line Path Tests                                  #

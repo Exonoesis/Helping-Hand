@@ -88,6 +88,14 @@ impl Game {
         self.app.update();
     }
 
+    pub fn tick_through_transition(&mut self) {
+        self.tick();
+
+        while self.get_state() != &AppState::InScene {
+            self.tick();
+        }
+    }
+
     /// Sets the window dimensions of the game to the specified width and height.
     pub fn set_window_resolution(&mut self, window_width: u32, window_height: u32) {
         let mut window = self.get_mut::<Window>();

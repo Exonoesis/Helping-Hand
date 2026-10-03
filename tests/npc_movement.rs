@@ -33,16 +33,13 @@ fn load_plugin_and_act(game: &mut Game, act_file_name: String) {
     game.tick();
 
     game.set_state(AppState::Transitioning);
-
-    while game.get_state() == &AppState::Transitioning {
-        game.tick();
-    }
+    game.tick_through_transition();
 }
 
 #[when(regex = r"the map cutscene '(.+)' is loaded,")]
 fn load_scene(game: &mut Game, scene_name: String) {
     game.write_message(LoadNextScene::new(scene_name));
-    game.tick();
+    game.tick_through_transition();
 }
 
 #[when(regex = r"([0-9]+) steps have taken place,")]
