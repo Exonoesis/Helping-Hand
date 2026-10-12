@@ -7,6 +7,7 @@ use bevy::asset::UntypedAssetId;
 use bevy::prelude::*;
 use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 use super::acts::ActLoader;
 
@@ -376,10 +377,18 @@ pub fn render_image_cutscene(
 
 #[derive(Component)]
 pub struct MapCutsceneDirector {
-    pub batches: VecDeque<MapAction>,
+    batches: VecDeque<MapAction>,
+    wait_timer: Option<Timer>,
 }
 
 impl MapCutsceneDirector {
+    pub fn new(batches: VecDeque<MapAction>) -> Self {
+        Self {
+            batches,
+            wait_timer: None,
+        }
+    }
+
     pub fn has_next_batch(&self) -> bool {
         !self.batches.is_empty()
     }
@@ -388,6 +397,23 @@ impl MapCutsceneDirector {
         self.batches
             .pop_front()
             .expect("MapCutsceneDirector has no next batch.")
+    }
+
+    pub fn start_wait(&mut self, duration: Duration) {
+        self.wait_timer = Some(Timer::from_seconds(duration.as_secs_f32(), TimerMode::Once));
+    }
+
+    pub fn is_waiting(&self) -> bool {
+        self.wait_timer.is_some()
+    }
+
+    pub fn tick_wait(&mut self, delta: Duration) {
+        let timer = self.wait_timer.as_mut().unwrap();
+        timer.tick(delta);
+
+        if timer.is_finished() {
+            self.wait_timer = None;
+        }
     }
 }
 
@@ -414,9 +440,9 @@ pub fn render_map_cutscene(
         let level_name = map_path.to_str().unwrap();
         load_level_broadcaster.write(ChangeLevel::new(level_name));
 
-        commands.spawn(MapCutsceneDirector {
-            batches: VecDeque::from(map_actions.clone()),
-        });
+        commands.spawn(MapCutsceneDirector::new(VecDeque::from(
+            map_actions.clone(),
+        )));
     }
 }
 

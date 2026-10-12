@@ -396,14 +396,15 @@ pub fn move_entity_to_target(
     }
 }
 
-/// Moves all NPCs in a batch along their paths until all
-/// path endings have been reached then loads the next batch
+/// Moves all non-looping NPCs in a batch along their paths to the end,
+/// then loads the next batch. A Wait batch is held until its timer expires.
 pub fn process_npc_path_actions(
     mut commands: Commands,
     mut director: Single<&mut MapCutsceneDirector>,
     mut npcs: Query<NPCInformation>,
     map: Single<WorldCollisionInfo>,
     arrival_time: Res<ArrivalTime>,
+    time: Res<Time>,
 ) {
     if npcs.is_empty() {
         return;
@@ -415,7 +416,11 @@ pub fn process_npc_path_actions(
         TileMeasurements::new(map.map_pixel_dimensions, map.map_grid_dimensions);
     advance_npc_paths(&mut npcs, &tile_measurements, &arrival_time, &mut commands);
 
-    if path_in_progress {
+    if director.is_waiting() {
+        director.tick_wait(time.delta());
+    }
+
+    if path_in_progress || director.is_waiting() {
         return;
     }
 
@@ -430,6 +435,7 @@ pub fn process_npc_path_actions(
         &tile_measurements,
         &arrival_time,
         &mut commands,
+        &mut director,
     );
 }
 
@@ -871,10 +877,13 @@ fn apply_instructions(
     tile_measurements: &TileMeasurements,
     arrival_time: &ArrivalTime,
     commands: &mut Commands,
+    director: &mut MapCutsceneDirector,
 ) {
     for instruction in instructions {
         match instruction {
-            MapInstruction::Wait(duration) => { /* TODO */ }
+            MapInstruction::Wait(duration) => {
+                director.start_wait(*duration);
+            }
             MapInstruction::Place(character, map_location) => {
                 place_npc(npcs, character, map_location.get_cords(), tile_measurements)
             }
