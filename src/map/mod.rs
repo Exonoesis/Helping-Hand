@@ -406,7 +406,7 @@ impl PxCords {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct GridCords2D {
     grid_x: usize,
     grid_y: usize,

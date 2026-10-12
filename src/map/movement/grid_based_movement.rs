@@ -39,6 +39,7 @@ pub struct NPCInformation<'world> {
     grid_position: &'world mut GridCords3D,
     facing_direction: &'world mut MovementDirection,
     path: Option<&'world mut NPCPath>,
+    looping_path: Option<&'world LoopingPath>,
     target: Option<&'world Target>,
 }
 
@@ -253,6 +254,14 @@ impl NPCPath {
         Self { waypoints }
     }
 }
+
+enum PathKind {
+    Once,
+    Looping,
+}
+
+#[derive(Component)]
+pub struct LoopingPath;
 
 #[derive(Resource)]
 pub struct ArrivalTime {
@@ -698,6 +707,7 @@ fn attach_path(
     tile_measurements: &TileMeasurements,
     arrival_time: &ArrivalTime,
     commands: &mut Commands,
+    path_kind: PathKind,
 ) {
     let path_points = map_path.get_path();
 
@@ -725,10 +735,23 @@ fn attach_path(
             commands,
         );
 
-        if path_points.len() > 2 {
-            commands
-                .entity(npc_info.entity)
-                .insert(NPCPath::new(path_points[2..].to_vec().into()));
+        let mut remaining = VecDeque::from(path_points[2..].to_vec());
+
+        match path_kind {
+            PathKind::Once => {
+                if !remaining.is_empty() {
+                    commands
+                        .entity(npc_info.entity)
+                        .insert(NPCPath::new(remaining));
+                }
+            }
+            PathKind::Looping => {
+                remaining.push_back(path_points[0]);
+                remaining.push_back(path_points[1]);
+                commands
+                    .entity(npc_info.entity)
+                    .insert((NPCPath::new(remaining), LoopingPath));
+            }
         }
         break;
     }
@@ -782,6 +805,10 @@ fn is_still_walking(npcs: &Query<NPCInformation>) -> bool {
             continue;
         }
 
+        if npc_info.looping_path.is_some() {
+            continue;
+        }
+
         let path = npc_info.path.unwrap();
         let is_currently_moving = npc_info.target.is_some();
         let has_remaining_waypoints = !path.waypoints.is_empty();
@@ -794,7 +821,7 @@ fn is_still_walking(npcs: &Query<NPCInformation>) -> bool {
     false
 }
 
-/// Starts each idle NPCs next step and drops paths that are finished
+/// Starts each idle NPC's next step and drops paths that are finished
 fn advance_npc_paths(
     npcs: &mut Query<NPCInformation>,
     tile_measurements: &TileMeasurements,
@@ -809,7 +836,9 @@ fn advance_npc_paths(
             continue;
         }
 
-        let next_waypoint = npc_info.path.unwrap().waypoints.pop_front();
+        let is_looping = npc_info.looping_path.is_some();
+        let mut path = npc_info.path.unwrap();
+        let next_waypoint = path.waypoints.pop_front();
 
         if next_waypoint.is_none() {
             commands.entity(npc_info.entity).remove::<NPCPath>();
@@ -817,6 +846,11 @@ fn advance_npc_paths(
         }
 
         let waypoint = next_waypoint.unwrap();
+
+        if is_looping {
+            path.waypoints.push_back(waypoint);
+        }
+
         let npc_z = npc_info.physical_position.translation.z as usize;
         let target = grid_to_target(&waypoint, npc_z, tile_measurements);
         *npc_info.facing_direction = get_direction(&*npc_info.grid_position, &waypoint);
@@ -852,9 +886,20 @@ fn apply_instructions(
                     tile_measurements,
                     arrival_time,
                     commands,
+                    PathKind::Once,
                 );
             }
-            MapInstruction::Loop(character, map_path) => { /* TODO */ }
+            MapInstruction::Loop(character, map_path) => {
+                attach_path(
+                    npcs,
+                    character,
+                    map_path,
+                    tile_measurements,
+                    arrival_time,
+                    commands,
+                    PathKind::Looping,
+                );
+            }
         }
     }
 }
