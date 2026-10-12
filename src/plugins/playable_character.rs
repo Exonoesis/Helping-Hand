@@ -14,7 +14,7 @@ pub struct PlayableCharacterPlugin;
 impl Plugin for PlayableCharacterPlugin {
     fn build(&self, app: &mut App) {
         app.add_message::<MovementDirection>();
-        app.insert_resource(ArrivalTime::new(Duration::from_secs_f32(0.15)));
+        app.insert_resource(ArrivalTime::new(Duration::from_secs_f32(0.22)));
 
         app.add_systems(
             Update,
@@ -23,6 +23,7 @@ impl Plugin for PlayableCharacterPlugin {
                 move_entity_to_target,
                 process_npc_path_actions,
             )
+                .chain()
                 .run_if(in_state(AppState::InScene)),
         )
         .add_systems(
@@ -56,6 +57,7 @@ impl Plugin for PlayableCharacterTestingPlugin {
                 move_entity_to_target,
                 process_npc_path_actions,
             )
+                .chain()
                 .run_if(in_state(AppState::InScene)),
         )
         .add_message::<PlayerMovementActions>();

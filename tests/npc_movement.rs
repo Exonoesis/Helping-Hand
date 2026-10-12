@@ -6,7 +6,7 @@ use crate::mock_game::Game;
 
 use cucumber::{given, then, when, World};
 use helping_hand::{
-    map::GridCords3D,
+    map::{GridCords2D, GridCords3D},
     narrative::act_loading::{LoadAct, LoadNextScene},
     plugins::{acts::CoreActsPlugin, levels::CoreLevelsPlugin},
     AppState,
@@ -80,6 +80,15 @@ fn verify_npc_at_tile_grid_coordinates(
         expected_npc_tile_grid_coordinate,
         actual_npc_tile_grid_coordinate
     );
+}
+
+#[then(regex = r"the NPC '(.+)' is at tile ([0-9]+),([0-9]+).")]
+fn verify_npc_at_tile(game: &mut Game, npc_name: String, tile_x: usize, tile_y: usize) {
+    let expected_npc_tile = GridCords2D::new(tile_x, tile_y);
+    let actual_npc_tile = game.get_npc_coordinate(&npc_name);
+
+    assert_eq!(expected_npc_tile.get_x(), actual_npc_tile.get_x());
+    assert_eq!(expected_npc_tile.get_y(), actual_npc_tile.get_y());
 }
 
 // This runs before everything else, so you can setup things here.

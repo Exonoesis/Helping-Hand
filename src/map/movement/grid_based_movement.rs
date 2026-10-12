@@ -5,7 +5,7 @@ use crate::{
     },
     narrative::{
         act_loading::MapCutsceneDirector,
-        acts::{Character, MapInstruction},
+        acts::{Character, MapInstruction, MapPath},
     },
 };
 
@@ -13,7 +13,7 @@ use bevy::{
     ecs::query::{QueryData, QueryFilter},
     prelude::*,
 };
-use std::time::Duration;
+use std::{collections::VecDeque, time::Duration};
 
 #[derive(QueryData)]
 #[query_data(mutable)]
@@ -28,6 +28,18 @@ pub struct PlayerInformation<'world> {
 #[derive(QueryFilter)]
 pub struct IdlePlayerIdentifiers {
     filters: (With<Player>, Without<Target>, Without<ArrivalTimer>),
+}
+
+#[derive(QueryData)]
+#[query_data(mutable)]
+pub struct NPCInformation<'world> {
+    entity: Entity,
+    npc: &'world NPC,
+    physical_position: &'world mut Transform,
+    grid_position: &'world mut GridCords3D,
+    facing_direction: &'world mut MovementDirection,
+    path: Option<&'world mut NPCPath>,
+    target: Option<&'world Target>,
 }
 
 #[derive(QueryData)]
@@ -137,25 +149,6 @@ impl<'world> PositionalData<'world> {
     }
 }
 
-struct ReferencedPlayerToMove<'world> {
-    entity: Entity,
-    player_to_move: PlayerToMove<'world>,
-    target: Target,
-}
-
-impl<'world> ReferencedPlayerToMove<'world> {
-    pub fn new(player: &'world PlayerInformationItem, target: Target) -> Self {
-        let entity = player.entity;
-        let player_to_move = PlayerToMove::new(player);
-
-        Self {
-            entity,
-            player_to_move,
-            target,
-        }
-    }
-}
-
 struct ReferencedEntityToMove<'world> {
     entity: Entity,
     pixel_position: &'world mut Transform,
@@ -250,6 +243,17 @@ impl Target {
     }
 }
 
+#[derive(Component)]
+pub struct NPCPath {
+    waypoints: VecDeque<GridCords2D>,
+}
+
+impl NPCPath {
+    pub fn new(waypoints: VecDeque<GridCords2D>) -> Self {
+        Self { waypoints }
+    }
+}
+
 #[derive(Resource)]
 pub struct ArrivalTime {
     time: Duration,
@@ -329,7 +333,7 @@ pub fn move_player_on_key_press(
 pub fn set_player_target(
     mut requests_to_move: MessageReader<MovementDirection>,
     mut movement_notifications: MessageWriter<PlayerMovementActions>,
-    commands: Commands,
+    mut commands: Commands,
     mut player: Single<PlayerInformation, IdlePlayerIdentifiers>,
     world: Single<WorldCollisionInfo>,
     arrival_time: Res<ArrivalTime>,
@@ -352,9 +356,14 @@ pub fn set_player_target(
         return;
     };
 
-    let referenced_player_to_move = ReferencedPlayerToMove::new(player_information, new_position);
     movement_notifications.write(PlayerMovementActions::Walking);
-    start_the_move(referenced_player_to_move, &arrival_time, commands);
+    start_the_move(
+        player_information.entity,
+        *player_information.physical_position,
+        new_position,
+        &arrival_time,
+        &mut commands,
+    );
 }
 
 /// Moves some entity towards a Target position.
@@ -378,47 +387,41 @@ pub fn move_entity_to_target(
     }
 }
 
-/// TODO: Function description
+/// Moves all NPCs in a batch along their paths until all
+/// path endings have been reached then loads the next batch
 pub fn process_npc_path_actions(
+    mut commands: Commands,
     mut director: Single<&mut MapCutsceneDirector>,
-    mut npcs: Query<(&NPC, &mut Transform, &mut GridCords3D)>,
+    mut npcs: Query<NPCInformation>,
     map: Single<WorldCollisionInfo>,
+    arrival_time: Res<ArrivalTime>,
 ) {
     if npcs.is_empty() {
         return;
     }
 
-    // [For Wait] If director has a timer that hasn't finished yet, then don't do anything
-    // [For Move] If there's NPCs that are still moving, then don't do anything
+    let path_in_progress = is_still_walking(&npcs);
+
+    let tile_measurements =
+        TileMeasurements::new(map.map_pixel_dimensions, map.map_grid_dimensions);
+    advance_npc_paths(&mut npcs, &tile_measurements, &arrival_time, &mut commands);
+
+    if path_in_progress {
+        return;
+    }
 
     if !director.has_next_batch() {
         return;
     }
     let action_batch = director.get_next_batch();
 
-    let tile_measurements =
-        TileMeasurements::new(map.map_pixel_dimensions, map.map_grid_dimensions);
-
-    // [For Wait] if wait then call set_scene_delay
-    // > which will get the wait duration and set the delay on the director
-    for instruction in action_batch.get_instructions() {
-        match instruction {
-            MapInstruction::Wait(duration) => { /* TODO */ }
-            MapInstruction::Place(character, map_location) => place_npc(
-                &mut npcs,
-                character,
-                map_location.get_cords(),
-                &tile_measurements,
-            ),
-            MapInstruction::Move(character, map_path) => {
-                let map_location = map_path.get_path()[0].clone();
-                place_npc(&mut npcs, character, &map_location, &tile_measurements);
-
-                // TODO: move_npc helper function that attaches the needed components
-            }
-            MapInstruction::Loop(character, map_path) => { /* TODO */ }
-        }
-    }
+    apply_instructions(
+        action_batch.get_instructions(),
+        &mut npcs,
+        &tile_measurements,
+        &arrival_time,
+        &mut commands,
+    );
 }
 
 /// Returns true is there are movements to process
@@ -450,24 +453,22 @@ fn able_to_move(
     None
 }
 
-/// Attaches the required components to preform a movement
+/// Attaches the required components to perform a movement
 fn start_the_move(
-    referenced_player_to_move: ReferencedPlayerToMove,
+    entity_to_move: Entity,
+    current_pixel_position: Transform,
+    target: Target,
     arrival_time: &ArrivalTime,
-    mut commands: Commands,
+    commands: &mut Commands,
 ) {
-    let player = referenced_player_to_move.player_to_move;
-    let player_entity = referenced_player_to_move.entity;
-
-    let starting_position = StartingPosition::new(*player.pixel_position);
-    let new_target = referenced_player_to_move.target;
+    let starting_position = StartingPosition::new(current_pixel_position);
 
     let timer = Timer::new(*arrival_time.get_duration(), TimerMode::Once);
     let arrival_timer = ArrivalTimer::new(timer);
 
     commands
-        .entity(player_entity)
-        .insert((starting_position, new_target, arrival_timer));
+        .entity(entity_to_move)
+        .insert((starting_position, target, arrival_timer));
 }
 
 /// Extracts information needed to move the entity
@@ -665,22 +666,70 @@ fn calculate_current_distance(
     current_distance
 }
 
-// Places the given NPC at a given location
+/// Places the given NPC at a given location
 fn place_npc(
-    npc_list: &mut Query<(&NPC, &mut Transform, &mut GridCords3D)>,
+    npc_list: &mut Query<NPCInformation>,
     character: &Character,
     map_location: &GridCords2D,
     tile_measurements: &TileMeasurements,
 ) {
-    for (npc, mut transform, mut grid_position) in npc_list.iter_mut() {
-        if npc.get_name() != character.get_name() {
+    for mut npc_info in npc_list.iter_mut() {
+        if npc_info.npc.get_name() != character.get_name() {
             continue;
         }
 
-        let npc_z = transform.translation.z as usize;
+        let npc_z = npc_info.physical_position.translation.z as usize;
         let target = grid_to_target(map_location, npc_z, tile_measurements);
 
-        snap_to(&target, &mut transform, &mut grid_position);
+        snap_to(
+            &target,
+            &mut npc_info.physical_position,
+            &mut npc_info.grid_position,
+        );
+        break;
+    }
+}
+
+/// Places an NPC at the start of its path and attaches the path to walk
+fn attach_path(
+    npc_list: &mut Query<NPCInformation>,
+    character: &Character,
+    map_path: &MapPath,
+    tile_measurements: &TileMeasurements,
+    arrival_time: &ArrivalTime,
+    commands: &mut Commands,
+) {
+    let path_points = map_path.get_path();
+
+    for mut npc_info in npc_list.iter_mut() {
+        if npc_info.npc.get_name() != character.get_name() {
+            continue;
+        }
+
+        let npc_z = npc_info.physical_position.translation.z as usize;
+
+        let placement_target = grid_to_target(&path_points[0], npc_z, tile_measurements);
+        snap_to(
+            &placement_target,
+            &mut npc_info.physical_position,
+            &mut npc_info.grid_position,
+        );
+
+        let movement_target = grid_to_target(&path_points[1], npc_z, tile_measurements);
+        *npc_info.facing_direction = get_direction(&*npc_info.grid_position, &path_points[1]);
+        start_the_move(
+            npc_info.entity,
+            *npc_info.physical_position,
+            movement_target,
+            arrival_time,
+            commands,
+        );
+
+        if path_points.len() > 2 {
+            commands
+                .entity(npc_info.entity)
+                .insert(NPCPath::new(path_points[2..].to_vec().into()));
+        }
         break;
     }
 }
@@ -713,8 +762,7 @@ fn snap_to(target: &Target, transform: &mut Transform, grid_position: &mut GridC
     *grid_position = *target.get_grid_coordinate();
 }
 
-/*
-///Calculates movement direction from one tile to another
+/// Calculates movement direction from one tile to another
 fn get_direction(current: &GridCords3D, next: &GridCords2D) -> MovementDirection {
     if next.get_x() > current.get_x() {
         MovementDirection::Right
@@ -726,4 +774,87 @@ fn get_direction(current: &GridCords3D, next: &GridCords2D) -> MovementDirection
         MovementDirection::Up
     }
 }
-*/
+
+/// True if any NPC is still moving or has waypoints left to walk
+fn is_still_walking(npcs: &Query<NPCInformation>) -> bool {
+    for npc_info in npcs.iter() {
+        if npc_info.path.is_none() {
+            continue;
+        }
+
+        let path = npc_info.path.unwrap();
+        let is_currently_moving = npc_info.target.is_some();
+        let has_remaining_waypoints = !path.waypoints.is_empty();
+
+        if is_currently_moving || has_remaining_waypoints {
+            return true;
+        }
+    }
+
+    false
+}
+
+/// Starts each idle NPCs next step and drops paths that are finished
+fn advance_npc_paths(
+    npcs: &mut Query<NPCInformation>,
+    tile_measurements: &TileMeasurements,
+    arrival_time: &ArrivalTime,
+    commands: &mut Commands,
+) {
+    for mut npc_info in npcs.iter_mut() {
+        if npc_info.path.is_none() {
+            continue;
+        }
+        if npc_info.target.is_some() {
+            continue;
+        }
+
+        let next_waypoint = npc_info.path.unwrap().waypoints.pop_front();
+
+        if next_waypoint.is_none() {
+            commands.entity(npc_info.entity).remove::<NPCPath>();
+            continue;
+        }
+
+        let waypoint = next_waypoint.unwrap();
+        let npc_z = npc_info.physical_position.translation.z as usize;
+        let target = grid_to_target(&waypoint, npc_z, tile_measurements);
+        *npc_info.facing_direction = get_direction(&*npc_info.grid_position, &waypoint);
+        start_the_move(
+            npc_info.entity,
+            *npc_info.physical_position,
+            target,
+            arrival_time,
+            commands,
+        );
+    }
+}
+
+/// Runs each instruction in a batch
+fn apply_instructions(
+    instructions: &[MapInstruction],
+    npcs: &mut Query<NPCInformation>,
+    tile_measurements: &TileMeasurements,
+    arrival_time: &ArrivalTime,
+    commands: &mut Commands,
+) {
+    for instruction in instructions {
+        match instruction {
+            MapInstruction::Wait(duration) => { /* TODO */ }
+            MapInstruction::Place(character, map_location) => {
+                place_npc(npcs, character, map_location.get_cords(), tile_measurements)
+            }
+            MapInstruction::Move(character, map_path) => {
+                attach_path(
+                    npcs,
+                    character,
+                    map_path,
+                    tile_measurements,
+                    arrival_time,
+                    commands,
+                );
+            }
+            MapInstruction::Loop(character, map_path) => { /* TODO */ }
+        }
+    }
+}
