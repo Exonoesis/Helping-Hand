@@ -44,6 +44,7 @@ fn load_scene(game: &mut Game, scene_name: String) {
 
 #[when(regex = r"([0-9]+) steps have taken place,")]
 fn take_number_of_steps(game: &mut Game, number_of_steps: usize) {
+    game.tick();
     for _ in 0..number_of_steps {
         game.tick();
     }

@@ -1,7 +1,7 @@
 use bevy::ecs::component::Component;
 use regex::Regex;
 use serde_json::Value;
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
@@ -67,10 +67,14 @@ pub enum SceneContents {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct MapAction {
-    map_instructions: Vec<MapInstruction>,
+    map_instructions: VecDeque<MapInstruction>,
 }
 impl MapAction {
-    pub fn get_instructions(&self) -> &Vec<MapInstruction> {
+    pub fn get_instructions_mut(&mut self) -> &mut VecDeque<MapInstruction> {
+        &mut self.map_instructions
+    }
+
+    pub fn get_instructions(&self) -> &VecDeque<MapInstruction> {
         &self.map_instructions
     }
 }
@@ -688,8 +692,8 @@ impl MapCutsceneLoader {
 
     /// Takes a batch of comma separated map instructions and
     /// converts them into their MapInstruction equivalent
-    fn parse_map_instructions(&self, map_instruction_batch: &str) -> Vec<MapInstruction> {
-        let mut parsed_map_instructions: Vec<MapInstruction> = Vec::new();
+    fn parse_map_instructions(&self, map_instruction_batch: &str) -> VecDeque<MapInstruction> {
+        let mut parsed_map_instructions: VecDeque<MapInstruction> = VecDeque::new();
 
         let split_map_instruction_batch: Vec<&str> = map_instruction_batch.split(',').collect();
 
@@ -701,21 +705,21 @@ impl MapCutsceneLoader {
 
             match instruction_action {
                 "@" => {
-                    parsed_map_instructions.push(MapInstruction::Place(
+                    parsed_map_instructions.push_back(MapInstruction::Place(
                         Character::new(split_map_instruction[0].to_string()),
                         MapLocation::new(split_map_instruction[2].to_string()),
                     ));
                     continue;
                 }
                 ">" => {
-                    parsed_map_instructions.push(MapInstruction::Move(
+                    parsed_map_instructions.push_back(MapInstruction::Move(
                         Character::new(split_map_instruction[0].to_string()),
                         MapPath::new(split_map_instruction[2].to_string()),
                     ));
                     continue;
                 }
                 "<->" => {
-                    parsed_map_instructions.push(MapInstruction::Loop(
+                    parsed_map_instructions.push_back(MapInstruction::Loop(
                         Character::new(split_map_instruction[0].to_string()),
                         MapPath::new(split_map_instruction[2].to_string()),
                     ));
@@ -730,7 +734,7 @@ impl MapCutsceneLoader {
             match special_instruction {
                 "Wait" => {
                     let duration = self.str_to_duration(instruction_duration);
-                    parsed_map_instructions.push(MapInstruction::Wait(duration));
+                    parsed_map_instructions.push_back(MapInstruction::Wait(duration));
                     continue;
                 }
                 _ => panic!(
@@ -784,7 +788,7 @@ impl MapCutsceneLoader {
             let actions_list = incomplete_map_actions.clone();
 
             for action in actions_list {
-                let mut new_instructions = Vec::new();
+                let mut new_instructions = VecDeque::new();
                 for instruction in action.get_instructions() {
                     match instruction {
                         MapInstruction::Place(character, map_location) => {
@@ -807,8 +811,10 @@ impl MapCutsceneLoader {
                             let mut new_map_location = map_location.clone();
                             new_map_location.set_cords(new_cords);
 
-                            new_instructions
-                                .push(MapInstruction::Place(character.clone(), new_map_location));
+                            new_instructions.push_back(MapInstruction::Place(
+                                character.clone(),
+                                new_map_location,
+                            ));
                         }
                         MapInstruction::Move(character, map_path) => {
                             let move_path_object = object_layer
@@ -832,8 +838,10 @@ impl MapCutsceneLoader {
                                 let mut new_map_path = map_path.clone();
                                 new_map_path.set_path(new_map_path_vec);
 
-                                new_instructions
-                                    .push(MapInstruction::Move(character.clone(), new_map_path));
+                                new_instructions.push_back(MapInstruction::Move(
+                                    character.clone(),
+                                    new_map_path,
+                                ));
                             }
                         }
                         MapInstruction::Loop(character, map_path) => {
@@ -858,12 +866,14 @@ impl MapCutsceneLoader {
                                 let mut new_map_path = map_path.clone();
                                 new_map_path.set_path(new_map_path_vec);
 
-                                new_instructions
-                                    .push(MapInstruction::Loop(character.clone(), new_map_path));
+                                new_instructions.push_back(MapInstruction::Loop(
+                                    character.clone(),
+                                    new_map_path,
+                                ));
                             }
                         }
                         MapInstruction::Wait(duration) => {
-                            new_instructions.push(MapInstruction::Wait(*duration));
+                            new_instructions.push_back(MapInstruction::Wait(*duration));
                         }
                     }
                 }

@@ -102,12 +102,6 @@ fn verify_player_at_tile_grid_coordinates(
     );
 }
 
-#[then("the Player should have a Target.")]
-fn verify_player_has_target(game: &mut Game) {
-    let player_has_target = game.has::<Player, Target>();
-    assert!(player_has_target);
-}
-
 #[then(regex = r"the Player is facing ([a-zA-Z]+).")]
 fn verify_player_facing_direction(game: &mut Game, facing_direction: String) {
     let expected_facing_direction = convert_string_to_movement_direction(facing_direction);

@@ -21,6 +21,7 @@ impl Plugin for PlayableCharacterPlugin {
             (
                 set_player_target,
                 move_entity_to_target,
+                advance_npc_paths,
                 process_npc_path_actions,
             )
                 .chain()
@@ -55,6 +56,7 @@ impl Plugin for PlayableCharacterTestingPlugin {
             (
                 set_player_target,
                 move_entity_to_target,
+                advance_npc_paths,
                 process_npc_path_actions,
             )
                 .chain()

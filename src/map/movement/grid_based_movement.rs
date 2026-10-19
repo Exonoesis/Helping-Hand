@@ -213,6 +213,23 @@ impl<'world> MoveableEntityInfo<'world> {
     }
 }
 
+struct NPCMovementData<'query, 'world, 'state, 'npc> {
+    npcs: &'query mut Query<'world, 'state, NPCInformation<'npc>>,
+    tile_measurements: &'query TileMeasurements,
+}
+
+impl<'query, 'world, 'state, 'npc> NPCMovementData<'query, 'world, 'state, 'npc> {
+    pub fn new(
+        npcs: &'query mut Query<'world, 'state, NPCInformation<'npc>>,
+        tile_measurements: &'query TileMeasurements,
+    ) -> Self {
+        Self {
+            npcs,
+            tile_measurements,
+        }
+    }
+}
+
 #[derive(Message, Copy, Clone, Debug, PartialEq, Component)]
 pub enum MovementDirection {
     Left,
@@ -403,22 +420,14 @@ pub fn process_npc_path_actions(
     mut director: Single<&mut MapCutsceneDirector>,
     mut npcs: Query<NPCInformation>,
     map: Single<WorldCollisionInfo>,
-    arrival_time: Res<ArrivalTime>,
     time: Res<Time>,
 ) {
     if npcs.is_empty() {
         return;
     }
 
+    director.tick_wait(time.delta());
     let path_in_progress = is_still_walking(&npcs);
-
-    let tile_measurements =
-        TileMeasurements::new(map.map_pixel_dimensions, map.map_grid_dimensions);
-    advance_npc_paths(&mut npcs, &tile_measurements, &arrival_time, &mut commands);
-
-    if director.is_waiting() {
-        director.tick_wait(time.delta());
-    }
 
     if path_in_progress || director.is_waiting() {
         return;
@@ -427,16 +436,11 @@ pub fn process_npc_path_actions(
     if !director.has_next_batch() {
         return;
     }
-    let action_batch = director.get_next_batch();
 
-    apply_instructions(
-        action_batch.get_instructions(),
-        &mut npcs,
-        &tile_measurements,
-        &arrival_time,
-        &mut commands,
-        &mut director,
-    );
+    let tile_measurements =
+        TileMeasurements::new(map.map_pixel_dimensions, map.map_grid_dimensions);
+    let npc_movement_data = NPCMovementData::new(&mut npcs, &tile_measurements);
+    apply_instructions(npc_movement_data, &mut commands, &mut director);
 }
 
 /// Returns true is there are movements to process
@@ -683,83 +687,36 @@ fn calculate_current_distance(
 
 /// Places the given NPC at a given location
 fn place_npc(
-    npc_list: &mut Query<NPCInformation>,
-    character: &Character,
+    npc_info: &mut NPCInformationItem,
     map_location: &GridCords2D,
     tile_measurements: &TileMeasurements,
 ) {
-    for mut npc_info in npc_list.iter_mut() {
-        if npc_info.npc.get_name() != character.get_name() {
-            continue;
-        }
+    let npc_z = npc_info.physical_position.translation.z as usize;
+    let target = grid_to_target(map_location, npc_z, tile_measurements);
 
-        let npc_z = npc_info.physical_position.translation.z as usize;
-        let target = grid_to_target(map_location, npc_z, tile_measurements);
-
-        snap_to(
-            &target,
-            &mut npc_info.physical_position,
-            &mut npc_info.grid_position,
-        );
-        break;
-    }
+    snap_to(
+        &target,
+        &mut npc_info.physical_position,
+        &mut npc_info.grid_position,
+    );
 }
 
-/// Places an NPC at the start of its path and attaches the path to walk
-fn attach_path(
-    npc_list: &mut Query<NPCInformation>,
-    character: &Character,
-    map_path: &MapPath,
-    tile_measurements: &TileMeasurements,
-    arrival_time: &ArrivalTime,
-    commands: &mut Commands,
-    path_kind: PathKind,
-) {
+/// Attaches the path an NPC will walk, starting after its current spot
+fn attach_path(entity: Entity, map_path: &MapPath, commands: &mut Commands, path_kind: PathKind) {
     let path_points = map_path.get_path();
 
-    for mut npc_info in npc_list.iter_mut() {
-        if npc_info.npc.get_name() != character.get_name() {
-            continue;
+    let mut remaining = VecDeque::from(path_points[1..].to_vec());
+
+    match path_kind {
+        PathKind::Once => {
+            commands.entity(entity).insert(NPCPath::new(remaining));
         }
-
-        let npc_z = npc_info.physical_position.translation.z as usize;
-
-        let placement_target = grid_to_target(&path_points[0], npc_z, tile_measurements);
-        snap_to(
-            &placement_target,
-            &mut npc_info.physical_position,
-            &mut npc_info.grid_position,
-        );
-
-        let movement_target = grid_to_target(&path_points[1], npc_z, tile_measurements);
-        *npc_info.facing_direction = get_direction(&*npc_info.grid_position, &path_points[1]);
-        start_the_move(
-            npc_info.entity,
-            *npc_info.physical_position,
-            movement_target,
-            arrival_time,
-            commands,
-        );
-
-        let mut remaining = VecDeque::from(path_points[2..].to_vec());
-
-        match path_kind {
-            PathKind::Once => {
-                if !remaining.is_empty() {
-                    commands
-                        .entity(npc_info.entity)
-                        .insert(NPCPath::new(remaining));
-                }
-            }
-            PathKind::Looping => {
-                remaining.push_back(path_points[0]);
-                remaining.push_back(path_points[1]);
-                commands
-                    .entity(npc_info.entity)
-                    .insert((NPCPath::new(remaining), LoopingPath));
-            }
+        PathKind::Looping => {
+            remaining.push_back(path_points[0]);
+            commands
+                .entity(entity)
+                .insert((NPCPath::new(remaining), LoopingPath));
         }
-        break;
     }
 }
 
@@ -828,12 +785,15 @@ fn is_still_walking(npcs: &Query<NPCInformation>) -> bool {
 }
 
 /// Starts each idle NPC's next step and drops paths that are finished
-fn advance_npc_paths(
-    npcs: &mut Query<NPCInformation>,
-    tile_measurements: &TileMeasurements,
-    arrival_time: &ArrivalTime,
-    commands: &mut Commands,
+pub fn advance_npc_paths(
+    mut npcs: Query<NPCInformation>,
+    map: Single<WorldCollisionInfo>,
+    arrival_time: Res<ArrivalTime>,
+    mut commands: Commands,
 ) {
+    let tile_measurements =
+        TileMeasurements::new(map.map_pixel_dimensions, map.map_grid_dimensions);
+
     for mut npc_info in npcs.iter_mut() {
         if npc_info.path.is_none() {
             continue;
@@ -858,56 +818,83 @@ fn advance_npc_paths(
         }
 
         let npc_z = npc_info.physical_position.translation.z as usize;
-        let target = grid_to_target(&waypoint, npc_z, tile_measurements);
+        let target = grid_to_target(&waypoint, npc_z, &tile_measurements);
         *npc_info.facing_direction = get_direction(&*npc_info.grid_position, &waypoint);
         start_the_move(
             npc_info.entity,
             *npc_info.physical_position,
             target,
-            arrival_time,
-            commands,
+            &arrival_time,
+            &mut commands,
         );
     }
 }
 
 /// Runs each instruction in a batch
 fn apply_instructions(
-    instructions: &[MapInstruction],
-    npcs: &mut Query<NPCInformation>,
-    tile_measurements: &TileMeasurements,
-    arrival_time: &ArrivalTime,
+    npc_movement_data: NPCMovementData,
     commands: &mut Commands,
     director: &mut MapCutsceneDirector,
 ) {
-    for instruction in instructions {
+    let npcs = npc_movement_data.npcs;
+    let tile_measurements = npc_movement_data.tile_measurements;
+
+    let mut action_batch = director.get_next_batch();
+    let instructions = action_batch.get_instructions_mut();
+
+    while let Some(instruction) = instructions.pop_front() {
         match instruction {
             MapInstruction::Wait(duration) => {
-                director.start_wait(*duration);
+                director.start_wait(duration);
             }
-            MapInstruction::Place(character, map_location) => {
-                place_npc(npcs, character, map_location.get_cords(), tile_measurements)
-            }
-            MapInstruction::Move(character, map_path) => {
-                attach_path(
-                    npcs,
-                    character,
-                    map_path,
+            MapInstruction::Place(ref character, ref map_location) => {
+                let found_npc = npcs
+                    .iter_mut()
+                    .find(|npc| npc.npc.get_name() == character.get_name());
+
+                if found_npc.is_none() {
+                    instructions.push_front(instruction);
+                    director.add_batch(action_batch);
+                    return;
+                }
+
+                let mut desired_npc = found_npc.unwrap();
+                place_npc(
+                    &mut desired_npc,
+                    map_location.get_cords(),
                     tile_measurements,
-                    arrival_time,
-                    commands,
-                    PathKind::Once,
                 );
             }
-            MapInstruction::Loop(character, map_path) => {
-                attach_path(
-                    npcs,
-                    character,
-                    map_path,
-                    tile_measurements,
-                    arrival_time,
-                    commands,
-                    PathKind::Looping,
-                );
+            MapInstruction::Move(ref character, ref map_path) => {
+                let found_npc = npcs
+                    .iter_mut()
+                    .find(|npc| npc.npc.get_name() == character.get_name());
+
+                if found_npc.is_none() {
+                    instructions.push_front(instruction);
+                    director.add_batch(action_batch);
+                    return;
+                }
+
+                let mut desired_npc = found_npc.unwrap();
+                let map_location = map_path.get_path()[0];
+                place_npc(&mut desired_npc, &map_location, tile_measurements);
+
+                attach_path(desired_npc.entity, &map_path, commands, PathKind::Once);
+            }
+            MapInstruction::Loop(ref character, ref map_path) => {
+                let found_npc = npcs
+                    .iter_mut()
+                    .find(|npc| npc.npc.get_name() == character.get_name());
+
+                if found_npc.is_none() {
+                    instructions.push_front(instruction);
+                    director.add_batch(action_batch);
+                    return;
+                }
+
+                let desired_npc = found_npc.unwrap();
+                attach_path(desired_npc.entity, &map_path, commands, PathKind::Looping);
             }
         }
     }

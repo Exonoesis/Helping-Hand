@@ -399,6 +399,10 @@ impl MapCutsceneDirector {
             .expect("MapCutsceneDirector has no next batch.")
     }
 
+    pub fn add_batch(&mut self, batch: MapAction) {
+        self.batches.push_front(batch);
+    }
+
     pub fn start_wait(&mut self, duration: Duration) {
         self.wait_timer = Some(Timer::from_seconds(duration.as_secs_f32(), TimerMode::Once));
     }
@@ -408,6 +412,10 @@ impl MapCutsceneDirector {
     }
 
     pub fn tick_wait(&mut self, delta: Duration) {
+        if !self.is_waiting() {
+            return;
+        }
+
         let timer = self.wait_timer.as_mut().unwrap();
         timer.tick(delta);
 
