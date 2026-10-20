@@ -35,6 +35,12 @@ Feature: NPC Movements
         And 0 steps have taken place,
         Then the NPC 'Iye' is at tile 0,0.
 
+    Scenario: A Player can be placed in a specified location
+        Given the game is loaded with the act 'map_cutscene_act.json',
+        When the map cutscene 'Placement Test' is loaded,
+        And 0 steps have taken place,
+        Then the Player is at tile 1,1.
+
     ##################################################################################
     #                               Line Path Tests                                  #
     ##################################################################################

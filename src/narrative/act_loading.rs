@@ -1,4 +1,6 @@
 use crate::map::interactions::map_changing::ChangeLevel;
+use crate::map::npc::NPC;
+use crate::map::player::Player;
 use crate::narrative::acts::{Act, MapAction, SceneContents, SceneType};
 use crate::plugins::acts::{FadeDuration, MapsFolderPath};
 use crate::ui::menus::ImageNodeBundle;
@@ -265,6 +267,7 @@ pub fn despawn_image_scene(
 pub fn despawn_map_scene(
     mut despawn_map_requests: MessageReader<DespawnScene>,
     script_to_remove: Query<Entity, With<MapCutsceneDirector>>,
+    player: Query<Entity, With<Player>>,
     mut commands: Commands,
     mut despawning_done_notification: MessageWriter<DespawnDone>,
 ) {
@@ -280,6 +283,10 @@ pub fn despawn_map_scene(
 
     for scene_script in script_to_remove {
         commands.entity(scene_script).despawn();
+    }
+
+    if !player.is_empty() {
+        commands.entity(player.single().unwrap()).remove::<NPC>();
     }
 
     despawning_done_notification.write(DespawnDone);
@@ -452,6 +459,15 @@ pub fn render_map_cutscene(
             map_actions.clone(),
         )));
     }
+}
+
+pub fn make_player_movable_in_map_cutscene(
+    player: Single<(Entity, &Player), Without<NPC>>,
+    _director: Single<&MapCutsceneDirector>,
+    mut commands: Commands,
+) {
+    let player_name = player.1.get_name().clone();
+    commands.entity(player.0).insert(NPC::new(player_name));
 }
 
 #[derive(Component, Clone)]

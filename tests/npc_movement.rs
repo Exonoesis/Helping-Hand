@@ -92,6 +92,15 @@ fn verify_npc_at_tile(game: &mut Game, npc_name: String, tile_x: usize, tile_y: 
     assert_eq!(expected_npc_tile.get_y(), actual_npc_tile.get_y());
 }
 
+#[then(regex = r"the Player is at tile ([0-9]+),([0-9]+).")]
+fn verify_player_at_tile(game: &mut Game, tile_x: usize, tile_y: usize) {
+    let expected_player_tile = GridCords2D::new(tile_x, tile_y);
+    let actual_player_tile = game.find_coordinates_of_player();
+
+    assert_eq!(expected_player_tile.get_x(), actual_player_tile.get_x());
+    assert_eq!(expected_player_tile.get_y(), actual_player_tile.get_y());
+}
+
 // This runs before everything else, so you can setup things here.
 fn main() {
     futures::executor::block_on(Game::run(

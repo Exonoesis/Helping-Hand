@@ -102,6 +102,7 @@ impl Plugin for CoreActsPlugin {
                     spawn_new_scene,
                     render_image_cutscene,
                     render_map_cutscene,
+                    make_player_movable_in_map_cutscene,
                     set_curtain_to_raise,
                     curtain_up,
                 )
