@@ -5,7 +5,7 @@ use crate::{
     },
     narrative::{
         act_loading::MapCutsceneDirector,
-        acts::{Character, MapInstruction, MapPath},
+        acts::{MapInstruction, MapPath},
     },
 };
 

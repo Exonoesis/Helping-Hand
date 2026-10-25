@@ -42,7 +42,47 @@ Feature: NPC Movements
         Then the Player is at tile 1,1.
 
     ##################################################################################
-    #                               Line Path Tests                                  #
+    #                         Player As NPC Line Path Tests                          #
+    ##################################################################################
+
+    Scenario: A Player can move right along a specified complex line path
+        Given the game is loaded with the act 'map_cutscene_act.json',
+        When the map cutscene 'Multiline Test' is loaded,
+        And 2 steps have taken place,
+        Then the Player is at tile 2,0.
+
+    Scenario: A Player can move down along a specified complex line path
+        Given the game is loaded with the act 'map_cutscene_act.json',
+        When the map cutscene 'Multiline Test' is loaded,
+        And 3 steps have taken place,
+        Then the Player is at tile 2,1.
+
+    Scenario: A Player can move left along a specified complex line path
+        Given the game is loaded with the act 'map_cutscene_act.json',
+        When the map cutscene 'Multiline Test' is loaded,
+        And 4 steps have taken place,
+        Then the Player is at tile 1,1.
+
+    Scenario: A Player can move right along a specified complex line path
+        Given the game is loaded with the act 'map_cutscene_act.json',
+        When the map cutscene 'Multiline Test' is loaded,
+        And 7 steps have taken place,
+        Then the Player is at tile 4,1.
+
+    Scenario: A Player can move up along a specified complex line path
+        Given the game is loaded with the act 'map_cutscene_act.json',
+        When the map cutscene 'Multiline Test' is loaded,
+        And 8 steps have taken place,
+        Then the Player is at tile 4,0.
+
+    Scenario: A Player can move left along a specified complex line path
+        Given the game is loaded with the act 'map_cutscene_act.json',
+        When the map cutscene 'Multiline Test' is loaded,
+        And 9 steps have taken place,
+        Then the Player is at tile 3,0.
+
+    ##################################################################################
+    #                              NPC Line Path Tests                               #
     ##################################################################################
 
     Scenario: An NPC can move right along a specified complex line path
@@ -82,7 +122,35 @@ Feature: NPC Movements
         Then the NPC 'Iye' is at tile 3,0.
 
     ##################################################################################
-    #                             Looping Path Tests                                 #
+    #                      Player As NPC Looping Path Tests                          #
+    ##################################################################################
+
+    Scenario: A Player can move down along a specified looping path
+        Given the game is loaded with the act 'map_cutscene_act.json',
+        When the map cutscene 'Looping Test' is loaded,
+        And 3 steps have taken place,
+        Then the Player is at tile 1,3.
+
+    Scenario: A Player can move right along a specified looping path
+        Given the game is loaded with the act 'map_cutscene_act.json',
+        When the map cutscene 'Looping Test' is loaded,
+        And 6 steps have taken place,
+        Then the Player is at tile 4,3.
+
+    Scenario: A Player can move up along a specified looping path
+        Given the game is loaded with the act 'map_cutscene_act.json',
+        When the map cutscene 'Looping Test' is loaded,
+        And 9 steps have taken place,
+        Then the Player is at tile 4,0.
+
+    Scenario: A Player can move left along a specified looping path
+        Given the game is loaded with the act 'map_cutscene_act.json',
+        When the map cutscene 'Looping Test' is loaded,
+        And 12 steps have taken place,
+        Then the Player is at tile 1,0.
+
+    ##################################################################################
+    #                            NPC Looping Path Tests                              #
     ##################################################################################
 
     Scenario: An NPC can move down along a specified looping path
