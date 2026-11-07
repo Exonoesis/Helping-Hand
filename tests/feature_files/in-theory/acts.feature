@@ -29,3 +29,5 @@ Feature: Acts
         And the speaker of line 1 is 'Jay' with text 'This is testing text.',
         And the speaker of line 2 is 'Iye' with text 'This one is really long and probably goes off the screen if we don't have text wrapping or formatting or anything like that. Also it will take some time to print out once we're going one character at a time. Characters as in letters in a word though, not characters like us!',
         And the speaker of line 3 is 'Jay' with text 'Wow, you said a lot!'.
+        And speaker 'Iye' has character image 'PC1.png',
+        And speaker 'Jay' has character image 'PC2.png'
