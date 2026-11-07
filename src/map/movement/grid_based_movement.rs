@@ -896,6 +896,12 @@ fn apply_instructions(
                 let desired_npc = found_npc.unwrap();
                 attach_path(desired_npc.entity, &map_path, commands, PathKind::Looping);
             }
+            MapInstruction::Read(ref dialogue_lines) => {
+                // TODO: Take lines and feed them to the dialogue display system
+                // Note: We will also have to pause any new actions from happening
+                // until the dialogue is done displaying
+                // This isn't really related to grid_based_movement anymore...
+            }
         }
     }
 }

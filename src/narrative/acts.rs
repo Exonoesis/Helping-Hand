@@ -85,6 +85,7 @@ pub enum MapInstruction {
     Place(Character, MapLocation),
     Move(Character, MapPath),
     Loop(Character, MapPath),
+    Read(Vec<DialogueLine>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -161,6 +162,35 @@ impl MapPath {
 
     pub fn set_path(&mut self, new_map_path: Vec<GridCords2D>) {
         self.map_path = new_map_path;
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DialogueLine {
+    speaker_name: String,
+    text: String,
+    character_image: PathBuf,
+}
+
+impl DialogueLine {
+    pub fn new(speaker_name: String, text: String, character_image: PathBuf) -> Self {
+        Self {
+            speaker_name,
+            text,
+            character_image,
+        }
+    }
+
+    pub fn get_speaker_name(&self) -> &String {
+        &self.speaker_name
+    }
+
+    pub fn get_text(&self) -> &String {
+        &self.text
+    }
+
+    pub fn get_character_image(&self) -> &PathBuf {
+        &self.character_image
     }
 }
 
@@ -729,13 +759,28 @@ impl MapCutsceneLoader {
             }
 
             let special_instruction = split_map_instruction[0];
-            let instruction_duration = split_map_instruction[1];
+            let instruction_content = split_map_instruction[1];
 
             match special_instruction {
                 "Wait" => {
-                    let duration = self.str_to_duration(instruction_duration);
+                    let duration = self.str_to_duration(instruction_content);
                     parsed_map_instructions.push_back(MapInstruction::Wait(duration));
                     continue;
+                }
+                "Read" => {
+                    // Current issue: [0] is Read, [1] is Dialogue, [2] is Test
+                    // because we're split on whitespace
+                    //
+                    // Options: Enforce no spaces, Bypass the strip to get the component ID,
+                    // Rebuild the string <- easiest & least ripples
+                    //
+                    // Make helper to rebuild string, look up component by name, and return
+                    // all info as a DialogueLine, then extract it below
+                    //
+                    // Get speaker name
+                    // Get text
+                    // Get character image
+                    // Push all into the map instructions and continue
                 }
                 _ => panic!(
                     "parse_map_instructions: Unrecognized instruction found: {}",
@@ -874,6 +919,9 @@ impl MapCutsceneLoader {
                         }
                         MapInstruction::Wait(duration) => {
                             new_instructions.push_back(MapInstruction::Wait(*duration));
+                        }
+                        MapInstruction::Read(content) => {
+                            new_instructions.push_back(MapInstruction::Read(content.clone()));
                         }
                     }
                 }

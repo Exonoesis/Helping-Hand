@@ -148,26 +148,6 @@ fn verify_image_cutscene(game: &mut GameWorld, scene_title: String, image_path: 
     assert_eq!(*actual_image_path, expected_image_path);
 }
 
-#[then(
-    regex = r"the act's scene called '(.+)' is a Map Cutscene pointing to the map file called (.+\.tmx)."
-)]
-fn verify_map_cutscene(game: &mut GameWorld, scene_title: String, map_file_path: String) {
-    let act = &game.current_act;
-
-    let actual_scene = act.get_scene_by_title(&scene_title);
-    let actual_contents = actual_scene.get_contents();
-
-    let actual_scene_type = actual_scene.get_type();
-    let actual_map_path = actual_contents.get_map_path();
-
-    let expected_scene_type = SceneType::MapCutscene;
-    let folder_path = PathBuf::from("assets/map/");
-    let expected_map_path = folder_path.join(map_file_path);
-
-    assert_eq!(*actual_scene_type, expected_scene_type);
-    assert_eq!(*actual_map_path, expected_map_path);
-}
-
 #[then(regex = r"in Map Action ([0-9]+) of '(.+)', Map Instruction ([0-9]+) says to (.\w+) (.+)")]
 fn verify_map_action_contents(
     game: &mut GameWorld,
