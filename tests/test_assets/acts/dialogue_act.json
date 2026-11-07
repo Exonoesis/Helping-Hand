@@ -1,0 +1,602 @@
+{
+    "startingElement": "4fd37965-e316-4192-b102-a03eb177a1da",
+    "boards": {
+        "c69f1ab9-37bc-4d23-b9fa-f7d011b2669e": {
+            "name": "Testing",
+            "notes": [],
+            "jumpers": [],
+            "branches": [],
+            "customId": "testing",
+            "elements": [
+                "4fd37965-e316-4192-b102-a03eb177a1da"
+            ],
+            "connections": []
+        },
+        "2ad15ff6-f2ba-4f1d-9d9d-68938c683d7e": {
+            "name": "Root",
+            "root": true,
+            "children": [
+                "c69f1ab9-37bc-4d23-b9fa-f7d011b2669e"
+            ]
+        }
+    },
+    "notes": {},
+    "elements": {
+        "4fd37965-e316-4192-b102-a03eb177a1da": {
+            "theme": "default",
+            "outputs": [],
+            "components": [
+                "3fcab303-4ce4-4886-adb5-8039d5a023ee",
+                "fa692c77-8520-4584-b716-b4a9f9ce0103"
+            ],
+            "content": "<p><span class=\"mention-component mention\" data-id=\"9ebcc176-8210-45ed-9f72-3e2e4aecb6e6\" data-label=\"Breeding Center\" data-type=\"component\">Breeding Center<\/span> <\/p><p>[Read <span class=\"mention-component mention\" data-id=\"fa692c77-8520-4584-b716-b4a9f9ce0103\" data-label=\"Dialogue Test\" data-type=\"component\">Dialogue Test<\/span>]<\/p>",
+            "title": "<p>Map Cutscene 1<\/p>"
+        }
+    },
+    "connections": {},
+    "jumpers": {},
+    "assets": {
+        "052a172a-b1ae-419c-a1b3-13768a6dd586": {
+            "name": "PI3.png",
+            "type": "image"
+        },
+        "073efe10-dd58-4795-b70a-e698e7a4cebb": {
+            "name": "PI8.png",
+            "type": "image"
+        },
+        "0d21327c-8627-492e-8cbb-f79e876219f6": {
+            "name": "Chapter 0 IC Images",
+            "children": [
+                "2ec98c1e-e643-419c-8b6c-4ea89928e3d8",
+                "6496ee21-f118-4dc6-bf9b-d1df1100a9ba",
+                "052a172a-b1ae-419c-a1b3-13768a6dd586",
+                "7d2de2e6-a07a-419b-811d-3996d1c1d2d9",
+                "c3119b28-1a5e-4274-9644-3e1f9d8c8111",
+                "cf3616d2-ae28-477f-bd99-bee2ad5509c1",
+                "67dce851-a273-4427-8811-48b3ba77cbd1",
+                "073efe10-dd58-4795-b70a-e698e7a4cebb",
+                "c7f9c5c6-c6df-4439-84fa-f57c93d7f91d",
+                "5e4acb0f-66bd-4f41-9e5f-b6d2c4cb5fa1",
+                "87fbce4b-bd6e-422c-a412-e68d6e3b76ba",
+                "70e9cfb6-995b-4547-8198-6df467cb3717",
+                "fbe53c41-8780-4d89-8840-41543925dea2",
+                "4fe42c88-6829-4639-bded-d8941d2442cd",
+                "2651fd07-893f-459b-b13e-ff4aa6d91c5f"
+            ]
+        },
+        "2651fd07-893f-459b-b13e-ff4aa6d91c5f": {
+            "name": "PI15.png",
+            "type": "image"
+        },
+        "2ec98c1e-e643-419c-8b6c-4ea89928e3d8": {
+            "name": "PI1.png",
+            "type": "image"
+        },
+        "4fe42c88-6829-4639-bded-d8941d2442cd": {
+            "name": "PI14.png",
+            "type": "image"
+        },
+        "5aa8e622-cf6a-476c-b658-75f7d3a6cbdc": {
+            "name": "PC2.png",
+            "type": "image"
+        },
+        "5e4acb0f-66bd-4f41-9e5f-b6d2c4cb5fa1": {
+            "name": "PI10.png",
+            "type": "image"
+        },
+        "647d0495-341f-42b2-8788-b47dace22bf8": {
+            "root": true,
+            "children": [
+                "73f016f4-2d3d-4f3e-abaa-2a1b4a205e39",
+                "0d21327c-8627-492e-8cbb-f79e876219f6"
+            ]
+        },
+        "6496ee21-f118-4dc6-bf9b-d1df1100a9ba": {
+            "name": "PI2.png",
+            "type": "image"
+        },
+        "67dce851-a273-4427-8811-48b3ba77cbd1": {
+            "name": "PI7.png",
+            "type": "image"
+        },
+        "70e9cfb6-995b-4547-8198-6df467cb3717": {
+            "name": "PI12.png",
+            "type": "image"
+        },
+        "73f016f4-2d3d-4f3e-abaa-2a1b4a205e39": {
+            "name": "Character Images",
+            "children": [
+                "da4a29f7-9a95-4658-a053-578f9eaf2494",
+                "5aa8e622-cf6a-476c-b658-75f7d3a6cbdc"
+            ]
+        },
+        "7d2de2e6-a07a-419b-811d-3996d1c1d2d9": {
+            "name": "PI4.png",
+            "type": "image"
+        },
+        "87fbce4b-bd6e-422c-a412-e68d6e3b76ba": {
+            "name": "PI11.png",
+            "type": "image"
+        },
+        "c3119b28-1a5e-4274-9644-3e1f9d8c8111": {
+            "name": "PI5.png",
+            "type": "image"
+        },
+        "c7f9c5c6-c6df-4439-84fa-f57c93d7f91d": {
+            "name": "PI9.png",
+            "type": "image"
+        },
+        "cf3616d2-ae28-477f-bd99-bee2ad5509c1": {
+            "name": "PI6.png",
+            "type": "image"
+        },
+        "da4a29f7-9a95-4658-a053-578f9eaf2494": {
+            "name": "PC1.png",
+            "type": "image"
+        },
+        "fbe53c41-8780-4d89-8840-41543925dea2": {
+            "name": "PI13.png",
+            "type": "image"
+        }
+    },
+    "branches": {},
+    "conditions": {},
+    "variables": {
+        "747d0495-341f-42b2-8788-b47dace22bf8": {
+            "root": true,
+            "children": []
+        }
+    },
+    "components": {
+        "0357170f-8f2e-4f1b-b1fb-b517d0584ed7": {
+            "children": [
+                "045a05ea-5346-4565-9270-022d4ff3cd8c"
+            ],
+            "name": "Card Games"
+        },
+        "045a05ea-5346-4565-9270-022d4ff3cd8c": {
+            "customId": "guessing_game",
+            "attributes": [],
+            "name": "Guessing Game"
+        },
+        "06b9087a-31bf-433c-9499-8f60cd87721c": {
+            "children": [
+                "3f7b74af-8dd5-477b-ba2d-090ce73169ba",
+                "3e66d2ec-a044-437a-977d-bdd9010b87b8",
+                "f0d56f80-5670-4e0a-8aef-beace22ff972"
+            ],
+            "name": "Test Components"
+        },
+        "0c850ecd-835f-45ec-902e-ac4ad1ad0256": {
+            "customId": "iye",
+            "attributes": [
+                "56a2870b-965d-44d9-b9dd-6939445b0aa7",
+                "ebec11c0-481b-4baf-8437-a0d6e9e4ec0c",
+                "c285ffb4-f751-4eb5-9926-f2219948b8fc",
+                "1d2e0a58-2ba2-4c1c-a628-20a21faf865a"
+            ],
+            "name": "Iye"
+        },
+        "0fd9bec6-219e-4efb-996e-636d0d754c3b": {
+            "customId": "siblings",
+            "attributes": [
+                "8295a4f4-1e0c-445d-a89c-a2349de4879a"
+            ],
+            "name": "Siblings"
+        },
+        "1270978b-4257-4bdb-9629-4986fae794a8": {
+            "children": [
+                "9ebcc176-8210-45ed-9f72-3e2e4aecb6e6"
+            ],
+            "name": "Locations"
+        },
+        "137a510f-814f-4c7b-9273-931129354b91": {
+            "customId": "line_path_test",
+            "attributes": [
+                "bab5956c-a486-4571-be5f-c885cef3e798"
+            ],
+            "name": "Line Path Test"
+        },
+        "1775d40c-7d2d-427c-9f11-2220fb26b810": {
+            "customId": "dialogue_2",
+            "attributes": [
+                "b248a224-4f28-42b9-a28a-9fa32221bda8"
+            ],
+            "name": "Dialogue 2"
+        },
+        "2b9d6121-6d86-4443-8660-b0c2fc67ca48": {
+            "customId": "npc_loop",
+            "attributes": [
+                "82fa66a6-ada1-4245-a237-7d5056b392cb"
+            ],
+            "name": "NPC Loop"
+        },
+        "31929ecc-d743-4439-9707-44b8269cb87e": {
+            "customId": "jay",
+            "attributes": [
+                "83dd9d56-f8b5-466a-8d66-6e12984afd57",
+                "c7bb2219-123f-459a-8c20-2afc687fcbce",
+                "575f4762-f448-4aee-af1e-f7c2850ee017",
+                "ff760899-d8c5-43ed-968e-4450226c4401"
+            ],
+            "name": "Jay"
+        },
+        "371ce904-6d5c-43ba-bd05-b672a7cb7772": {
+            "customId": "chase_scene",
+            "attributes": [],
+            "name": "Chase Scene"
+        },
+        "3e66d2ec-a044-437a-977d-bdd9010b87b8": {
+            "children": [
+                "60d4b12e-45ac-4821-b31a-a63f092261f1",
+                "137a510f-814f-4c7b-9273-931129354b91",
+                "70accddb-cf7f-4a6d-9378-3d6dbbb06454"
+            ],
+            "name": "Path Tests"
+        },
+        "3f7b74af-8dd5-477b-ba2d-090ce73169ba": {
+            "children": [
+                "2b9d6121-6d86-4443-8660-b0c2fc67ca48",
+                "f3143609-5abe-41c1-891d-cea80aa77ae0",
+                "687bdb59-c0f9-4aae-8363-287b0bbae43e",
+                "bbc6d2e4-bccf-4a36-aede-758cdf5261d3"
+            ],
+            "name": "NPC Move Tests"
+        },
+        "3fcab303-4ce4-4886-adb5-8039d5a023ee": {
+            "customId": "map_cutscene",
+            "attributes": [],
+            "name": "Map Cutscene"
+        },
+        "60d4b12e-45ac-4821-b31a-a63f092261f1": {
+            "customId": "placement_path_test",
+            "attributes": [
+                "9588a614-1821-421d-8abe-203f7479f158"
+            ],
+            "name": "Placement Path Test"
+        },
+        "65005bda-15d0-41c5-867f-68c118829f08": {
+            "root": true,
+            "children": [
+                "acf25afd-1f74-458a-9ce5-9b0f9b873b69",
+                "98a21778-2580-4fa1-9b0b-e353da9180a9",
+                "0357170f-8f2e-4f1b-b1fb-b517d0584ed7",
+                "1270978b-4257-4bdb-9629-4986fae794a8",
+                "77cd3701-66d4-4e07-9f76-4d71b3cf5b01",
+                "06b9087a-31bf-433c-9499-8f60cd87721c"
+            ],
+            "name": "Root"
+        },
+        "674fe4a4-506e-43c8-9692-d9e94db86ad3": {
+            "customId": "linsey_human",
+            "attributes": [
+                "57e40253-545b-4cc8-be92-46bf2635b1d6",
+                "80b751a7-8935-4de4-9a12-abbcc445b148"
+            ],
+            "name": "Linsey (Human)"
+        },
+        "687bdb59-c0f9-4aae-8363-287b0bbae43e": {
+            "customId": "npc_placement",
+            "attributes": [
+                "d58997ef-fd67-4f7d-99e9-083e06a99f95"
+            ],
+            "name": "NPC Placement"
+        },
+        "70accddb-cf7f-4a6d-9378-3d6dbbb06454": {
+            "customId": "looping_path_test",
+            "attributes": [
+                "9117ce44-314c-49dd-8c2d-2aa6b97dcef4"
+            ],
+            "name": "Looping Path Test"
+        },
+        "77cd3701-66d4-4e07-9f76-4d71b3cf5b01": {
+            "children": [
+                "674fe4a4-506e-43c8-9692-d9e94db86ad3",
+                "0fd9bec6-219e-4efb-996e-636d0d754c3b",
+                "0c850ecd-835f-45ec-902e-ac4ad1ad0256",
+                "31929ecc-d743-4439-9707-44b8269cb87e"
+            ],
+            "name": "Characters"
+        },
+        "98a21778-2580-4fa1-9b0b-e353da9180a9": {
+            "children": [
+                "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d",
+                "3fcab303-4ce4-4886-adb5-8039d5a023ee",
+                "afcaf75a-8019-4caf-897e-0bda212ae48b",
+                "371ce904-6d5c-43ba-bd05-b672a7cb7772"
+            ],
+            "name": "Scene Types"
+        },
+        "9ebcc176-8210-45ed-9f72-3e2e4aecb6e6": {
+            "customId": "breeding_center",
+            "attributes": [
+                "3ba23a37-bd49-4ed6-a864-22bccef5ab9b"
+            ],
+            "name": "Breeding Center"
+        },
+        "acf25afd-1f74-458a-9ce5-9b0f9b873b69": {
+            "children": [
+                "e8a43519-dd88-482e-8ed1-1db1e8fd764c",
+                "1775d40c-7d2d-427c-9f11-2220fb26b810"
+            ],
+            "name": "Dialogues"
+        },
+        "afcaf75a-8019-4caf-897e-0bda212ae48b": {
+            "customId": "exploring_scene",
+            "attributes": [],
+            "name": "Exploring Scene"
+        },
+        "bbc6d2e4-bccf-4a36-aede-758cdf5261d3": {
+            "customId": "npc_simple_line",
+            "attributes": [
+                "390a5224-1468-4293-a94f-abfbd7520612"
+            ],
+            "name": "NPC Simple Line"
+        },
+        "e40f37ad-d836-4b39-ad8b-8e1b5e890b1d": {
+            "customId": "image_cutscene",
+            "attributes": [],
+            "name": "Image Cutscene"
+        },
+        "e8a43519-dd88-482e-8ed1-1db1e8fd764c": {
+            "customId": "untitled_component",
+            "attributes": [
+                "b80f5d08-7f65-4324-8bcb-f2ba1fdba92b"
+            ],
+            "name": "Dialogue 1"
+        },
+        "f0d56f80-5670-4e0a-8aef-beace22ff972": {
+            "children": [
+                "fa692c77-8520-4584-b716-b4a9f9ce0103"
+            ],
+            "name": "Other"
+        },
+        "f3143609-5abe-41c1-891d-cea80aa77ae0": {
+            "customId": "npc_path",
+            "attributes": [
+                "57975a48-7136-4345-9b41-57d5a98d8d28"
+            ],
+            "name": "NPC Path"
+        },
+        "fa692c77-8520-4584-b716-b4a9f9ce0103": {
+            "customId": "dialogue_test",
+            "attributes": [
+                "cfaf19f4-5fc9-4f09-8d88-66529c39d151"
+            ],
+            "name": "Dialogue Test"
+        }
+    },
+    "attributes": {
+        "1d2e0a58-2ba2-4c1c-a628-20a21faf865a": {
+            "cId": "0c850ecd-835f-45ec-902e-ac4ad1ad0256",
+            "name": "Dialogue Images",
+            "cType": "components",
+            "value": {
+                "data": [
+                    "da4a29f7-9a95-4658-a053-578f9eaf2494"
+                ],
+                "type": "asset-list"
+            }
+        },
+        "390a5224-1468-4293-a94f-abfbd7520612": {
+            "cId": "bbc6d2e4-bccf-4a36-aede-758cdf5261d3",
+            "name": "File Name",
+            "cType": "components",
+            "value": {
+                "data": "npc_simple_line.tmx",
+                "type": "string",
+                "plain": true
+            },
+            "customId": "file_name"
+        },
+        "3ba23a37-bd49-4ed6-a864-22bccef5ab9b": {
+            "cId": "9ebcc176-8210-45ed-9f72-3e2e4aecb6e6",
+            "name": "File Name",
+            "cType": "components",
+            "value": {
+                "data": "breeding_center.tmx",
+                "type": "string",
+                "plain": true
+            },
+            "customId": "file_name"
+        },
+        "56a2870b-965d-44d9-b9dd-6939445b0aa7": {
+            "cId": "0c850ecd-835f-45ec-902e-ac4ad1ad0256",
+            "name": "Pronouns",
+            "cType": "components",
+            "value": {
+                "data": "He\/Him",
+                "type": "string",
+                "plain": true
+            },
+            "customId": "pronouns"
+        },
+        "575f4762-f448-4aee-af1e-f7c2850ee017": {
+            "cId": "31929ecc-d743-4439-9707-44b8269cb87e",
+            "name": "Bio",
+            "cType": "components",
+            "value": {
+                "data": "<p>Shy and standoffish, they have strong opinions that they usually keep to themselves. One thing they are very open about is their hatred of evolution. He has only really been close with their sibling <span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span>, who taught them how to do card battles. When <span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> was adopted Jay stopped playing games entirely out of sadness (and lack of a partner to play against).&nbsp;<\/p><p>When they are forced into the wild they quickly encounter the card games again and are reminded of <span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span>. Deciding to seek them out (convinced they must have escaped or something) they hear of a card game tournament and know that <span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> couldn't pass up going to something like that. So they set off to the tournament in the big city.<\/p>",
+                "type": "string"
+            }
+        },
+        "57975a48-7136-4345-9b41-57d5a98d8d28": {
+            "cId": "f3143609-5abe-41c1-891d-cea80aa77ae0",
+            "name": "File Name",
+            "cType": "components",
+            "value": {
+                "data": "npc_path.tmx",
+                "type": "string",
+                "plain": true
+            },
+            "customId": "file_name"
+        },
+        "57e40253-545b-4cc8-be92-46bf2635b1d6": {
+            "cId": "674fe4a4-506e-43c8-9692-d9e94db86ad3",
+            "name": "Pronouns",
+            "cType": "components",
+            "value": {
+                "data": "She\/Her",
+                "type": "string",
+                "plain": true
+            },
+            "customId": "pronouns"
+        },
+        "80b751a7-8935-4de4-9a12-abbcc445b148": {
+            "cId": "674fe4a4-506e-43c8-9692-d9e94db86ad3",
+            "name": "Bio",
+            "cType": "components",
+            "value": {
+                "data": "<p>The Manager of the Eevee Breeding Center. She gives trainers their Starter Pokemon as well as their first pack of Battle Cards. Seeing that Jay is the last remaining Eevee of the litter and his aggression towards trainers she is forced to make the tough decision to set him loose so that a new batch of Eevee can be bred.<\/p>",
+                "type": "string"
+            }
+        },
+        "8295a4f4-1e0c-445d-a89c-a2349de4879a": {
+            "cId": "0fd9bec6-219e-4efb-996e-636d0d754c3b",
+            "name": null,
+            "cType": "components",
+            "value": {
+                "data": "<p>Group of 4 Eevee from the same litter as <span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> and <span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> <\/p>",
+                "type": "string"
+            }
+        },
+        "82fa66a6-ada1-4245-a237-7d5056b392cb": {
+            "cId": "2b9d6121-6d86-4443-8660-b0c2fc67ca48",
+            "name": "File Name",
+            "cType": "components",
+            "value": {
+                "data": "npc_loop.tmx",
+                "type": "string",
+                "plain": true
+            },
+            "customId": "file_name"
+        },
+        "83dd9d56-f8b5-466a-8d66-6e12984afd57": {
+            "cId": "31929ecc-d743-4439-9707-44b8269cb87e",
+            "name": "Pronouns",
+            "cType": "components",
+            "value": {
+                "data": "They\/Them",
+                "type": "string",
+                "plain": true
+            },
+            "customId": "pronouns"
+        },
+        "9117ce44-314c-49dd-8c2d-2aa6b97dcef4": {
+            "cId": "70accddb-cf7f-4a6d-9378-3d6dbbb06454",
+            "name": "File Name",
+            "cType": "components",
+            "value": {
+                "data": "path_loop.tmx",
+                "type": "string",
+                "plain": true
+            },
+            "customId": "file_name"
+        },
+        "9588a614-1821-421d-8abe-203f7479f158": {
+            "cId": "60d4b12e-45ac-4821-b31a-a63f092261f1",
+            "name": "File Name",
+            "cType": "components",
+            "value": {
+                "data": "path_place.tmx",
+                "type": "string",
+                "plain": true
+            },
+            "customId": "file_name"
+        },
+        "bab5956c-a486-4571-be5f-c885cef3e798": {
+            "cId": "137a510f-814f-4c7b-9273-931129354b91",
+            "name": "File Name",
+            "cType": "components",
+            "value": {
+                "data": "path_line.tmx",
+                "type": "string",
+                "plain": true
+            },
+            "customId": "file_name"
+        },
+        "c285ffb4-f751-4eb5-9926-f2219948b8fc": {
+            "cId": "0c850ecd-835f-45ec-902e-ac4ad1ad0256",
+            "name": "Bio",
+            "cType": "components",
+            "value": {
+                "data": "<p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span>'s sibling, he's competitive and a little overbearing at times. He really loves playing games with others and isn't above tricking others into doing what he wants to do. His favorite thing is card battles. He also has very strong opinions that evolving is the worst thing ever, something that he and <span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> agreed on instantly and kick-started their bond. He was adopted before the start of the game but we see him as an Eevee in the introduction flashback tutorial.<\/p>",
+                "type": "string"
+            }
+        },
+        "c7bb2219-123f-459a-8c20-2afc687fcbce": {
+            "cId": "31929ecc-d743-4439-9707-44b8269cb87e",
+            "name": "Parents",
+            "cType": "components",
+            "value": {
+                "data": "Flareon (mother), Lopunny (father)",
+                "type": "string",
+                "plain": true
+            },
+            "customId": "parents"
+        },
+        "d58997ef-fd67-4f7d-99e9-083e06a99f95": {
+            "cId": "687bdb59-c0f9-4aae-8363-287b0bbae43e",
+            "name": "File Name",
+            "cType": "components",
+            "value": {
+                "data": "npc_placement.tmx",
+                "type": "string",
+                "plain": true
+            },
+            "customId": "file_name"
+        },
+        "ebec11c0-481b-4baf-8437-a0d6e9e4ec0c": {
+            "cId": "0c850ecd-835f-45ec-902e-ac4ad1ad0256",
+            "name": "Parents",
+            "cType": "components",
+            "value": {
+                "data": "Flareon (mother), Lopunny (father)",
+                "type": "string",
+                "plain": true
+            },
+            "customId": "parents"
+        },
+        "ff760899-d8c5-43ed-968e-4450226c4401": {
+            "cId": "31929ecc-d743-4439-9707-44b8269cb87e",
+            "name": "Dialogue Images",
+            "cType": "components",
+            "value": {
+                "data": [
+                    "5aa8e622-cf6a-476c-b658-75f7d3a6cbdc"
+                ],
+                "type": "asset-list"
+            }
+        },
+        "cfaf19f4-5fc9-4f09-8d88-66529c39d151": {
+            "name": "Text",
+            "value": {
+                "data": "<p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : This is testing text.<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : This one is really long and probably goes off the screen if we don't have text wrapping or formatting or anything like that. Also it will take some time to print out once we're going one character at a time. Characters as in letters in a word though, not characters like us!<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : Wow, you said a lot!<\/p>",
+                "type": "string"
+            },
+            "cType": "components",
+            "cId": "fa692c77-8520-4584-b716-b4a9f9ce0103"
+        },
+        "b80f5d08-7f65-4324-8bcb-f2ba1fdba92b": {
+            "name": "Text",
+            "value": {
+                "data": "<p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : Hey, they kick you out of tag again?<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : No, I left! They won't listen to me about the humans.<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : Maybe it's because they're just trying to have fun?<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : How can they run around having fun when at any moment a human could come in here and take one of us away?!<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : Would you rather they hide and be scared all the time? Let them have fun Jay, they don't want to think about where the humans take us or what happens after that.<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : You don't understand! Dee came back yesterday, I saw her and that human that took her away up in the front! She didn't have fur anymore, her skin was all blue and she had fins, like a fish. She's a fish, Iye! The humans turned her into a fish!<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : Whoa\u2026 That's freaky\u2026<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : Yeah, and you know what Em said when I told them all what I saw?! \u201cCool!\u201d Can you believe it?!<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : I don't want some human to grab me and turn me into a fish\u2026 But what can we do about it? We can't stop them, can we?<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : I... I don't know...<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : We need to come up with a plan, even if it's just us, okay? Say, let's play a quick card game, that always helps me calm down and think.<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : Hmmm, okay. I guess it can't hurt.<\/p>",
+                "type": "string"
+            },
+            "cType": "components",
+            "cId": "e8a43519-dd88-482e-8ed1-1db1e8fd764c"
+        },
+        "b248a224-4f28-42b9-a28a-9fa32221bda8": {
+            "name": "Text",
+            "value": {
+                "data": "<p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : This is so frustrating! Why does she keep bringing them here?!<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : I don't know, they should just leave us alone. We don't want to be fish or anything else!<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : Yeah, we're great just the way we are! We're not going to change for any dumb human!<\/p><p><span class=\"mention-component mention\" data-id=\"0c850ecd-835f-45ec-902e-ac4ad1ad0256\" data-label=\"Iye\" data-type=\"component\">Iye<\/span> : Never, promise?<\/p><p><span class=\"mention-component mention\" data-id=\"31929ecc-d743-4439-9707-44b8269cb87e\" data-label=\"Jay\" data-type=\"component\">Jay<\/span> : Of course! Promise!<\/p>",
+                "type": "string"
+            },
+            "cType": "components",
+            "cId": "1775d40c-7d2d-427c-9f11-2220fb26b810"
+        }
+    },
+    "exportVersion": 1,
+    "name": "Helping Hand",
+    "cover": null
+}
